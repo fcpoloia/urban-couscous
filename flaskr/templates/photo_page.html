@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block photoset %}
+
+    <div class="centredthumbs">
+	  {% for item in gallpage %}
+	    <span style="padding:3px">
+			<a href="{{item.href}}" class="floatbox">
+				<img class="nohover" src="{{item.src}}" style="max-width:100%;margin:3px;">
+			</a>
+		</span>
+	  {% endfor %}
+    </div>
+	
+{% endblock %}

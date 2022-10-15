@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block intro %}
+
+    <div class="{{page['button_class']}}">
+    {% for item in buttons %}
+    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br><br>[ {{item.name}} ]</a></div>
+    {% endfor %}
+    </div>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block model %}
+
+    <div class="centredthumbs">
+	  {% for item in galldicts %}
+	    <span style="padding:3px">
+			<a href="{{item.href}}">
+				<img src="{{item.src}}" height="{{item.height}}px">
+				<br>{{item.name}}
+			</a>
+		</span>
+	  {% endfor %}
+    </div>
+
+	{% if hasvideos %}
+	<h2>Videos</h2>
+
+	<div class="centredthumbs">
+
+	  {% for item in viddicts %}
+	    <span style="padding:3px">
+			<a href="{{item.href}}">
+				<img src="{{item.src}}" height="{{item.height}}px">
+				<br>{{item.name}}
+			</a>
+		</span>
+	  {% endfor %}
+
+	</div>
+	{% endif %}
+
+{% endblock %}

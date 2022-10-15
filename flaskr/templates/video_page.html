@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block video %}
+
+    <div class="centredthumbs">
+      {% if viddict %}
+        <span style="padding:3px;">
+          <video height='{{viddict.height}}px' width='{{viddict.width}}px' controls poster='{{viddict.thumb_url}}'>
+            <source src='{{viddict.video_url}}' type='video/mp4'>
+            <p>Your web browser is outdated and does not support html5 video function. You can:</p>
+            <ul><li>Upgrade your browser.</li><li><a href='{{viddict.mp4_url}}'>Download the video file</a> to your computer and play it with 
+            <a href='http://www.videolan.org/vlc/index.html' target='_blank'>VLC media player</a>.</li></ul>
+          </video>
+        </span>
+      {% endif %}
+    </div>
+
+{% endblock %}

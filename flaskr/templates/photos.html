@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block photos %}
+
+    <div class="centredthumbs">
+	  {% for item in galldicts %}
+	    <span style="padding:3px">
+			<a href="{{item.href}}">
+				<img src="{{item.src}}" height="{{item.height}}px">
+				<br>{{item.name}}
+			</a>
+		</span>
+	  {% endfor %}
+    </div>
+
+{% endblock %}

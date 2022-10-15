@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{page['title']['folder']}}</title>
+ <!-- for floatbox -->
+ <!-- link type="text/css" rel="stylesheet" href="http://gallery/floatbox/floatbox.css">
+ <script type="text/javascript" src="http://gallery/floatbox/floatbox.js"></script -->
+
+ <link rev="stylesheet" type="text/css" href="http://gallery/phpgallery/css/style.css" rel="stylesheet" media="screen,all">
+
+ <meta http-equiv="Content-Type" content="text/html, charset=ISO-8859-1">
+ <meta http-equiv="content-style-type" content="text/css">
+
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- maximum-scale=1.0;" -->
+
+ <meta name="googlebot" content="noindex,noarchive,nofollow">
+ <meta name="robots" content="noindex,nofollow">
+
+ <style>
+  img.rollover:hover {margin-top:-140px; overflow:hidden;}
+  #rollover {overflow: hidden; height:140px;}
+  #thumbnails span a {font-size: 8pt;
+                     color: #fff;
+                     text-shadow: 2px 2px 4px #000, -2px 2px 4px #000, 2px -2px 4px #000, -2px -2px 4px #000; 
+                     /*text-decoration: none;*/
+                     color: #fff;}
+  a img {background-color:#fff;}
+  a img:hover {opacity: 0.8;}
+  a img.nohover:hover {opacity: 1.0;}
+  a:hover {color: #fff;}
+  a.nav {font-size:16pt;color:#aaa;}
+  a.hide {display:none;}
+  a.title {font-size: 20pt; color: #aaa;}
+  a.page {color:orange;}
+  a.page:hover, a.title:hover {color: #fff;}
+  .onebutton {width:210px;height:200px;}
+  .twobutton {width:420px;height:200px;}
+  .threebutton {width:630px;height:200px;}
+  .fourbuttons {width:850px;height:200px;}
+  #bigbtn {display:inline-block;width:200px;height:200px;border:1px solid #777;margin:3px;}
+  /* td { border:1px solid #ff00ff;}*/
+ </style>
+
+ 
+</head>
+<body>
+
+<div id="title">
+<table width="100%"><tbody><tr>
+<td class="spacel" width="5%"></td>
+<td class="prevdir" width="15%">
+  {% if page['prev'] %}
+    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
+  {% endif %}
+</td>
+<td class="firstpage" width="5%"></td>
+<td class="prevpage"></td>
+<td class="up" width="50%">
+    {{page['heading']}}
+    {% for item in page['navigation'] %}
+        <a class="title{{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
+    {% endfor %}
+ <br>  
+     {% if page['plaintitle'] %}
+     {{page['title']}}
+     {% else %}
+     <a class="title" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
+     <a class="title" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a>
+	 {{page['title']['folder']}}
+     {% endif %}
+     {% autoescape false %}
+     {% endautoescape %}
+</td>
+<td class="nextpage"></td>
+<td class="lastpage" width="5%"></td>
+<td class="nextdir" width="15%">
+  {% if page['next'] %}
+    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
+  {% endif %}
+</td>
+<td class="spacer" width="5%"></td>
+</tr></tbody></table>
+</div>
+
+ <div style="width: 98%" id="thumbnails" class="centredthumbs">
+  <div style="text-align:center">
+      {% block photos %}{% endblock %}
+      {% block model %}{% endblock %}
+      {% block photoset %}{% endblock %}
+      {% block video %}{% endblock %}
+      {% block intro %}{% endblock %}
+  </div>
+ </div>
+
+<div id="title">
+<table width="100%"><tbody><tr>
+<td class="spacel" width="5%"></td>
+<td class="prevdir" width="15%">
+  {% if page['prev'] %}
+    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
+  {% endif %}
+</td>
+<td class="firstpage" width="5%"></td>
+<td class="prevpage"></td>
+<td class="up" width="50%"></td>
+<td class="nextpage"></td>
+<td class="lastpage" width="5%"></td>
+<td class="nextdir" width="15%">
+  {% if page['next'] %}
+    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
+  {% endif %}
+</td>
+<td class="spacer" width="5%"></td>
+</tr></tbody></table>
+</div>
+
+</body>
+</html>
