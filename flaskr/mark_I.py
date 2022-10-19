@@ -26,7 +26,7 @@ refactor code below
 from flask import render_template
 import glob, os
 
-from flaskr.getkindgirls_sql import GirlsDB
+from flaskr.db1 import GirlsDB
 
 
 class SiteDB:
