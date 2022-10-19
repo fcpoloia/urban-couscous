@@ -117,8 +117,9 @@ class Table(BasicDB):
         sql = self.sql_all % self.distinct + f"where {column} = '{value}' group by {group_col} order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
-    def select_by_most_recent_photos(self, col):
-        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb,photos.id from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id desc;"
+    def select_by_most_recent_photos(self, col): 
+        """this will only actually work for models table which has thumb column"""
+        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb,max(photos.id) from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id desc;"
         return self.get_results_list(sql, self.col_count()+1)
 
     def get_next_prev(self, id, col=None, val=None):
