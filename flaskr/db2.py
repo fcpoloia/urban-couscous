@@ -136,6 +136,10 @@ class Table(BasicDB):
         if nid is not None: nn = self.get_single_result(f"select name from {self.name} where id = {nid}", 1)[0]
         return nid, pid, nn, pn
 
+    def select_where_like(self, column, value):
+        sql = self.sql_all % self.distinct + f"where {column} like '%{value}%' "
+        return self.get_results_list(sql, self.col_count())
+
 
 # get a list of model names ordered by set count
 

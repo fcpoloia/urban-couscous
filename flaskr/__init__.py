@@ -3,7 +3,7 @@
 """
 """
 
-from flask import Flask
+from flask import Flask, request
 #from flaskr.mark_I import *
 from flaskr.mark_II import *
 
@@ -95,6 +95,14 @@ def kindgirls_video_model(dbname, vid, sid=None, mid=None):
     mysite = HtmlSite(dbname)
     return mysite.video(vid, sid, mid)
 
+@app.route("/<dbname>/search", methods=['POST', 'GET'])
+def search(dbname):
+    """"""
+    mysite = HtmlSite(dbname)
+    if request.method == 'GET':
+        s = request.args.get('s')
+    return mysite.search(s)
+
 
 @app.route("/<dbname>/")
 @app.route("/<dbname>")
@@ -113,6 +121,12 @@ def kindgirls(dbname):
     return render_template("intro.html", 
                            page=page_dict,
                            buttons=buttons)
+
+@app.route("/favicon.ico")
+def favicon():
+    """"""
+    print("favicon.ico handled")
+    return ""
 
 
 @app.route("/")

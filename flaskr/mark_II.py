@@ -16,7 +16,7 @@ class SiteDB:
 def get_config(dbname):
     global DATABASE
     DATABASE = f"flaskr/new_{dbname}.db"
-    
+    print(DATABASE)
     val = ConfigTable(DATABASE).select_all()[0]
     try:
         config = {'id':val[0], 'rootpath':val[1], 'title':val[2], 
@@ -33,6 +33,7 @@ def get_config(dbname):
 class HtmlSite:
     def __init__(self, dbname):
         """"""
+        print(dbname)
         self.dbname = dbname
         self.config = get_config(dbname)
         self.thumb_h = 160
@@ -74,7 +75,8 @@ class HtmlSite:
                 galldicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
 
         links = self.heading('models')
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 'db':self.dbname}
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
+                     'db':self.dbname, 'search': True}
 
         return render_template("photos.html", 
                                page=page_dict,
@@ -165,7 +167,7 @@ class HtmlSite:
         sites = SitesTable(DATABASE).select_all()
         ordered_sites = {}
         galldicts = []
-        for id,name,location in sites[:1000]:
+        for id,name,location in sites:
             try:
                 pid,_,_,_,_,thm = PhotosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][:6]
                 thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
@@ -183,7 +185,8 @@ class HtmlSite:
             galldicts.append(ordered_sites[pid])
 
         links = self.heading('sites')
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 'db':self.dbname}
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
+                     'db':self.dbname, 'search': True}
 
         return render_template("photos.html", 
                                page=page_dict,
@@ -239,7 +242,7 @@ class HtmlSite:
 
         links = self.heading('photos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
-                     'db':self.dbname}
+                     'db':self.dbname, 'search': True}
 
         return render_template("photos.html", 
                                page=page_dict,
@@ -251,14 +254,14 @@ class HtmlSite:
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
     
         galldicts = []
-        for vid in videos[:1000]:
+        for vid in videos:
             id, model_id, site_id, name, filename, thumb, width, height, length = vid
             thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/video/{id}", 'src':thumb_url, 'name':name, 'height':self.thumb_h})
 
         links = self.heading('videos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
-                     'db':self.dbname}
+                     'db':self.dbname, 'search': True}
         return render_template("photos.html", 
                                page=page_dict,
                                galldicts=galldicts)
@@ -269,7 +272,11 @@ class HtmlSite:
         video = VideosTable(DATABASE).select_where('id', vid)[0]
     
         id, model_id, site_id, name, filename, thumb, width, height, length = video
-        modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
+        sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
+        try:
+            modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
+        except IndexError:
+            modelname = ''
         if DATABASE == 'flaskr/new_hegre.db':
             filename = filename.replace('.avi', '.mp4')
         thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
@@ -292,7 +299,11 @@ class HtmlSite:
         if sid is not None: prefix+=f"site/{sid}/"
         if mid is not None: prefix+=f"model/{mid}/"
         
-        page_dict = {'title':f"{modelname}", 'plaintitle':True, 'heading': self.config['title'], 'type':'video', 
+        titledict = {'site': {'href':f"/{self.dbname}/site/{site_id}", 'name':sitename}, 
+                     'model':{'href':f"/{self.dbname}/model/{model_id}", 'name':modelname},
+                     'folder':name}
+        page_dict = {'title': titledict, 
+                     'plaintitle':False, 'heading': self.config['title'], 'type':'video', 
                      'navigation': links, 'nid':nvideo, 'pid':pvideo, 'next':nname, 'prev':pname, 
                      'prefix':prefix, 'db':self.dbname}
         return render_template("video_page.html", 
@@ -348,4 +359,64 @@ class HtmlSite:
             gall.append({'href':image, 'src':image})
         return gall
 
+
+    def search(self, s):
+        """"""
+        sites = SitesTable(DATABASE).select_where_like('name', s)
+        models = ModelsTable(DATABASE).select_where_like('name', s)
+        photos = PhotosTable(DATABASE).select_where_like('name', s)
+        videos = VideosTable(DATABASE).select_where_like('name', s)
+        
+        modeldicts = []
+        hasmodels = False
+        if len(models) > 0:
+            hasmodels = True
+        for id,name,thumb in models:
+            thumburl = f"http://gallery{self.config['rootpath']}/{self.config['models']}{thumb}"
+            #galldicts.append({'href':f"/{self.dbname}/model/{model}", 'src':thumb, 'name':model, 'height':self.thumb_h})
+            modeldicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
+
+        galldicts = []
+        hasphotos = False
+        if len(photos) > 0:
+            hasphotos = True
+        for gallery in photos:
+            id, model_id, site_id, name, location, thumb, count = gallery
+            thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thumb}"
+            galldicts.append({'href':f"/{self.dbname}/gallery/model/{model_id}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
+
+        viddicts = []
+        hasvideos = False
+        if len(videos) > 0:
+            hasvideos = True
+        for vid in videos:
+            id, model_id, site_id, name, filename, thumb, width, height, length = vid
+            thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+            viddicts.append({'href':f"/{self.dbname}/video/model/{model_id}/{id}", 'src':thumb_url, 'height':self.thumb_h, 'name': name})
+
+        sitedicts = []
+        hassites = False
+        if len(sites) > 0:
+            hassites = True
+        for id,name,location in sites:
+            try:
+                pid,_,_,_,_,thm = PhotosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][:6]
+                thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
+                sitedicts.append( {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h} )
+            except IndexError:
+                vname = VideosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][5]
+                thumb = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
+                sitedicts.append( {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h} )
+
+        links = self.heading()
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
+                     'navigation': links, 
+                     'db':self.dbname, 'search': True}
+        
+        return render_template("search_page.html", 
+                               page=page_dict, search_term=s,
+                               hasphotos=hasphotos, galldicts=galldicts, 
+                               hasmodels=hasmodels, modeldicts=modeldicts,
+                               hassites=hassites, sitedicts=sitedicts, 
+                               hasvideos=hasvideos, viddicts=viddicts)
 
