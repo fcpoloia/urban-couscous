@@ -39,6 +39,8 @@
   .fourbuttons {width:850px;height:200px;}
   #bigbtn {display:inline-block;width:200px;height:200px;border:1px solid #777;margin:3px;}
   /* td { border:1px solid #ff00ff;}*/
+  #search_form {font-size: 11pt; color: #ccc;}
+  #search_form input {background-color: #444; color: #ccc}
  </style>
 
  
@@ -77,6 +79,14 @@
   {% if page['next'] %}
     <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
   {% endif %}
+  {% if page['search'] %}
+    <div id="search_form">
+      <form action="/{{page['db']}}/search" method="get">
+        <label>Search</label>
+        <input name="s" type="text" size="9" maxlength="20">
+      </form>
+    </div>
+  {% endif %}
 </td>
 <td class="spacer" width="5%"></td>
 </tr></tbody></table>
@@ -89,6 +99,7 @@
       {% block photoset %}{% endblock %}
       {% block video %}{% endblock %}
       {% block intro %}{% endblock %}
+      {% block search %}{% endblock %}
   </div>
  </div>
 
