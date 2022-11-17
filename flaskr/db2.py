@@ -91,6 +91,13 @@ class Table(BasicDB):
     def col_count(self):
         return len(self.get_results_list(self.pragma, 6))
         
+    def column_list(self):
+        res = self.get_results_list(self.pragma, 2)
+        columns = []
+        for col in res:
+            columns.append(col[1])
+        return columns
+        
     def set_distinct(self):
         self.distinct = 'DISTINCT'
 
@@ -192,3 +199,4 @@ if __name__ == '__main__':
 
     c = ConfigTable(DATABASE)
     print(c.select_all())
+    print(c.column_list())

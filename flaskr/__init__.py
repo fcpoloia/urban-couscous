@@ -33,20 +33,18 @@ def gallery(dbname, id):
     return mysite.do_gallery(id, None, None, None, links)
 
 
-@app.route("/<dbname>/models/<letter>")
 @app.route("/<dbname>/models")
-def kindgirls_models(dbname, letter=''):
+def kindgirls_models(dbname):
     """"""
     mysite = HtmlSite(dbname)
-    return mysite.models(letter)
+    return mysite.models()
 
 
-@app.route("/<dbname>/model/<model>/<letter>")
 @app.route("/<dbname>/model/<model>")
-def kindgirls_model(dbname, model, letter=''):
+def kindgirls_model(dbname, model):
     """"""
     mysite = HtmlSite(dbname)
-    return mysite.model(model, letter)
+    return mysite.model(model)
 
 
 @app.route("/<dbname>/sites")
@@ -132,10 +130,14 @@ def favicon():
 @app.route("/")
 def index():
     """"""
-    buttons = [{'href':'/kindgirls', 'name':'KindGirls'},
-               {'href':'/inthecrack', 'name':'InTheCrack'}]
+    buttons = [{'href':'/kindgirls',  'name':'KindGirls'},
+               {'href':'/inthecrack', 'name':'InTheCrack'},
+               {'href':'/hegre',      'name':'Hegre-Art'},
+               {'href':'/alsangels',  'name':'AlsAngels'},
+               {'href':'/femjoy',     'name':'FemJoy'}
+           ]
 
-    page_dict = {'title':'Stuff', 'plaintitle':True, 'button_class':'twobuttons'}
+    page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'twobuttons'}
     return render_template("intro.html", 
                            page=page_dict, 
                            buttons=buttons)

@@ -19,6 +19,7 @@
  <style>
   img.rollover:hover {margin-top:-140px; overflow:hidden;}
   #rollover {overflow: hidden; height:140px;}
+  .centredthumbs { padding: 0px;}
   #thumbnails span a {font-size: 8pt;
                      color: #fff;
                      text-shadow: 2px 2px 4px #000, -2px 2px 4px #000, 2px -2px 4px #000, -2px -2px 4px #000; 
@@ -38,7 +39,7 @@
   .threebutton {width:630px;height:200px;}
   .fourbuttons {width:850px;height:200px;}
   #bigbtn {display:inline-block;width:200px;height:200px;border:1px solid #777;margin:3px;}
-  /* td { border:1px solid #ff00ff;}*/
+  td { border:1px solid #202020;}
   #search_form {font-size: 11pt; color: #ccc;}
   #search_form input {background-color: #444; color: #ccc}
  </style>
@@ -92,7 +93,7 @@
 </tr></tbody></table>
 </div>
 
- <div style="width: 98%" id="thumbnails" class="centredthumbs">
+ <div style="width: 100%" id="thumbnails" class="centredthumbs">
   <div style="text-align:center">
       {% block photos %}{% endblock %}
       {% block model %}{% endblock %}

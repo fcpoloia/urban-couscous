@@ -4,6 +4,7 @@
 
 from flask import Flask, render_template
 import glob, os
+from subprocess import getstatusoutput as unix
 
 from flaskr.db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable
 
@@ -16,33 +17,24 @@ class SiteDB:
 def get_config(dbname):
     global DATABASE
     DATABASE = f"flaskr/new_{dbname}.db"
-    print(DATABASE)
-    val = ConfigTable(DATABASE).select_all()[0]
-    try:
-        config = {'id':val[0], 'rootpath':val[1], 'title':val[2], 
-              'images':val[3], 'thumbs':val[4], 'videos':val[5] }
-    except:
-        print(val)
-        raise
-    config['models'] = 'html'
-    if dbname == "hegre":
-        config['models'] = 'updates/models/'
+    #print(DATABASE)
+    vals = ConfigTable(DATABASE).select_all()[0]
+    cols = ConfigTable(DATABASE).column_list()
+    config = {}
+    if len(vals) == len(cols):
+        for i in range(len(cols)):
+            config[cols[i]] = vals[i]
+    #print(config)
     return config
 
         
 class HtmlSite:
     def __init__(self, dbname):
         """"""
-        print(dbname)
+        #print(dbname)
         self.dbname = dbname
         self.config = get_config(dbname)
         self.thumb_h = 160
-        if dbname == "inthecrack":
-            self.thumbs0 = ".pics"
-        elif dbname == "hegre":
-            self.thumbs0 = ''
-        else:
-            self.thumbs0 = "0.thumbs"
 
     def heading(self, page=None):
         """"""
@@ -57,22 +49,22 @@ class HtmlSite:
             
         return links
 
-    def models(self, letter=''):
+    def models(self):
         """"""
-        #models = ModelsTable(DATABASE).select_order_by('id', 'desc')
         models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id')
-    
+        if len(models) == 0:
+            models = ModelsTable(DATABASE).select_order_by('id', 'desc')
+        #print(f"model count {len(models)}")
+        
         galldicts = []
-        for id,name,thumb,_ in models:
-            thumburl = f"http://gallery{self.config['rootpath']}/{self.config['models']}{thumb}"
-            #if self.dbname == "inthecrack":
-            #    thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{location}/{self.thumbs0}/{id}_001.jpg"
-            if letter.isalpha():
-                if model.lower().startswith(letter.lower()):
-                    galldicts.append({'href':f"/{self.dbname}/model/{model}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
-            else:
-                #galldicts.append({'href':f"/{self.dbname}/model/{model}", 'src':thumb, 'name':model, 'height':self.thumb_h})
-                galldicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
+        for m in models:
+            try:
+                id,name,thumb,_ = m
+            except:
+                id,name,thumb = m
+            thumburl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['models']}{thumb}"
+            #print(thumburl)
+            galldicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
 
         links = self.heading('models')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
@@ -82,7 +74,7 @@ class HtmlSite:
                                page=page_dict,
                                galldicts=galldicts)
 
-    def model(self, modelid, letter=''):
+    def model(self, modelid):
         """"""
         photos = PhotosTable(DATABASE).select_where('model_id',modelid)
         videos = VideosTable(DATABASE).select_where('model_id',modelid)
@@ -91,9 +83,7 @@ class HtmlSite:
         galldicts = []
         for gallery in photos:
             id, model_id, site_id, name, location, thumb, count = gallery
-            thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thumb}"
-            #if self.dbname == "inthecrack":
-            #    thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{location}/{self.thumbs0}/{id}_001.jpg"
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/gallery/model/{modelid}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
 
         hasvideos = False
@@ -102,8 +92,8 @@ class HtmlSite:
             hasvideos = True
             for vid in videos:
                 id, model_id, site_id, name, filename, thumb, width, height, length = vid
-                thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
-                #video_url = f"http://gallery{self.config['rootpath']}/{self.config['videos']}/{name}"
+                thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+                #video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{name}"
                 viddicts.append({'href':f"/{self.dbname}/video/model/{modelid}/{id}", 'src':thumb_url, 'height':self.thumb_h, 'name': name})
     
         # next/prev needs to follow sort order of models page above
@@ -129,10 +119,10 @@ class HtmlSite:
             sitename = sites[site_id]
             try:
                 thm = PhotosTable(DATABASE).select_where_order_by('site_id', site_id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', site_id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
             galldicts.append({'href':f"/{self.dbname}/site/{site_id}", 'src':thumb, 'name':sitename, 'height':self.thumb_h})
 
         links = self.heading('sites')
@@ -149,10 +139,10 @@ class HtmlSite:
         for site_id, sitename, location, photo_id in sites:
             try:
                 thm = PhotosTable(DATABASE).select_where_order_by('site_id', site_id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', site_id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
             galldicts.append({'href':f"/{self.dbname}/site/{site_id}", 'src':thumb, 'name':sitename, 'height':self.thumb_h})
 
         links = self.heading('sites')
@@ -170,14 +160,13 @@ class HtmlSite:
         for id,name,location in sites:
             try:
                 pid,_,_,_,_,thm = PhotosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][:6]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
                 ordered_sites[int(pid)] = {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h}
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
                 ordered_sites[1] = {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h}
-            #if self.dbname == "inthecrack":
-            #    thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{location}/{self.thumbs0}/{id}_001.jpg"
+
         photo_ids = [k for k in ordered_sites]
         photo_ids.sort()
         photo_ids.reverse()
@@ -201,9 +190,7 @@ class HtmlSite:
         galldicts = []
         for gallery in galleries[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
-            thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thumb}"
-            #if self.dbname == "inthecrack":
-            #    thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{location}/{self.thumbs0}/{id}_001.jpg"
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/gallery/site/{siteid}/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h})
 
         hasvideos = False
@@ -212,8 +199,8 @@ class HtmlSite:
             hasvideos = True
             for vid in videos:
                 id, model_id, site_id, name, filename, thumb, width, height, length = vid
-                thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
-                video_url = f"http://gallery{self.config['rootpath']}/{self.config['videos']}/{name}"
+                thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+                video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{name}"
                 viddicts.append({'href':f"/{self.dbname}/video/site/{site_id}/{id}", 'src':thumb_url, 'height':self.thumb_h, 'name': name})
 
         nsite, psite, nname, pname = SitesTable(DATABASE).get_next_prev(siteid)
@@ -235,9 +222,7 @@ class HtmlSite:
         galldicts = []
         for gallery in photos[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
-            thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thumb}"
-            #if self.dbname == "inthecrack":
-            #    thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{location}/{self.thumbs0}/{id}_001.jpg"
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/gallery/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h})
 
         links = self.heading('photos')
@@ -256,7 +241,7 @@ class HtmlSite:
         galldicts = []
         for vid in videos:
             id, model_id, site_id, name, filename, thumb, width, height, length = vid
-            thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/video/{id}", 'src':thumb_url, 'name':name, 'height':self.thumb_h})
 
         links = self.heading('videos')
@@ -279,8 +264,8 @@ class HtmlSite:
             modelname = ''
         if DATABASE == 'flaskr/new_hegre.db':
             filename = filename.replace('.avi', '.mp4')
-        thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
-        video_url = f"http://gallery{self.config['rootpath']}/{self.config['videos']}/{filename}"
+        thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+        video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{filename}"
         if int(width) > 1280 or int(height) > 720:
             width=1280
             height=720
@@ -327,10 +312,6 @@ class HtmlSite:
         
         next, prev, nname, pname = PhotosTable(DATABASE).get_next_prev(id, col, val)
 
-        #print(val,prev,next)
-    
-        #links = self.heading('photos')
-
         titledict = {'site': {'href':f"/{self.dbname}/site/{site_id}", 'name':sitename}, 
                      'model':{'href':f"/{self.dbname}/model/{model_id}", 'name':modelname},
                      'folder':name}
@@ -347,16 +328,29 @@ class HtmlSite:
                                gallpage=gallery)
 
 
-    def create_gallery(self, fld, id, count):
-        """"""
+    def old_create_gallery(self, fld, id, count):
+        """relies on knowing the format of the image file name"""
         gall = []
         for i in range(count):
             n = i+1
             pic = os.path.basename(fld) 
-            image = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{fld}/{pic}_{n}.jpg"
-            #if self.dbname == "inthecrack":
-            #    image = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{fld}/{id}_%03d.jpg" % n
+            image = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{pic}_{n}.jpg"
             gall.append({'href':image, 'src':image})
+        return gall
+
+
+    def create_gallery(self, fld, id, count):
+        """relies on being able to downloading the list of images from the gallery server"""
+        # eg. self.config['webroot']/zdata/stuff.backup/sdc1/www.hegre-art.com/members//LubaAfterAShowerGen/
+        
+        gall = []
+        url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/"
+        st, out = unix(f"curl -s {url}")
+        for line in out.split('\n'):
+            if line.find("[IMG]") > -1:
+                img = line[line.find("href="):line.find("</a>")].split('"')[1]
+                imgurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{img}"
+                gall.append({'href':imgurl, 'src':imgurl})
         return gall
 
 
@@ -372,8 +366,7 @@ class HtmlSite:
         if len(models) > 0:
             hasmodels = True
         for id,name,thumb in models:
-            thumburl = f"http://gallery{self.config['rootpath']}/{self.config['models']}{thumb}"
-            #galldicts.append({'href':f"/{self.dbname}/model/{model}", 'src':thumb, 'name':model, 'height':self.thumb_h})
+            thumburl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['models']}{thumb}"
             modeldicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
 
         galldicts = []
@@ -382,7 +375,7 @@ class HtmlSite:
             hasphotos = True
         for gallery in photos:
             id, model_id, site_id, name, location, thumb, count = gallery
-            thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thumb}"
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             galldicts.append({'href':f"/{self.dbname}/gallery/model/{model_id}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
 
         viddicts = []
@@ -391,7 +384,7 @@ class HtmlSite:
             hasvideos = True
         for vid in videos:
             id, model_id, site_id, name, filename, thumb, width, height, length = vid
-            thumb_url = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             viddicts.append({'href':f"/{self.dbname}/video/model/{model_id}/{id}", 'src':thumb_url, 'height':self.thumb_h, 'name': name})
 
         sitedicts = []
@@ -401,11 +394,11 @@ class HtmlSite:
         for id,name,location in sites:
             try:
                 pid,_,_,_,_,thm = PhotosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][:6]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['images']}/{self.thumbs0}/{thm}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
                 sitedicts.append( {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h} )
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][5]
-                thumb = f"http://gallery{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
+                thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
                 sitedicts.append( {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h} )
 
         links = self.heading()
