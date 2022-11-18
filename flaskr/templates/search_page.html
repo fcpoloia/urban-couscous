@@ -3,7 +3,7 @@
 
 	<h1 style="color:#ccc">Search Results for "{{search_term}}"</h1>
 	{% if not hasmodels and not hasphotos %}
-		<div style="font-size:11pt; color:#ccc">No Results Found</div>
+		<div style="font-size:11pt; color:#ccc">No Models or Photo Sets Found</div>
 	{% endif %}
 	{% if hasmodels %}
 	<h2>Models</h2>
@@ -12,7 +12,7 @@
 	    <span style="padding:3px">
 			<a href="{{item.href}}">
 				<img src="{{item.src}}" height="{{item.height}}px">
-				<br>{{item.name}}
+				<div class="poffset">{{item.name}}</div>
 			</a>
 		</span>
 	  {% endfor %}
@@ -26,7 +26,7 @@
 	    <span style="padding:3px">
 			<a href="{{item.href}}">
 				<img src="{{item.src}}" height="{{item.height}}px">
-				<br>{{item.name}}
+				<div class="poffset">{{item.name}}</div>
 			</a>
 		</span>
 	  {% endfor %}
@@ -41,8 +41,9 @@
 	  {% for item in viddicts %}
 	    <span style="padding:3px">
 			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.height}}px">
-				<br>{{item.name}}
+				<img src="{{item.src}}" height="{{item.theight}}px">
+				<div class="voffset">{{item.w}}x{{item.h}} {{item.mlen}}</div>
+				<div>{{item.name}}</div>
 			</a>
 		</span>
 	  {% endfor %}
@@ -57,7 +58,7 @@
 	    <span style="padding:3px">
 			<a href="{{item.href}}">
 				<img src="{{item.src}}" height="{{item.height}}px">
-				<br>{{item.name}}
+				<div class="poffset">{{item.name}}</div>
 			</a>
 		</span>
 	  {% endfor %}

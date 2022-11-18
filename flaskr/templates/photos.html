@@ -3,11 +3,11 @@
 
     <div class="centredthumbs">
 	  {% for item in galldicts %}
-	    <span style="padding:3px">
+	    <span style="padding:3px"><div>
 			<a href="{{item.href}}">
 				<img src="{{item.src}}" height="{{item.height}}px">
-				<br>{{item.name}}
-			</a>
+				<div class="poffset">{{item.name}}</div>
+			</a></div>
 		</span>
 	  {% endfor %}
     </div>
