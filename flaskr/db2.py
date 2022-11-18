@@ -15,15 +15,21 @@
 import sqlite3
 import sys
 import re
+import os
 import glob
 
+class DatabaseMissingError(Exception):
+    pass
 
 class BasicDB:
     def __init__(self):
         self.conn = None
 
     def connectdb(self, database):
-        self.conn = sqlite3.connect(database)
+        if os.path.exists(database):
+            self.conn = sqlite3.connect(database)
+        else:
+            raise DatabaseMissingError
 
     def closedb(self):
         self.conn.close()

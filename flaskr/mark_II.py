@@ -6,7 +6,7 @@ from flask import Flask, render_template
 import glob, os
 from subprocess import getstatusoutput as unix
 
-from flaskr.db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable
+from flaskr.db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable, DatabaseMissingError
 
 DATABASE = "flaskr/new_kindgirls.db"
 
@@ -18,13 +18,16 @@ def get_config(dbname):
     global DATABASE
     DATABASE = f"flaskr/new_{dbname}.db"
     #print(DATABASE)
-    vals = ConfigTable(DATABASE).select_all()[0]
-    cols = ConfigTable(DATABASE).column_list()
-    config = {}
-    if len(vals) == len(cols):
-        for i in range(len(cols)):
-            config[cols[i]] = vals[i]
-    #print(config)
+    try:
+        vals = ConfigTable(DATABASE).select_all()[0]
+        cols = ConfigTable(DATABASE).column_list()
+        config = {}
+        if len(vals) == len(cols):
+            for i in range(len(cols)):
+                config[cols[i]] = vals[i]
+        #print(config)
+    except DatabaseMissingError:
+        raise 
     return config
 
 
@@ -45,11 +48,15 @@ def human_time(length):
     
 
 class HtmlSite:
+    
     def __init__(self, dbname):
         """"""
-        #print(dbname)
+        self.errorOccured = False
         self.dbname = dbname
-        self.config = get_config(dbname)
+        try:
+            self.config = get_config(dbname)
+        except DatabaseMissingError:
+            self.errorOccured = True
         self.thumb_h = 160
 
     def heading(self, page=None):
@@ -65,6 +72,9 @@ class HtmlSite:
             
         return links
 
+    def getConfig(self):
+        """"""
+        return self.config
 
     def moddict(self, models):
         """"""
@@ -401,3 +411,18 @@ class HtmlSite:
                                hassites=hassites, sitedicts=sitedicts, 
                                hasvideos=hasvideos, viddicts=viddicts)
 
+    def rootpage(self):
+        """"""
+        buttons = [
+            {'href':f"/{self.dbname}/photos", 'name':'Photos'},
+            {'href':f"/{self.dbname}/models", 'name':'Models'},
+            {'href':f"/{self.dbname}/sites",  'name':'Sites'},
+            {'href':f"/{self.dbname}/videos", 'name':'Videos'},
+        ]
+
+        links = self.heading()
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'button_class':'fourbuttons'}
+        return render_template("intro.html", 
+                               webroot=self.getConfig()['webroot'],
+                               page=page_dict,
+                               buttons=buttons)
