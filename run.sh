@@ -1,7 +1,12 @@
+#!/bin/bash
 # to run the flask website
 
-# for external connections
-#flask --app flaskr --debug run --host=0.0.0.0
+if [ "$1" == "-ext" ]
+then
+    # for external connections
+    flask --app flaskr --debug run --host=0.0.0.0
 
-# for local only connections
-flask --app flaskr --debug run
+else
+    # for local only connections
+    flask --app flaskr --debug run
+fi
