@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>{{page['title']['folder']}}</title>
+<title>{{page['heading']}}</title>
  <!-- for floatbox -->
- <!-- link type="text/css" rel="stylesheet" href="http://gallery/floatbox/floatbox.css">
- <script type="text/javascript" src="http://gallery/floatbox/floatbox.js"></script -->
+ <!-- link type="text/css" rel="stylesheet" href="{{webroot}}/floatbox/floatbox.css">
+ <script type="text/javascript" src="{{webroot}}/floatbox/floatbox.js"></script -->
 
- <link rev="stylesheet" type="text/css" href="http://gallery/phpgallery/css/style.css" rel="stylesheet" media="screen,all">
+ <link rev="stylesheet" type="text/css" href="{{webroot}}/phpgallery/css/style.css" rel="stylesheet" media="screen,all">
 
  <meta http-equiv="Content-Type" content="text/html, charset=ISO-8859-1">
  <meta http-equiv="content-style-type" content="text/css">
@@ -15,6 +15,11 @@
 
  <meta name="googlebot" content="noindex,noarchive,nofollow">
  <meta name="robots" content="noindex,nofollow">
+
+ <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+ <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+ <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+ <link rel="manifest" href="/static/site.webmanifest">
 
  <style>
   img.rollover:hover {margin-top:-140px; overflow:hidden;}
@@ -38,6 +43,8 @@
   .twobutton {width:420px;height:200px;}
   .threebutton {width:630px;height:200px;}
   .fourbuttons {width:850px;height:200px;}
+  .poffset {margin-top: -21px;font-size:120%;}
+  .voffset {margin-top: -36px;font-size:150%;}
   #bigbtn {display:inline-block;width:200px;height:200px;border:1px solid #777;margin:3px;}
   td { border:1px solid #202020;}
   #search_form {font-size: 11pt; color: #ccc;}
