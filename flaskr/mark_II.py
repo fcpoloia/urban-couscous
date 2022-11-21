@@ -14,6 +14,29 @@ class SiteDB:
     def __init__(self, dbname):
         self.dbname = dbname
 
+def getDBpath(dbname):
+    return f"flaskr/new_{dbname}.db"
+
+def databaseButtons():
+    """"""
+    buttons = [{'href':'/kindgirls',  'name':'KindGirls'},
+               {'href':'/inthecrack', 'name':'InTheCrack'},
+               {'href':'/hegre',      'name':'Hegre-Art'},
+               {'href':'/alsangels',  'name':'AlsAngels'},
+               {'href':'/alsscans',   'name':'AlsScans'},
+               {'href':'/femjoy',     'name':'FemJoy'}
+           ]
+    page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'fivebuttons'}
+    return buttons, page_dict
+
+def siteRoot():
+    """"""
+    buttons, page_dict = databaseButtons()
+    return render_template("intro.html", 
+                           webroot="http://gallery", #mysite.getConfig()['webroot'],
+                           page=page_dict, 
+                           buttons=buttons)
+
 def get_config(dbname):
     global DATABASE
     DATABASE = f"flaskr/new_{dbname}.db"
@@ -59,6 +82,15 @@ class HtmlSite:
             self.errorOccured = True
         self.thumb_h = 160
 
+    def do(self, method, *args):
+        try:
+            func = getattr(self, method) #(*args)
+        except AttributeError:
+            print(f"AttributeError: {method} ( )")
+            print(*args)
+            return
+        return func(*args)
+
     def heading(self, page=None):
         """"""
         links = {
@@ -85,24 +117,30 @@ class HtmlSite:
         return (len(models) > 0), mdicts
 
 
-    def galdict(self, photos):
+    def galdict(self, photos, filter, filtid):
         """"""
         gdict = []
         for gallery in photos[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             name = name.replace('_', ' ')[:50]
-            gdict.append({'href':f"/{self.dbname}/gallery/model/{model_id}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
+            if filter is None:
+                filter = 'model'
+                filtid = model_id
+            gdict.append({'href':f"/{self.dbname}/gallery/{filter}/{filtid}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
         return (len(photos) > 0), gdict
 
 
-    def viddict(self, videos):
+    def viddict(self, videos, filter, filtid):
         """"""
+        filterurl=""
+        if filter is not None:
+            filterurl=f"/{filter}/{filtid}"
         vdicts = []
         for vid in videos:
             id, model_id, site_id, name, filename, thumb, width, height, length = vid
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
-            vdicts.append({'href':f"/{self.dbname}/video/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
+            vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
                              'w': width, 'h': height, 'mlen':human_time(length)})
         return (len(videos) > 0),vdicts
 
@@ -150,11 +188,12 @@ class HtmlSite:
         videos = VideosTable(DATABASE).select_where('model_id',modelid)
         modelname = ModelsTable(DATABASE).select_where('id',modelid)[0][1]
     
-        hasphotos, galldicts = self.galdict(photos)
+        hasphotos, galldicts = self.galdict(photos, 'model', modelid)
 
-        hasvideos, viddicts = self.viddict(videos)
+        hasvideos, viddicts = self.viddict(videos, 'model', modelid)
     
         # next/prev needs to follow sort order of models page above
+        print(f"(model) get_next_prev modelid={modelid}")
         nmodel, pmodel, nname, pname = ModelsTable(DATABASE).get_next_prev(modelid)
 
         links = self.heading('models')
@@ -234,10 +273,11 @@ class HtmlSite:
         photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
         videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
     
-        hasphotos, galldicts = self.galdict(photos)
+        hasphotos, galldicts = self.galdict(photos, 'site', siteid)
 
-        hasvideos, viddicts = self.viddict(videos)
+        hasvideos, viddicts = self.viddict(videos, 'site', siteid)
 
+        print(f"(site) get_next_prev siteid={siteid}")
         nsite, psite, nname, pname = SitesTable(DATABASE).get_next_prev(siteid)
     
         links = self.heading('sites')
@@ -255,7 +295,7 @@ class HtmlSite:
         """"""
         photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
-        hasphotos, galldicts = self.galdict(photos)
+        hasphotos, galldicts = self.galdict(photos, None, 0)
 
         links = self.heading('photos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
@@ -271,7 +311,7 @@ class HtmlSite:
         """"""
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
     
-        hasvideos, galldicts = self.viddict(videos)
+        hasvideos, galldicts = self.viddict(videos, None, 0)
 
         links = self.heading('videos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
@@ -306,7 +346,9 @@ class HtmlSite:
         viddict = {'height':height, 'width':width, 'thumb_url':thumb_url, 'video_url':video_url}
 
         nvideo = pvideo = nname = pname = None
+        print(f"(video) get_next_prev vid={vid} site_id={sid}")
         if sid is not None: nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'site_id', sid)
+        print(f"(video) get_next_prev vid={vid} model_id {mid}")
         if mid is not None: nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'model_id', mid)
 
         links = self.heading('videos')
@@ -341,6 +383,7 @@ class HtmlSite:
             location = name
         gallery = self.create_gallery(location, id, count)
         
+        print(f"(do_gallery) get_next_prev pid={id} {col}={val}")
         next, prev, nname, pname = PhotosTable(DATABASE).get_next_prev(id, col, val)
 
         titledict = {'site': {'href':f"/{self.dbname}/site/{site_id}", 'name':sitename}, 
@@ -382,7 +425,7 @@ class HtmlSite:
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
                 imgurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{img}"
-                gall.append({'href':imgurl, 'src':imgurl})
+                gall.append({'href':imgurl, 'src':imgurl, 'pic':img})
         return gall
 
 
@@ -394,12 +437,12 @@ class HtmlSite:
         videos = VideosTable(DATABASE).select_where_like('name', s)
         
         hasmodels, modeldicts = self.moddict(models)
-        hasphotos, galldicts = self.galdict(photos)
-        hasvideos, viddicts = self.viddict(videos)
+        hasphotos, galldicts = self.galdict(photos, None, 0)
+        hasvideos, viddicts = self.viddict(videos, None, 0)
         hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
+        page_dict = {'title':f"Search Results for '{s}'", 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
                      'navigation': links, 
                      'db':self.dbname, 'search': True}
         
@@ -409,7 +452,54 @@ class HtmlSite:
                                hasphotos=hasphotos, galldicts=galldicts, 
                                hasmodels=hasmodels, modeldicts=modeldicts,
                                hassites=hassites, sitedicts=sitedicts, 
-                               hasvideos=hasvideos, viddicts=viddicts)
+                               hasvideos=hasvideos, viddicts=viddicts,
+                               pagetype='search')
+
+    def random_selection(self, datalist, count):
+        """"""
+        import random
+        selection = []
+        nums = []
+        if len(datalist) > 1:
+            while len(selection) < count:
+                num = random.randrange(len(datalist))
+                if num not in nums:
+                    nums.append(num)
+                    selection.append(datalist[num])
+            return selection
+        else:
+            return datalist
+
+    def random(self):
+        """"""
+        sites = SitesTable(DATABASE).select_all()
+        models = ModelsTable(DATABASE).select_all()
+        photos = PhotosTable(DATABASE).select_all()
+        videos = VideosTable(DATABASE).select_all()
+
+        models = self.random_selection(models, 8)
+        photos = self.random_selection(photos, 8)
+        videos = self.random_selection(videos, 4)
+
+        hasmodels, modeldicts = self.moddict(models)
+        hasphotos, galldicts = self.galdict(photos, None, 0)
+        hasvideos, viddicts = self.viddict(videos, None, 0)
+        #hassites, sitedicts = self.sitdict(sites)
+
+        links = self.heading()
+        page_dict = {'title':'Random Selection', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
+                     'navigation': links, 
+                     'db':self.dbname, 'search': True}
+        
+        return render_template("search_page.html", 
+                               webroot=self.config['webroot'],
+                               page=page_dict, #search_term=s,
+                               hasphotos=hasphotos, galldicts=galldicts, 
+                               hasmodels=hasmodels, modeldicts=modeldicts,
+                               hassites=False, #sitedicts=sitedicts, 
+                               hasvideos=hasvideos, viddicts=viddicts,
+                               pagetype='random')
+
 
     def rootpage(self):
         """"""

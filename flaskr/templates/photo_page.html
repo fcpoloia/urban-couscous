@@ -3,15 +3,19 @@
 
     <div class="centredthumbs">
 	  {% for item in gallpage %}
-	    <!-- span style="padding:0px;border: 1px solid #444444; width:50%" -->
-			<a href="{{item.href}}" class="floatbox" style="max-width:99%;border: 0px solid #444444; padding:1px 2px 0px 2px;margin:0px 0px">
-				<img class="nohover" src="{{item.src}}" style="width:100%;margin:0px;padding:0px;border:0px solid #444444;">
+		<span style="padding: 3px">
+			<a href="{{item.href}}" class="floatbox" style="max-width:99%;border: 0px solid #444444;"><!-- padding:1px 2px 0px 2px;"><!-- margin:0px 0px" -->
+				<img class="nohover" src="{{item.src}}" style="width:100%;border: 0px solid #444444;"><!-- margin:0px;padding:0px; -->
+			<div class="poffset shadow" style="text-align: left">{{item.pic}}</div>
 			</a>
-			<!-- a href="{{item.href}}" class="floatbox" style="width:49%;border: 0px solid #444444; padding:1px 2px 0px 2px;margin:0px 0px">
-				<img class="nohover" src="{{item.src}}" style="width:100%;margin:0px;padding:0px;border:0px solid #444444;">
-			</a-- > <!-- 2 pics across the page -->
-			<!-- /span -->
+		</span>
 	  {% endfor %}
     </div>
 	
 {% endblock %}
+
+	    <!-- span style="padding:0px;border: 1px solid #444444; width:50%" -->
+			<!-- a href="{{item.href}}" class="floatbox" style="width:49%;border: 0px solid #444444; padding:1px 2px 0px 2px;margin:0px 0px">
+				<img class="nohover" src="{{item.src}}" style="width:100%;margin:0px;padding:0px;border:0px solid #444444;">
+			</a-- > <!-- 2 pics across the page -->
+		<!-- /span -->

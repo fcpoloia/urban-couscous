@@ -9,16 +9,6 @@ from flaskr.mark_II import *
 
 app = Flask(__name__)
 
-def databaseButtons():
-    """"""
-    buttons = [{'href':'/kindgirls',  'name':'KindGirls'},
-               {'href':'/inthecrack', 'name':'InTheCrack'},
-               {'href':'/hegre',      'name':'Hegre-Art'},
-               {'href':'/alsangels',  'name':'AlsAngels'},
-               {'href':'/femjoy',     'name':'FemJoy'}
-           ]
-    page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'twobuttons'}
-    return buttons, page_dict
 
 class ErrorPage:
     def __init__(self, dbname):
@@ -38,7 +28,7 @@ class ErrorPage:
 
 def createPage(dbname):
     """"""
-    if os.path.exists(dbname):
+    if os.path.exists(getDBpath(dbname)):
         return HtmlSite(dbname)
     else:
         return ErrorPage(dbname)
@@ -81,7 +71,7 @@ def kindgirls_model(dbname, model):
     """"""
     mysite = createPage(dbname)
     #return mysite.model(model)
-    return mysite.do('model')
+    return mysite.do('model', model)
 
 
 @app.route("/<dbname>/sites")
@@ -96,7 +86,7 @@ def kindgirls_site(dbname, site):
     """"""
     mysite = createPage(dbname)
     #return mysite.site(site)
-    return mysite.do('site')
+    return mysite.do('site', site)
 
 
 @app.route("/<dbname>/photos")
@@ -146,6 +136,12 @@ def search(dbname):
     #return mysite.search(s)
     return mysite.do('search', s)
 
+@app.route("/<dbname>/random")
+def random(dbname):
+    """"""
+    mysite = createPage(dbname)
+    return mysite.do('random')
+
 
 @app.route("/<dbname>/")
 @app.route("/<dbname>")
@@ -162,11 +158,7 @@ def favicon():
 
 @app.route("/")
 def index():
-    buttons, page_dict = databaseButtons()
-    return render_template("intro.html", 
-                           webroot=mysite.getConfig()['webroot'],
-                           page=page_dict, 
-                           buttons=buttons)
+    return siteRoot()
 
 
 if __name__ == '__main__':

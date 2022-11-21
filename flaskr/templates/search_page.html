@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block search %}
 
-	<h1 style="color:#ccc">Search Results for "{{search_term}}"</h1>
+    {% if pagetype == 'search' %}
+	<!-- h1 style="color:#ccc">Search Results for "{{search_term}}"</h1 -->
+	{% else %}
+	<!-- h1 style="color:#ccc">Random Selection</h1 -->
+	{% endif %}
 	{% if not hasmodels and not hasphotos %}
 		<div style="font-size:11pt; color:#ccc">No Models or Photo Sets Found</div>
 	{% endif %}
