@@ -6,67 +6,30 @@
 	{% else %}
 	<!-- h1 style="color:#ccc">Random Selection</h1 -->
 	{% endif %}
+	{% import 'macros.html' as macs %}
+	
 	{% if not hasmodels and not hasphotos %}
 		<div style="font-size:11pt; color:#ccc">No Models or Photo Sets Found</div>
 	{% endif %}
+
 	{% if hasmodels %}
 	<h2>Models</h2>
-    <div class="centredthumbs">
-	  {% for item in modeldicts %}
-	    <span style="padding:3px">
-			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.height}}px">
-				<div class="poffset">{{item.name}}</div>
-			</a>
-		</span>
-	  {% endfor %}
-    </div>
+		{{ macs.image_span(modeldicts) }}
 	{% endif %}
 	
 	{% if hasphotos %}
 	<h2>Photo Sets</h2>
-    <div class="centredthumbs">
-	  {% for item in galldicts %}
-	    <span style="padding:3px">
-			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.height}}px">
-				<div class="poffset">{{item.name}}</div>
-			</a>
-		</span>
-	  {% endfor %}
-    </div>
+		{{ macs.image_span(galldicts) }}
 	{% endif %}
 
 	{% if hasvideos %}
 	<h2>Videos</h2>
-
-	<div class="centredthumbs">
-
-	  {% for item in viddicts %}
-	    <span style="padding:3px">
-			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.theight}}px">
-				<div class="voffset">{{item.w}}x{{item.h}} {{item.mlen}}</div>
-				<div>{{item.name}}</div>
-			</a>
-		</span>
-	  {% endfor %}
-
-	</div>
+		{{ macs.video_span(viddicts) }}
 	{% endif %}
 
 	{% if hassites %}
 	<h2>Sites</h2>
-    <div class="centredthumbs">
-	  {% for item in sitedicts %}
-	    <span style="padding:3px">
-			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.height}}px">
-				<div class="poffset">{{item.name}}</div>
-			</a>
-		</span>
-	  {% endfor %}
-    </div>
+		{{ macs.image_span(sitedicts) }}
 	{% endif %}
 	
 

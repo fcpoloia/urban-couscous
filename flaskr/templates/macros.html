@@ -1,0 +1,22 @@
+
+{%- macro image_span(itemdicts) -%}
+    <div class="centredthumbs">
+	  {% for item in itemdicts %}
+		<div class="overlay-image"><a href="{{item.href}}">
+		  <img class="image" src="{{item.src}}" alt="Alt text" height="{{item.height}}px" />
+		  <div class="text">{{item.name}}</div>
+		</a></div>
+	  {% endfor %}
+    </div>
+{%- endmacro -%}
+
+{%- macro video_span(itemdicts) -%}
+    <div class="centredthumbs">
+	  {% for item in itemdicts %}
+		<div class="overlay-image"><a href="{{item.href}}">
+		  <img class="image" src="{{item.src}}" alt="Alt text" height="{{item.theight}}px" />
+		  <div class="text">{{item.name}} <i>{{item.w}}x{{item.h}} {{item.mlen}}</i></div>
+		</a></div>
+	  {% endfor %}
+    </div>
+{%- endmacro -%}

@@ -1,15 +1,8 @@
 {% extends "base.html" %}
 {% block photos %}
 
-    <div class="centredthumbs">
-	  {% for item in galldicts %}
-	    <span style="padding:3px"><div>
-			<a href="{{item.href}}">
-				<img src="{{item.src}}" height="{{item.height}}px">
-				<div class="poffset">{{item.name}}</div>
-			</a></div>
-		</span>
-	  {% endfor %}
-    </div>
+	{% import 'macros.html' as macs %}
+
+	{{ macs.image_span(galldicts) }}
 
 {% endblock %}
