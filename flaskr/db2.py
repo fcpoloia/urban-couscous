@@ -43,6 +43,9 @@ class BasicDB:
     def execute(self, sql):
         self.conn.execute(sql)
 
+    def num_cols(self, table):
+        return len(self.get_results_list(f"pragma table_info({table});", 6))
+
     def get_single_result(self, sql, cols):
         """"""
         cursor = self.conn.cursor()
@@ -71,28 +74,52 @@ class BasicDB:
 
 
 #------------------------------------------------------------------------------
+# select(cols).from(table).where(clause).group_by(col).order_by(col).desc()
+# select().star().from(table).where(clause).group_by(col).order_by(col).asc()
+#
 class Query:
     def __init__(self):
-        pass
+        self.sql = ""
 
-    def select(cls, cols, table):
-        return f"select {cols} from {table}"
+    def select(self, cols):
+        self.sql += f"select {cols}"
+        return self
         
-    def where(cls, sql, col, val):
-        return sql + f" where {col} = '{val}'"
+    def _from(self, table):
+        self.sql += f" from {table}"
+        return self
+        
+    def where(self, clause):
+        self.sql += f" where {clause}"
+        return self
 
-    def and_where(self, sql, col, val):
-        return sql + f" and {col} = '{val}'"
+    def group_by(self, col):
+        self.sql += f" group by {col}"
+        return self
 
+    def order_by(self, col):
+        self.sql += f" order by {col}"
+        return self
+        
+    def desc(self):
+        self.sql += f" desc"
+        return self
 
+    def asc(self):
+        self.sql += f" asc"
+        return self
+
+    def __call__(self):
+        return self.sql
+        
 #------------------------------------------------------------------------------
 class Table(BasicDB):
     def __init__(self, dbname, tblname):
         self.name = tblname
-        self.sql_all = f"SELECT %s * FROM {self.name} "
+        self.sql_all = f"SELECT * FROM {self.name} "
         self.pragma = f"pragma table_info({self.name});"
         self.connectdb(dbname)
-        self.distinct = ''
+        #self.distinct = ''
         
     def col_count(self):
         return len(self.get_results_list(self.pragma, 6))
@@ -104,30 +131,32 @@ class Table(BasicDB):
             columns.append(col[1])
         return columns
         
-    def set_distinct(self):
-        self.distinct = 'DISTINCT'
+    #def set_distinct(self):
+    #    self.distinct = 'DISTINCT'
+    #    return self
+
 
     def select_all(self):
-        return self.get_results_list(self.sql_all % self.distinct, self.col_count())
+        return self.get_results_list(self.sql_all, self.col_count())
         
     def select_where(self, column, value):
-        sql = self.sql_all % self.distinct + f"where {column} = '{value}' "
+        sql = self.sql_all + f"where {column} = '{value}' "
         return self.get_results_list(sql, self.col_count())
         
     def select_order_by(self, order_col, direction):
-        sql = self.sql_all % self.distinct + f"order by {order_col} {direction} "
+        sql = self.sql_all + f"order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_group_by_order_by(self, group_col, order_col, direction):
-        sql = self.sql_all % self.distinct + f" group by {group_col} order by {order_col} {direction} "
+        sql = self.sql_all + f" group by {group_col} order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_where_order_by(self, column, value, order_col, direction):
-        sql = self.sql_all % self.distinct + f"where {column} = '{value}' order by {order_col} {direction} "
+        sql = self.sql_all + f"where {column} = '{value}' order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_where_group_by_order_by(self, column, value, group_col, order_col, direction):
-        sql = self.sql_all % self.distinct + f"where {column} = '{value}' group by {group_col} order by {order_col} {direction} "
+        sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_by_most_recent_photos(self, col): 
@@ -150,7 +179,11 @@ class Table(BasicDB):
         return nid, pid, nn, pn
 
     def select_where_like(self, column, value):
-        sql = self.sql_all % self.distinct + f"where {column} like '%{value}%' "
+        sql = self.sql_all + f"where {column} like '%{value}%'" # group by id order by id desc"
+        return self.get_results_list(sql, self.col_count())
+
+    def select_where_like_group_order(self, column, value, group, order, direction):
+        sql = self.sql_all + f"where {column} like '%{value}%' group by {group} order by {order} {direction}"
         return self.get_results_list(sql, self.col_count())
 
 
@@ -206,3 +239,16 @@ if __name__ == '__main__':
     c = ConfigTable(DATABASE)
     print(c.select_all())
     print(c.column_list())
+    
+    print(len(p.select_where_like('name','mango')))
+    #print(len(p.select_where_like('name','mango')))
+    
+    q = Query()
+    b = BasicDB()
+    b.connectdb(DATABASE)
+    sql = q.select('*')._from('photos').where("name like '%mango%'")()
+    res = b.get_results_list(sql, b.num_cols('photos'))
+    print(len(res))
+    for row in res:
+        print(row)
+    

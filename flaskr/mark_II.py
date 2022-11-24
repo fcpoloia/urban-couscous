@@ -117,24 +117,24 @@ class HtmlSite:
         return (len(models) > 0), mdicts
 
 
-    def galdict(self, photos, filter, filtid):
+    def galdict(self, photos, filter='', filtid=''):
         """"""
+        filterurl=""
+        if filter != '':
+            filterurl = f"/{filter}/{filtid}"
         gdict = []
         for gallery in photos[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             name = name.replace('_', ' ')[:50]
-            if filter is None:
-                filter = 'model'
-                filtid = model_id
-            gdict.append({'href':f"/{self.dbname}/gallery/{filter}/{filtid}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
+            gdict.append({'href':f"/{self.dbname}/gallery{filterurl}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
         return (len(photos) > 0), gdict
 
 
-    def viddict(self, videos, filter, filtid):
+    def viddict(self, videos, filter='', filtid=''):
         """"""
         filterurl=""
-        if filter is not None:
+        if filter != '':
             filterurl=f"/{filter}/{filtid}"
         vdicts = []
         for vid in videos:
@@ -142,6 +142,7 @@ class HtmlSite:
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
                              'w': width, 'h': height, 'mlen':human_time(length)})
+            print(self.thumb_h)
         return (len(videos) > 0),vdicts
 
     def sitdict(self, sites):
@@ -295,7 +296,7 @@ class HtmlSite:
         """"""
         photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
-        hasphotos, galldicts = self.galdict(photos, None, 0)
+        hasphotos, galldicts = self.galdict(photos)
 
         links = self.heading('photos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
@@ -311,7 +312,7 @@ class HtmlSite:
         """"""
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
     
-        hasvideos, galldicts = self.viddict(videos, None, 0)
+        hasvideos, galldicts = self.viddict(videos)
 
         links = self.heading('videos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
@@ -347,9 +348,14 @@ class HtmlSite:
 
         nvideo = pvideo = nname = pname = None
         print(f"(video) get_next_prev vid={vid} site_id={sid}")
-        if sid is not None: nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'site_id', sid)
+        if sid is not None: 
+            nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'site_id', sid)
         print(f"(video) get_next_prev vid={vid} model_id {mid}")
-        if mid is not None: nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'model_id', mid)
+        if mid is not None: 
+            nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid, 'model_id', mid)
+        if mid is None and sid is None:
+            nvideo, pvideo, nname, pname = VideosTable(DATABASE).get_next_prev(vid)
+            
 
         links = self.heading('videos')
         prefix = ''
@@ -400,7 +406,8 @@ class HtmlSite:
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
                                page=page_dict,
-                               gallpage=gallery)
+                               gallpage=gallery,
+                               hasedit=True, edit={'table':'photos', 'id':id})
 
 
     def old_create_gallery(self, fld, id, count):
@@ -433,12 +440,12 @@ class HtmlSite:
         """"""
         sites = SitesTable(DATABASE).select_where_like('name', s)
         models = ModelsTable(DATABASE).select_where_like('name', s)
-        photos = PhotosTable(DATABASE).select_where_like('name', s)
-        videos = VideosTable(DATABASE).select_where_like('name', s)
+        photos = PhotosTable(DATABASE).select_where_like_group_order('name', s, 'id', 'id', 'desc')
+        videos = VideosTable(DATABASE).select_where_like_group_order('name', s, 'id', 'id', 'desc')
         
         hasmodels, modeldicts = self.moddict(models)
-        hasphotos, galldicts = self.galdict(photos, None, 0)
-        hasvideos, viddicts = self.viddict(videos, None, 0)
+        hasphotos, galldicts = self.galdict(photos)
+        hasvideos, viddicts = self.viddict(videos)
         hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
@@ -482,8 +489,8 @@ class HtmlSite:
         videos = self.random_selection(videos, 4)
 
         hasmodels, modeldicts = self.moddict(models)
-        hasphotos, galldicts = self.galdict(photos, None, 0)
-        hasvideos, viddicts = self.viddict(videos, None, 0)
+        hasphotos, galldicts = self.galdict(photos)
+        hasvideos, viddicts = self.viddict(videos)
         #hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
@@ -516,3 +523,20 @@ class HtmlSite:
                                webroot=self.getConfig()['webroot'],
                                page=page_dict,
                                buttons=buttons)
+
+
+    def edit(self, table, id):
+        """"""
+        photo = PhotosTable(DATABASE).select_where('id', id)
+        models = ModelsTable(DATABASE).select_order_by('name', 'asc')
+        mopts = {}
+        for model in models:
+            mopts[model[0]] = model[1]
+        links = self.heading()
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'button_class':'fourbuttons'}
+        return render_template("edit_page.html",
+                               webroot=self.getConfig()['webroot'],
+                               page=page_dict,
+                               editphoto=photo,
+                               modelist=mopts
+                             )
