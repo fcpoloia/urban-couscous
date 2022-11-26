@@ -80,7 +80,7 @@ class HtmlSite:
             self.config = get_config(dbname)
         except DatabaseMissingError:
             self.errorOccured = True
-        self.thumb_h = 160
+        self.thumb_h = 120
 
     def do(self, method, *args):
         try:

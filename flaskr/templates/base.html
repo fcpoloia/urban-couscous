@@ -16,6 +16,7 @@
  <meta name="googlebot" content="noindex,noarchive,nofollow">
  <meta name="robots" content="noindex,nofollow">
 
+ <!-- favicon support -->
  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
@@ -40,11 +41,11 @@
   a.page    {color:#A50;}
   a.page:hover, a.title:hover {color: #ddd;}
   .shadow   {text-shadow: 2px 2px 4px #000, -2px 2px 4px #000, 2px -2px 4px #000, -2px -2px 4px #000; }
-  .onebutton   {width:210px;height:200px;}
+  /*.onebutton   {width:210px;height:200px;}
   .twobutton   {width:420px;height:200px;}
   .threebutton {width:630px;height:200px;}
   .fourbuttons {width:850px;height:200px;}
-  .fivebuttons {width:1060px;height:200px;}
+  .fivebuttons {width:1060px;height:200px;}*/
   .poffset     {margin-top: -21px;font-size:120%;margin-bottom:15px;height:0px;}
   .voffset     {margin-top: -36px;font-size:150%;}
   td {border:1px solid #101010;}
@@ -89,7 +90,7 @@
   /* Main container */
   .overlay-image {
     position: relative;
-	padding: 3px 3px 1px 3px;
+	margin: 3px 3px 1px 3px;
     transition: .5s ease;
   }
 
@@ -106,14 +107,15 @@
     text-shadow: 2px 2px 2px #000;
     text-align: center;
     position: absolute;
-    top: 92%;
-    left: 47%;
+    bottom: -5px;
+    left: 50%;
     transform: translate(-50%, -50%);
-    width: 94%;
-	margin-left: 3px;
+    width: 100%;
+	/*margin-left: 3px;*/
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: clip;
+	background-color: rgba(0,0,0,0.5);
   }
   </style>
 
@@ -173,54 +175,6 @@
 	</div>
 </div>
 
-<!-- div id="title">
-	<table width="100%"><tbody><tr>
-		<td class="title" style="text-align: left; padding-left:10px; width:8%">
-			{{page['heading']}}
-		</td><td class="title" style="text-align: left; padding-left:10px; width: 280px;">
-			{% for item in page['navigation'] %}
-			<a class="title{{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
-			{% endfor %}
-		</td>
-		<td class="title2" style="text-align: center; padding-left:10px;">
-			{% if page['plaintitle'] %}
-			{{page['title']}}
-			{% else %}
-			<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-			<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a>
-			{{page['title']['folder']}}
-			{% endif %}
-			{% autoescape false %}
-			{% endautoescape %}
-		</td>
-		<td style="text-align:right; width:100px;">
-			<div id="search_form">
-			{% if page['prev'] %}
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a>
-			{% endif %}
-
-			{% if page['next'] %}
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a>
-			{% endif %}
-			</div>
-		</td>
-
-		<td style="vertical-align:bottom; width:100px">
-			<div id="search_form">
-			  <form action="/{{page['db']}}/search" method="get">
-				<input name="s" type="text" size="10" maxlength="20" style="margin-bottom:2px;">
-			  </form>
-			</div>
-		</td>
-		<td style="width:120px">
-			<div id="search_form">
-				<a class="navbtn" href="/{{page['db']}}/random">Random</a>
-				<a class="navbtn" {% if hasedit %} onclick="on()" {% endif %}>Edit</a>
-			</div>
-		</td>
-	</tr></tbody></table>
-
-</div -->
 
  <div style="width: 100%" id="thumbnails" class="centredthumbs">
   <div style="text-align:center">
@@ -251,21 +205,6 @@
 	</div>
 </div>
 
-<!-- div id="title">
-<table width="100%"><tbody><tr>
-<td style="text-align:left; padding-left:10px;">
-  {% if page['prev'] %}
-    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
-  {% endif %}
-</td>
-<td></td>
-<td style="text-align:right; padding-right:10px;">
-  {% if page['next'] %}
-    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
-  {% endif %}
-</td>
-</tr></tbody></table>
-</div>
 
 <div id="overlay" onclick="off()">
   <div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
