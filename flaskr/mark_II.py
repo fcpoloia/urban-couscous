@@ -23,7 +23,7 @@ def databaseButtons():
                {'href':'/inthecrack', 'name':'InTheCrack'},
                {'href':'/hegre',      'name':'Hegre-Art'},
                {'href':'/alsangels',  'name':'AlsAngels'},
-               {'href':'/alsscans',   'name':'AlsScans'},
+               {'href':'/alsscans',   'name':'ALSScans'},
                {'href':'/femjoy',     'name':'FemJoy'}
            ]
     page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'fivebuttons'}

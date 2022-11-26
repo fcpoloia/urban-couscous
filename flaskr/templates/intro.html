@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block intro %}
 
-    <div style="display: flex; flex-wrap: wrap;"><!--  class="{{page['button_class']}}" -->
+    <div style="display: flex; flex-wrap: wrap;">
     {% for item in buttons %}
-    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br><br> {{item.name}} </a></div>
+    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br> {{item.name}} </a></div>
     {% endfor %}
     </div>
 
