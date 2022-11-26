@@ -164,6 +164,15 @@ class Table(BasicDB):
         sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id desc;"
         return self.get_results_list(sql, self.col_count()+1)
 
+    def select_by_most_recent_videos(self, col): 
+        """this will only actually work for models table which has thumb column"""
+        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join videos on {self.name}.id=videos.{col} group by videos.{col} order by videos.id desc;"
+        return self.get_results_list(sql, self.col_count()+1)
+
+    def nn():
+        """"""
+        sql="select count(models.id),models.id,models.name,photos.model_id,videos.model_id from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) desc;"
+
     def get_next_prev(self, id, col=None, val=None):
         """"""
         query = ""
@@ -193,6 +202,11 @@ class Table(BasicDB):
 class ModelsTable(Table):
     def __init__(self, dbname):
         super().__init__(dbname, 'models')
+
+    def select_models_by_count(self, order):
+        """"""
+        sql = f"select models.id,models.name,models.thumb from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) {order};"
+        return self.get_results_list(sql, self.col_count())
 
 class SitesTable(Table):
     def __init__(self, dbname):

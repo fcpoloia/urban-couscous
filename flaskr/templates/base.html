@@ -132,6 +132,73 @@
     text-overflow: clip;
     background-color: rgba(0,0,0,0.5);
   }
+
+  /* Dropdown Menu */
+
+  /*.dropbtn:hover, .dropbtn:focus {
+    background-color: #3e8e41;
+	  }*/
+
+  #myInput {
+    box-sizing: border-box;
+    /*background-image: url('searchicon.png');*/
+    background-position: 14px 12px;
+    background-repeat: no-repeat;
+    font-size: 16px;
+    padding: 6px 6px 6px 16px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  #myInput:focus {outline: 0px solid #ddd;}
+
+
+  /**/
+  .dropbtn {
+    /*background-color: #04AA6D;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;*/
+    cursor: pointer;
+  }
+
+  /*.dropbtn:hover, .dropbtn:focus {
+    background-color: #3e8e41;
+  }*/
+
+  .dropdown {
+    float: right;
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #111;
+    min-width: 100px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    right: 0;
+    z-index: 1;
+  }
+
+  .dropdown-content a {
+    color: #ccc;
+    padding: 6px 16px;
+    text-decoration: none;
+    display: block;
+	font-size: 60%;
+	text-align: left;
+  }
+
+  .dropdown-content a:hover {background-color: #333;}
+
+  .dropdown-content input {background-color: #111;
+                           color: #ccc;}
+
+  .show {display: block;}
   </style>
 
  
@@ -171,23 +238,41 @@
 		</div>
 	</div>
 	</div>
-	<div id="title">
+	<!-- div id="title">
 		<div id="search_form">
 		  <form action="/{{page['db']}}/search" method="get">
-			<!-- label>Search</label -->
+			< !-- label>Search</label -- >
 			<input name="s" type="text" size="10" maxlength="20" style="margin-bottom:0px;">
 		  </form>
 		</div>
-	</div>
-	<div id="title">
+	</div -->
+	<!-- div id="title">
 		<div id="navbtn">
 			<a class="navbtn" href="/{{page['db']}}/random">Random</a>
-			<!-- a class="navbtn" {% if hasedit %}href="/{{page['db']}}/edit/{{edit['table']}}/{{edit['id']}}" {% endif %}>Edit</a -->
+			< !-- a class="navbtn" {% if hasedit %}href="/{{page['db']}}/edit/{{edit['table']}}/{{edit['id']}}" {% endif %}>Edit</a -- >
 			<a class="navbtn" {% if hasedit %} onclick="on()" {% endif %}>Edit</a>
 		</div>
-	</div>
+	</div -->
 	<div id="title">
-	</div>
+	  <div id="navbtn">
+  	  <a class="navbtn dropbtn" onclick="myFunction()" >Dropdown</a>
+
+      <div id="myDropdown" class="dropdown-content">
+		<form action="/{{page['db']}}/search" method="get">
+        <input name="s" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
+		</form>
+        <a href="/{{page['db']}}/random">Random</a>
+        <a href="#base">Sort Order</a>
+        <a href="#blog">Thumb Size</a>
+        <a href="#contact">Contact</a>
+        <a href="#custom">Custom</a>
+        <a href="#support">Support</a>
+        <a href="#tools">About</a>
+      </div>
+      </div>
+  	</div>
+	<div id="title"></div>
+	<div id="title"></div>
 </div>
 
 
@@ -224,6 +309,30 @@
 <div id="overlay" onclick="off()">
   <div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
 </div>
+
+<script>
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+function filterFunction() {
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  div = document.getElementById("myDropdown");
+  a = div.getElementsByTagName("a");
+  for (i = 0; i < a.length; i++) {
+    txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    }
+  }
+}
+</script>
 
 <script>
 function on() {

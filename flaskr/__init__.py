@@ -59,12 +59,14 @@ def gallery(dbname, id):
     return mysite.do('do_gallery', id, None, None, None, links)
 
 
-@app.route("/<dbname>/models")
+@app.route("/<dbname>/models", methods=['POST', 'GET'])
 def kindgirls_models(dbname):
     """"""
     mysite = createPage(dbname)
+    if request.method == 'GET':
+        s = request.args.get('s') # sort ( alpha/ralpha , latest/rlatest , most/least )
     #return mysite.models()
-    return mysite.do('models')
+    return mysite.do('models', s)
 
 @app.route("/<dbname>/model/<model>")
 def kindgirls_model(dbname, model):
@@ -89,12 +91,14 @@ def kindgirls_site(dbname, site):
     return mysite.do('site', site)
 
 
-@app.route("/<dbname>/photos")
+@app.route("/<dbname>/photos", methods=['POST', 'GET'])
 def photos(dbname):
     """"""
     mysite = createPage(dbname)
+    if request.method == 'GET':
+        s = request.args.get('s') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
     #return mysite.photos()
-    return mysite.do('photos')
+    return mysite.do('photos', s)
 
 
 @app.route("/<dbname>/videos")

@@ -125,7 +125,7 @@ class HtmlSite:
         gdict = []
         for gallery in photos:#[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
-            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}" #.replace(' ','%20')
             name = name.replace('_', ' ')[:50]
             gdict.append({'href':f"/{self.dbname}/gallery{filterurl}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name, 'count': count})
         return (len(photos) > 0), gdict
@@ -166,9 +166,19 @@ class HtmlSite:
         return (len(sites) > 0), sdict
 
 
-    def models(self):
+    def models(self, order):
         """"""
-        models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id')
+        if order == "alpha":
+            models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
+        elif order == "ralpha":
+            models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
+        elif order == "latest" or order == None: # latest video
+            models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id')
+        elif order == "most":
+            models = ModelsTable(DATABASE).select_models_by_count('desc')
+        elif order == "least":
+            models = ModelsTable(DATABASE).select_models_by_count('asc')
+
         if len(models) == 0:
             models = ModelsTable(DATABASE).select_order_by('id', 'desc')
         
@@ -292,9 +302,20 @@ class HtmlSite:
                                hasvideos=hasvideos, viddicts=viddicts)
 
 
-    def photos(self):
+    def photos(self, order):
         """"""
-        photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+        if order == 'alpha':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
+        elif order == 'ralpha':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
+        elif order == 'latest' or order == None:
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
+        elif order == 'rlatest':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+        elif order == 'pics':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
+        elif order == 'rpics':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'desc')
 
         hasphotos, galldicts = self.galdict(photos)
 
@@ -424,8 +445,10 @@ class HtmlSite:
         # eg. self.config['webroot']/zdata/stuff.backup/sdc1/www.hegre-art.com/members//LubaAfterAShowerGen/
         
         gall = []
-        url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/"
-        st, out = unix(f"curl -s {url}")
+        url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/".replace(' ','%20')
+        #print(f"{url}")
+        st, out = unix(f"curl -s \"{url}\"")
+        #print(f"{out}")
         for line in out.split('\n'):
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
