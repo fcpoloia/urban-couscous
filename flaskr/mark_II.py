@@ -123,7 +123,7 @@ class HtmlSite:
         if filter != '':
             filterurl = f"/{filter}/{filtid}"
         gdict = []
-        for gallery in photos[:1000]:
+        for gallery in photos:#[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             name = name.replace('_', ' ')[:50]
@@ -142,7 +142,7 @@ class HtmlSite:
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
                              'w': width, 'h': height, 'mlen':human_time(length)})
-            print(self.thumb_h)
+            #print(self.thumb_h)
         return (len(videos) > 0),vdicts
 
     def sitdict(self, sites):
@@ -385,8 +385,6 @@ class HtmlSite:
         except IndexError:
             modelname = ''
 
-        if DATABASE == 'flaskr/new_hegre.db':
-            location = name
         gallery = self.create_gallery(location, id, count)
         
         print(f"(do_gallery) get_next_prev pid={id} {col}={val}")
