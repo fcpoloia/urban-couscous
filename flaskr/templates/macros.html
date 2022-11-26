@@ -4,7 +4,7 @@
 	  {% for item in itemdicts %}
 		<div class="overlay-image"><a href="{{item.href}}">
 		  <img class="image" src="{{item.src}}" alt="Alt text" height="{{item.height}}px" />
-		  <div class="text">{{item.name}}</div>
+		  <div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
 		</a></div>
 	  {% endfor %}
     </div>

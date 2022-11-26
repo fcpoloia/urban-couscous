@@ -143,6 +143,13 @@ def random(dbname):
     return mysite.do('random')
 
 
+@app.route("/<dbname>/edit/<table>/<id>")
+def edit(dbname, table, id):
+    """"""
+    mysite = createPage(dbname)
+    return mysite.do('edit', table, id)
+
+
 @app.route("/<dbname>/")
 @app.route("/<dbname>")
 def kindgirls(dbname):

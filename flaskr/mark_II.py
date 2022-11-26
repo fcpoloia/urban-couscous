@@ -127,7 +127,7 @@ class HtmlSite:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             name = name.replace('_', ' ')[:50]
-            gdict.append({'href':f"/{self.dbname}/gallery{filterurl}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name})
+            gdict.append({'href':f"/{self.dbname}/gallery{filterurl}/{id}", 'src':thumb, 'height':self.thumb_h, 'name': name, 'count': count})
         return (len(photos) > 0), gdict
 
 
@@ -312,7 +312,7 @@ class HtmlSite:
         """"""
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
     
-        hasvideos, galldicts = self.viddict(videos)
+        hasvideos, viddicts = self.viddict(videos)
 
         links = self.heading('videos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
@@ -320,7 +320,7 @@ class HtmlSite:
         return render_template("videos.html", 
                                webroot=self.config['webroot'],
                                page=page_dict,
-                               galldicts=galldicts)
+                               viddicts=viddicts)
 
 
     def video(self, vid, sid=None, mid=None):
