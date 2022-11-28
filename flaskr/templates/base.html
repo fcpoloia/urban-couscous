@@ -27,13 +27,13 @@
   /*a img:hover {opacity: 0.8;}*/
   /*a img.nohover:hover {opacity: 1.0;}*/
   /*a:hover   {color: #fff;}*/
-  a.navbtn  {font-size:12pt; color:#aaa; background-color: #A50; padding:3px 6px; border-radius:3px;}
-  a.navbtn:hover {color:#333;}
-  #navbtn {} /*vertical-align: bottom;}*/
+  a.navbtn,button.navbtn  {font-size:12pt; color:#aaa; background-color: #A50; padding:3px 6px; border-radius:3px; border: 0px;}
+  a.navbtn:hover,button.navbtn:hover {color:#333;}
+  #navbtn {padding: 0px 4px 0px 4px;} /*vertical-align: bottom;}*/
   a.nav     {font-size:12pt;color:#aaa;}
   a.nav:hover    {color:#A50;}
   a.hide    {display:none;}
-  a.title   {font-size: 18pt; color: #aaa;}
+  a.title   {font-size: 18pt; color: #aaa; padding: 2px 4px}
   td.title  {font-size: 18pt; color: #ccc;}
   a.title2  {font-size: 16pt; color: #aaa;}
   a.title2:hover  {font-size: 16pt; color: #ddd;}
@@ -227,54 +227,59 @@
 	</div>
 	<div id="title">
 		<div id="navbtn">
-			<div style="margin-bottom: 6px;">
-		{% if page['prev'] %}
-		<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev<!-- [{{page['prev']}}] --></a>
-		{% endif %}
+			<!--div style="margin-bottom: 6px;" -->
 
-		{% if page['next'] %}
-		<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next<!-- [{{page['next']}}] --></a>
-		{% endif %}
+				<!--form id="search_form" action="/{{page['thisurl']}}?t=u">
+					<button class="navbtn" type='submit'>&plus;</button>
+				</form -->
+				<a class="navbtn" href="/{{page['db']}}/inc?url={{page['thisurl']}}">&plus;</a>
 		</div>
-	</div>
-	</div>
-	<!-- div id="title">
-		<div id="search_form">
-		  <form action="/{{page['db']}}/search" method="get">
-			< !-- label>Search</label -- >
-			<input name="s" type="text" size="10" maxlength="20" style="margin-bottom:0px;">
-		  </form>
-		</div>
-	</div -->
-	<!-- div id="title">
 		<div id="navbtn">
-			<a class="navbtn" href="/{{page['db']}}/random">Random</a>
-			< !-- a class="navbtn" {% if hasedit %}href="/{{page['db']}}/edit/{{edit['table']}}/{{edit['id']}}" {% endif %}>Edit</a -- >
-			<a class="navbtn" {% if hasedit %} onclick="on()" {% endif %}>Edit</a>
+				<!--form id="search_form" action="/{{page['thisurl']}}?t=d">
+					<button class="navbtn" type='submit'>&minus;</button>
+				</form -->
+				<a class="navbtn" href="/{{page['db']}}/dec?url={{page['thisurl']}}">&minus;</a>
 		</div>
-	</div -->
-	<div id="title">
-	  <div id="navbtn">
-  	  <a class="navbtn dropbtn" onclick="myFunction()" >Dropdown</a>
+		<div id="navbtn">
+				{% if page['prev'] %}
+				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a>
+				{% endif %}
 
-      <div id="myDropdown" class="dropdown-content">
-		<form action="/{{page['db']}}/search" method="get">
-        <input name="s" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
-		</form>
-        <a href="/{{page['db']}}/random">Random</a>
-        <a href="#base">Sort Order</a>
-        <a href="#blog">Thumb Size</a>
-        <a href="#contact">Contact</a>
-        <a href="#custom">Custom</a>
-        <a href="#support">Support</a>
-        <a href="#tools">About</a>
-      </div>
-      </div>
-  	</div>
+				{% if page['next'] %}
+				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a>
+				{% endif %}
+
+				<a class="navbtn dropbtn" onclick="myFunction()" >Dropdown</a>
+
+				<div id="myDropdown" class="dropdown-content">
+					<form action="/{{page['db']}}/search" method="get">
+						<input name="s" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
+					</form>
+					<a href="/{{page['db']}}/random">Random</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=alpha">Sort Alpha</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=ralpha">Sort Alpha(R)</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=latest">Sort Latest</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=rlatest">Sort Latest(R)</a>
+					{% if page['type'] == 'photos' %}
+					<a href="/{{page['db']}}/{{page['type']}}?s=pics">Sort PicCount</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=rpics">Sort PicCount(R)</a>
+					{% endif %}
+					{% if page['type'] == 'models' %}
+					<a href="/{{page['db']}}/{{page['type']}}?s=most">Sort Most</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=least">Sort Least</a>
+					{% endif %}
+					<a href="#blog">Thumb Size</a>
+					<!-- a href="#contact">Contact</a>
+					<a href="#custom">Custom</a>
+					<a href="#support">Support</a -->
+					<a href="#tools">About</a>
+				</div>
+				<!-- /div-->
+		</div>
+	</div>
 	<div id="title"></div>
 	<div id="title"></div>
 </div>
-
 
  <div style="width: 100%" id="thumbnails" class="centredthumbs">
   <div style="text-align:center">

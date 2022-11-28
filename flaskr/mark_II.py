@@ -82,6 +82,12 @@ class HtmlSite:
             self.errorOccured = True
         self.thumb_h = 120
 
+    def incthumb(self):
+        self.thumb_h += 10
+
+    def decthumb(self):
+        self.thumb_h -= 10
+
     def do(self, method, *args):
         try:
             func = getattr(self, method) #(*args)
@@ -123,7 +129,7 @@ class HtmlSite:
         if filter != '':
             filterurl = f"/{filter}/{filtid}"
         gdict = []
-        for gallery in photos:#[:1000]:
+        for gallery in photos[:1000]:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}" #.replace(' ','%20')
             name = name.replace('_', ' ')[:50]
@@ -173,7 +179,9 @@ class HtmlSite:
         elif order == "ralpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
         elif order == "latest" or order == None: # latest video
-            models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id')
+            models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'desc')
+        elif order == "rlatest": # latest video
+            models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'asc')
         elif order == "most":
             models = ModelsTable(DATABASE).select_models_by_count('desc')
         elif order == "least":
@@ -186,7 +194,7 @@ class HtmlSite:
         
         links = self.heading('models')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
-                     'db':self.dbname, 'search': True}
+                     'db':self.dbname, 'search': True, 'type':'models'}
 
         return render_template("photos.html", 
                                webroot=self.config['webroot'],
@@ -209,7 +217,7 @@ class HtmlSite:
 
         links = self.heading('models')
         page_dict = {'title': modelname, 'plaintitle':True, 'heading': self.config['title'], 'type':'model', 'navigation': links,
-                    'nid':nmodel, 'pid':pmodel, 'next':nname, 'prev':pname, 'db':self.dbname}
+                    'nid':nmodel, 'pid':pmodel, 'next':nname, 'prev':pname, 'db':self.dbname, 'thisurl':f"/{self.dbname}/model/{modelid}"}
 
         return render_template("model_page.html", 
                                webroot=self.config['webroot'],
@@ -308,19 +316,19 @@ class HtmlSite:
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
         elif order == 'ralpha':
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
-        elif order == 'latest' or order == None:
-            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
-        elif order == 'rlatest':
+        elif order == 'rlatest' or order == None:
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+        elif order == 'latest':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
         elif order == 'pics':
-            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
-        elif order == 'rpics':
             photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'desc')
+        elif order == 'rpics':
+            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
 
         hasphotos, galldicts = self.galdict(photos)
 
         links = self.heading('photos')
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'photos', 'navigation': links, 
                      'db':self.dbname, 'search': True}
 
         return render_template("photos.html", 

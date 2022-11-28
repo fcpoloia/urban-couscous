@@ -159,14 +159,14 @@ class Table(BasicDB):
         sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} {direction} "
         return self.get_results_list(sql, self.col_count())
         
-    def select_by_most_recent_photos(self, col): 
+    def select_by_most_recent_photos(self, col, order='desc'): 
         """this will only actually work for models table which has thumb column"""
-        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id desc;"
+        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id {order};"
         return self.get_results_list(sql, self.col_count()+1)
 
-    def select_by_most_recent_videos(self, col): 
+    def select_by_most_recent_videos(self, col, order='desc'): 
         """this will only actually work for models table which has thumb column"""
-        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join videos on {self.name}.id=videos.{col} group by videos.{col} order by videos.id desc;"
+        sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join videos on {self.name}.id=videos.{col} group by videos.{col} order by videos.id {order};"
         return self.get_results_list(sql, self.col_count()+1)
 
     def nn():
@@ -204,7 +204,7 @@ class ModelsTable(Table):
         super().__init__(dbname, 'models')
 
     def select_models_by_count(self, order):
-        """"""
+        """list models by largest count of combined photosets and videos"""
         sql = f"select models.id,models.name,models.thumb from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) {order};"
         return self.get_results_list(sql, self.col_count())
 
