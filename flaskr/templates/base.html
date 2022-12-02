@@ -268,7 +268,7 @@
 					<a href="/{{page['db']}}/{{page['type']}}?s=most">Sort Most</a>
 					<a href="/{{page['db']}}/{{page['type']}}?s=least">Sort Least</a>
 					{% endif %}
-					<a href="#blog">Thumb Size</a>
+					<a href="/{{page['db']}}/{{page['type']}}?s=2x">2x Thumb Size</a>
 					<!-- a href="#contact">Contact</a>
 					<a href="#custom">Custom</a>
 					<a href="#support">Support</a -->
@@ -283,13 +283,7 @@
 
  <div style="width: 100%" id="thumbnails" class="centredthumbs">
   <div style="text-align:center">
-      {% block photos %}{% endblock %}
-      {% block model %}{% endblock %}
-      {% block photoset %}{% endblock %}
-      {% block video %}{% endblock %}
-      {% block intro %}{% endblock %}
-      {% block search %}{% endblock %}
-      {% block edit %}{% endblock %}
+      {% block content %}{% endblock %}
   </div>
  </div>
 
