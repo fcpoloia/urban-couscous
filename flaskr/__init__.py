@@ -101,12 +101,14 @@ def photos(dbname):
     return mysite.do('photos', s)
 
 
-@app.route("/<dbname>/videos")
+@app.route("/<dbname>/videos", methods=['POST', 'GET'])
 def kindgirls_videos(dbname):
     """"""
     mysite = createPage(dbname)
+    if request.method == 'GET':
+        s = request.args.get('s') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
     #return mysite.videos()
-    return mysite.do('videos')
+    return mysite.do('videos', s)
 
 
 @app.route("/<dbname>/video/<vid>")

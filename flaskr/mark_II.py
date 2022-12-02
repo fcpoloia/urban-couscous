@@ -7,6 +7,7 @@ import glob, os
 from subprocess import getstatusoutput as unix
 
 from flaskr.db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable, DatabaseMissingError
+from sqlite3 import OperationalError
 
 DATABASE = "flaskr/new_kindgirls.db"
 
@@ -176,16 +177,28 @@ class HtmlSite:
         """"""
         if order == "alpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
+            print(f"alpha {len(models)}")
         elif order == "ralpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
-        elif order == "latest" or order == None: # latest video
+            print(f"ralpha {len(models)}")
+        elif order == "latest": # or order == None: # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'desc')
+            print(f"latest {len(models)}")
         elif order == "rlatest": # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'asc')
+            print(f"rlatest {len(models)}")
+        elif order == "platest" or order == None or order == "2x": # latest video
+            models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id', 'desc')
+            print(f"platest {len(models)}")
         elif order == "most":
             models = ModelsTable(DATABASE).select_models_by_count('desc')
+            print(f"most {len(models)}")
         elif order == "least":
             models = ModelsTable(DATABASE).select_models_by_count('asc')
+            print(f"least {len(models)}")
+
+        if order == "2x":
+            self.thumb_h = self.thumb_h * 1.6
 
         if len(models) == 0:
             models = ModelsTable(DATABASE).select_order_by('id', 'desc')
@@ -316,7 +329,7 @@ class HtmlSite:
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
         elif order == 'ralpha':
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
-        elif order == 'rlatest' or order == None:
+        elif order == 'rlatest' or order == None or order == "2x":
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
         elif order == 'latest':
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
@@ -324,6 +337,9 @@ class HtmlSite:
             photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'desc')
         elif order == 'rpics':
             photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
+
+        if order == "2x":
+            self.thumb_h = self.thumb_h * 1.6
 
         hasphotos, galldicts = self.galdict(photos)
 
@@ -337,14 +353,17 @@ class HtmlSite:
                                galldicts=galldicts)
 
 
-    def videos(self):
+    def videos(self, order):
         """"""
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+
+        if order == "2x":
+            self.thumb_h = self.thumb_h * 1.6
     
         hasvideos, viddicts = self.viddict(videos)
 
         links = self.heading('videos')
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'navigation': links, 
+        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'videos', 'navigation': links, 
                      'db':self.dbname, 'search': True}
         return render_template("videos.html", 
                                webroot=self.config['webroot'],
@@ -355,7 +374,12 @@ class HtmlSite:
     def video(self, vid, sid=None, mid=None):
         """"""
         video = VideosTable(DATABASE).select_where('id', vid)[0]
-    
+        try:
+            sql = f"select id, model_id, site_id, name, filename, thumb, poster, width, height, length from videos2 where id = {vid};"
+            video2 = VideosTable(DATABASE).get_single_result(sql,10)
+            print(video2)
+        except OperationalError:
+            video2 = [0,0,0,0,0,0,None]
         id, model_id, site_id, name, filename, thumb, width, height, length = video
         sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
         try:
@@ -364,7 +388,12 @@ class HtmlSite:
             modelname = ''
         if DATABASE == 'flaskr/new_hegre.db':
             filename = filename.replace('.avi', '.mp4')
-        thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+
+        if video2[6] is not None:
+            poster = video2[6]
+            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{poster}"
+        else:
+            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
         video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{filename}"
         if int(width) > 1280 or int(height) > 720:
             width=1280
