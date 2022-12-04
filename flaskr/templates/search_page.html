@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-    {% if pagetype == 'search' %}
+    {% if page['type'] == 'search' %}
 	<!-- h1 style="color:#ccc">Search Results for "{{search_term}}"</h1 -->
 	{% else %}
 	<!-- h1 style="color:#ccc">Random Selection</h1 -->

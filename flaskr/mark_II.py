@@ -2,7 +2,7 @@
 
 # Mark II verion of the website using a different database schema
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 import glob, os
 from subprocess import getstatusoutput as unix
 
@@ -30,6 +30,21 @@ def databaseButtons():
     page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'fivebuttons'}
     return buttons, page_dict
 
+def random_selection(datalist, count):
+    """"""
+    import random
+    selection = []
+    nums = []
+    if len(datalist) > 1:
+        while len(selection) < count:
+            num = random.randrange(len(datalist))
+            if num not in nums:
+                nums.append(num)
+                selection.append(datalist[num])
+        return selection
+    else:
+        return datalist
+
 def siteRoot():
     """"""
     buttons, page_dict = databaseButtons()
@@ -37,6 +52,13 @@ def siteRoot():
                            webroot="http://gallery", #mysite.getConfig()['webroot'],
                            page=page_dict, 
                            buttons=buttons)
+
+def get_order(default):
+    order = default
+    if 'order' in session:
+        order = session['order']
+    print(f"photos order {order}")
+    return order
 
 def get_config(dbname):
     global DATABASE
@@ -81,13 +103,29 @@ class HtmlSite:
             self.config = get_config(dbname)
         except DatabaseMissingError:
             self.errorOccured = True
+        self.default_thumbsize = 120
         self.thumb_h = 120
 
-    def incthumb(self):
-        self.thumb_h += 10
-
-    def decthumb(self):
-        self.thumb_h -= 10
+    def setThumbSize(self):
+        if 'thumbsize' in session:
+            if 'thumb_h' not in session:
+                session['thumb_h'] = self.default_thumbsize
+            if session['thumbsize'] == "large":
+                self.thumb_h = 1.5 * self.default_thumbsize
+                print(f"thumb_h = {self.thumb_h}")
+            elif session['thumbsize'] == "small":
+                self.thumb_h = self.default_thumbsize
+                print(f"thumb_h = {self.thumb_h}")
+                
+            elif session['thumbsize'] == "inc":
+                session['thumb_h'] = session['thumb_h']+10
+                self.thumb_h = session['thumb_h']
+                print(f"thumb_h = {self.thumb_h}")
+            elif session['thumbsize'] == "dec":
+                session['thumb_h'] = session['thumb_h']-10
+                self.thumb_h = session['thumb_h']
+                print(f"thumb_h = {self.thumb_h}")
+            
 
     def do(self, method, *args):
         try:
@@ -173,8 +211,10 @@ class HtmlSite:
         return (len(sites) > 0), sdict
 
 
-    def models(self, order):
+    def models(self):
         """"""
+        order = get_order("platest")
+        
         if order == "alpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
             print(f"alpha {len(models)}")
@@ -187,7 +227,7 @@ class HtmlSite:
         elif order == "rlatest": # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'asc')
             print(f"rlatest {len(models)}")
-        elif order == "platest" or order == None or order == "2x": # latest video
+        elif order == "platest": # or order == None or order in ("small", "large"): # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id', 'desc')
             print(f"platest {len(models)}")
         elif order == "most":
@@ -197,8 +237,8 @@ class HtmlSite:
             models = ModelsTable(DATABASE).select_models_by_count('asc')
             print(f"least {len(models)}")
 
-        if order == "2x":
-            self.thumb_h = self.thumb_h * 1.6
+        #if order == "2x":
+        #    self.thumb_h = self.thumb_h * 1.6
 
         if len(models) == 0:
             models = ModelsTable(DATABASE).select_order_by('id', 'desc')
@@ -301,6 +341,7 @@ class HtmlSite:
 
     def site(self, siteid):
         """"""
+        order = get_order("alpha")
         sitename = SitesTable(DATABASE).select_where('id', siteid)[0][1]
         photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
         videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
@@ -322,14 +363,15 @@ class HtmlSite:
                                galldicts=galldicts, 
                                hasvideos=hasvideos, viddicts=viddicts)
 
-
-    def photos(self, order):
+    def photos(self):
         """"""
+        order = get_order("rlatest")
+            
         if order == 'alpha':
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
         elif order == 'ralpha':
             photos = PhotosTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
-        elif order == 'rlatest' or order == None or order == "2x":
+        elif order == 'rlatest': # or order == None or order in ("small", "large"):
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
         elif order == 'latest':
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
@@ -338,8 +380,8 @@ class HtmlSite:
         elif order == 'rpics':
             photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
 
-        if order == "2x":
-            self.thumb_h = self.thumb_h * 1.6
+        #if order == "2x":
+        #    self.thumb_h = self.thumb_h * 1.6
 
         hasphotos, galldicts = self.galdict(photos)
 
@@ -353,12 +395,14 @@ class HtmlSite:
                                galldicts=galldicts)
 
 
-    def videos(self, order):
+    def videos(self):
         """"""
+        order = get_order("alpha")
+        
         videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
-        if order == "2x":
-            self.thumb_h = self.thumb_h * 1.6
+        #if order == "2x":
+        #    self.thumb_h = self.thumb_h * 1.6
     
         hasvideos, viddicts = self.viddict(videos)
 
@@ -494,12 +538,15 @@ class HtmlSite:
         return gall
 
 
-    def search(self, s):
+    def search(self, term):
         """"""
-        sites = SitesTable(DATABASE).select_where_like('name', s)
-        models = ModelsTable(DATABASE).select_where_like('name', s)
-        photos = PhotosTable(DATABASE).select_where_like_group_order('name', s, 'id', 'id', 'desc')
-        videos = VideosTable(DATABASE).select_where_like_group_order('name', s, 'id', 'id', 'desc')
+        order = get_order("alpha")
+        #term = get_search()
+
+        sites = SitesTable(DATABASE).select_where_like('name', term)
+        models = ModelsTable(DATABASE).select_where_like('name', term)
+        photos = PhotosTable(DATABASE).select_where_like_group_order('name', term, 'id', 'id', 'desc')
+        videos = VideosTable(DATABASE).select_where_like_group_order('name', term, 'id', 'id', 'desc')
         
         hasmodels, modeldicts = self.moddict(models)
         hasphotos, galldicts = self.galdict(photos)
@@ -507,33 +554,17 @@ class HtmlSite:
         hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
-        page_dict = {'title':f"Search Results for '{s}'", 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
+        page_dict = {'title':f"Search Results for '{term}'", 'plaintitle':True, 'heading': self.config['title'], 'type':'search', 
                      'navigation': links, 
                      'db':self.dbname, 'search': True}
         
         return render_template("search_page.html", 
                                webroot=self.config['webroot'],
-                               page=page_dict, search_term=s,
+                               page=page_dict, search_term=term,
                                hasphotos=hasphotos, galldicts=galldicts, 
                                hasmodels=hasmodels, modeldicts=modeldicts,
                                hassites=hassites, sitedicts=sitedicts, 
-                               hasvideos=hasvideos, viddicts=viddicts,
-                               pagetype='search')
-
-    def random_selection(self, datalist, count):
-        """"""
-        import random
-        selection = []
-        nums = []
-        if len(datalist) > 1:
-            while len(selection) < count:
-                num = random.randrange(len(datalist))
-                if num not in nums:
-                    nums.append(num)
-                    selection.append(datalist[num])
-            return selection
-        else:
-            return datalist
+                               hasvideos=hasvideos, viddicts=viddicts)
 
     def random(self):
         """"""
@@ -542,9 +573,9 @@ class HtmlSite:
         photos = PhotosTable(DATABASE).select_all()
         videos = VideosTable(DATABASE).select_all()
 
-        models = self.random_selection(models, 8)
-        photos = self.random_selection(photos, 8)
-        videos = self.random_selection(videos, 4)
+        models = random_selection(models, 8)
+        photos = random_selection(photos, 8)
+        videos = random_selection(videos, 4)
 
         hasmodels, modeldicts = self.moddict(models)
         hasphotos, galldicts = self.galdict(photos)
@@ -583,18 +614,30 @@ class HtmlSite:
                                buttons=buttons)
 
 
-    def edit(self, table, id):
-        """"""
-        photo = PhotosTable(DATABASE).select_where('id', id)
-        models = ModelsTable(DATABASE).select_order_by('name', 'asc')
-        mopts = {}
-        for model in models:
-            mopts[model[0]] = model[1]
-        links = self.heading()
-        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'button_class':'fourbuttons'}
-        return render_template("edit_page.html",
-                               webroot=self.getConfig()['webroot'],
-                               page=page_dict,
-                               editphoto=photo,
-                               modelist=mopts
-                             )
+class Page:
+    def __init__(self):
+        pass
+        
+    def render(self):
+        return render_template(self.pagehtml)
+        
+class IntroPage:
+    def __init__(self):
+        super().__init__(dbname, 'models')
+        
+        
+#    def edit(self, table, id):
+#        """"""
+#        photo = PhotosTable(DATABASE).select_where('id', id)
+#        models = ModelsTable(DATABASE).select_order_by('name', 'asc')
+#        mopts = {}
+#        for model in models:
+#            mopts[model[0]] = model[1]
+#        links = self.heading()
+#        page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 'button_class':'fourbuttons'}
+#        return render_template("edit_page.html",
+#                               webroot=self.getConfig()['webroot'],
+#                               page=page_dict,
+#                               editphoto=photo,
+#                               modelist=mopts
+#                             )

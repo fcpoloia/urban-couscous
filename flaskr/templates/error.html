@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
+    {% if error %}
+	<h2>{{error}}</h2>
+	{% else %}
     <h2>Error:  Database {{dbname}} does not exist.</h2>
-
+	{% endif %}
+    {% if page %}
     <div class="{{page['button_class']}}">
     {% for item in buttons %}
-    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br><br> {{item.name}} </a></div>
+    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br> {{item.name}} </a></div>
     {% endfor %}
     </div>
+    {% endif %}
 
 {% endblock %}
