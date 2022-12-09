@@ -6,7 +6,7 @@ from flask import Flask, render_template, session
 import glob, os
 from subprocess import getstatusoutput as unix
 
-from flaskr.db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable, DatabaseMissingError
+from .db2 import ConfigTable, ModelsTable, SitesTable, PhotosTable, VideosTable, DatabaseMissingError
 from sqlite3 import OperationalError
 
 DATABASE = "flaskr/new_kindgirls.db"

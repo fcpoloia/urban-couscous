@@ -41,11 +41,24 @@ sort order(alpha,latest,most,pics)
 """
 
 from flask import Flask, request, session, make_response
-#from flaskr.mark_I import *
-from flaskr.mark_II import *
+#from .mark_I import *
+from .mark_II import *
 
 app = Flask(__name__)
 app.secret_key = "d76df0b23782624435e4e42b9fd79b99e1b1a1c387a145ecae02683d69cf2fda"
+
+@app.errorhandler(404)
+def not_found(error):
+    """"""
+    print(error)
+    buttons, page_dict = databaseButtons()
+    resp = make_response(render_template('error.html',
+                                         error=error,
+                                         page=page_dict, 
+                                         buttons=buttons,
+                                         ), 404)
+    resp.headers['X-Something'] = 'A value'
+    return resp
 
 class ErrorPage:
     def __init__(self, error):
@@ -54,17 +67,11 @@ class ErrorPage:
     def do(self, method, *args):
         """"""
         return not_found(self.error)
-        #buttons, page_dict = databaseButtons()
-        #return render_template("error.html", 
-        #                       webroot="http://gallery", #mysite.getConfig()['webroot'],
-        #                       page=page_dict, 
-        #                       buttons=buttons,
-        #                       dbname=self.dbname
-        #                       )
+
     def heading(self):
         pass
 
-def createPage(dbname):
+def page_factory(dbname):
     """"""
     if os.path.exists(getDBpath(dbname)):
         return HtmlSite(dbname)
@@ -88,38 +95,24 @@ def do_post_get():
             session['order'] = o
         print(f"session {session}")
 
-@app.errorhandler(404)
-def not_found(error):
-    """"""
-    print(error)
-    buttons, page_dict = databaseButtons()
-    resp = make_response(render_template('error.html',
-                                         error=error,
-                                         #webroot="http://gallery", #mysite.getConfig()['webroot'],
-                                         page=page_dict, 
-                                         buttons=buttons,
-                                         ), 404)
-    resp.headers['X-Something'] = 'A value'
-    return resp
-
 @app.route("/<dbname>/gallery/model/<mid>/<pid>")
 def gallery_model(dbname, pid, mid):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     links = mysite.heading('models')
     return mysite.do('do_gallery', pid, 'model_id', mid, 'model', links)
 
 @app.route("/<dbname>/gallery/site/<sid>/<pid>")
 def gallery_site(dbname, pid, sid):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     links = mysite.heading('sites')
     return mysite.do('do_gallery', pid, 'site_id', sid, 'site', links)
 
 @app.route("/<dbname>/gallery/<id>")
 def gallery(dbname, id):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     links = mysite.heading('photos')
     return mysite.do('do_gallery', id, None, None, None, links)
 
@@ -128,14 +121,14 @@ def gallery(dbname, id):
 def models(dbname):
     """"""
     do_post_get()
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('models')
 
 @app.route("/<dbname>/model/<model>")
 def model(dbname, model):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('model', model)
 
@@ -143,14 +136,14 @@ def model(dbname, model):
 @app.route("/<dbname>/sites")
 def sites(dbname):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('sites')
 
 @app.route("/<dbname>/site/<site>")
 def site(dbname, site):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('site', site)
 
@@ -158,7 +151,7 @@ def site(dbname, site):
 def photos(dbname):
     """"""
     do_post_get()
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('photos')
 
@@ -167,7 +160,7 @@ def photos(dbname):
 def videos(dbname):
     """"""
     do_post_get()
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('videos')
 
@@ -175,21 +168,21 @@ def videos(dbname):
 @app.route("/<dbname>/video/<vid>")
 def video(dbname, vid):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('video', vid, None, None)
 
 @app.route("/<dbname>/video/site/<sid>/<vid>")
 def video_site(dbname, vid, sid=None):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('video', vid, sid)
 
 @app.route("/<dbname>/video/model/<mid>/<vid>")
 def video_model(dbname, vid, sid=None, mid=None):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('video', vid, sid, mid)
 
@@ -199,14 +192,14 @@ def search(dbname):
     """"""
     #do_get_post()
     term = get_search_term()
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('search', term)
 
 @app.route("/<dbname>/random")
 def random(dbname):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('random')
 
@@ -214,7 +207,7 @@ def random(dbname):
 @app.route("/<dbname>/edit/<table>/<id>")
 def edit(dbname, table, id):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     return mysite.do('edit', table, id)
 
 
@@ -222,7 +215,7 @@ def edit(dbname, table, id):
 @app.route("/<dbname>")
 def dbroot(dbname):
     """"""
-    mysite = createPage(dbname)
+    mysite = page_factory(dbname)
     return mysite.do('rootpage')
 
 @app.route("/favicon.ico")
