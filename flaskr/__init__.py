@@ -81,16 +81,16 @@ def page_factory(dbname):
 def get_search_term():
     """"""
     if request.method == 'GET':
-        s = request.args.get('s') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
+        s = request.args.get('search') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
     return s
 
 def do_post_get():
     """"""
     if request.method == 'GET':
-        s = request.args.get('s') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
+        s = request.args.get('size') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
         if s in ["large", "small", "inc", "dec"]:
             session['thumbsize'] = s
-        o = request.args.get('o') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
+        o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
         if o is not None:
             session['order'] = o
         print(f"session {session}")
@@ -133,9 +133,10 @@ def model(dbname, model):
     return mysite.do('model', model)
 
 
-@app.route("/<dbname>/sites")
+@app.route("/<dbname>/sites", methods=['POST', 'GET'])
 def sites(dbname):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('sites')
@@ -190,7 +191,7 @@ def video_model(dbname, vid, sid=None, mid=None):
 @app.route("/<dbname>/search", methods=['POST', 'GET'])
 def search(dbname):
     """"""
-    #do_get_post()
+    #do_post_get()
     term = get_search_term()
     mysite = page_factory(dbname)
     mysite.setThumbSize()

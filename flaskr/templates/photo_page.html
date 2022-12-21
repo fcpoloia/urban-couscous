@@ -5,7 +5,7 @@
 
 	<div class="centredthumbs">
 		{% for item in gallpage %}
-		<div class="overlay-image" style="max-width:99%"><a href="{{item.href}}">
+		<div class="overlay-image" style="max-width:{{page.picwidth}}%"><a href="{{item.href}}">
 		  <img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" />
 		  <div class="textleft">{{item.pic}}</div>
 		</a></div>

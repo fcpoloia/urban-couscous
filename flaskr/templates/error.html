@@ -9,7 +9,7 @@
     {% if page %}
     <div class="{{page['button_class']}}">
     {% for item in buttons %}
-    <div id="bigbtn"><br><a style="font-size:20pt;" href="{{item.href}}" ><br> {{item.name}} </a></div>
+    <div id="bigbtn"><div class="center"><a style="font-size:20pt;" href="{{item.href}}" > {{item.name}} </a></div></div>
     {% endfor %}
     </div>
     {% endif %}

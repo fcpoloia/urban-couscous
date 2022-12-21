@@ -34,15 +34,23 @@
 	</div>
 	<div id="title">
 		{% for item in page['navigation'] %}
+        {% if page['navigation'][item]['rows'] > 0 %}
 		<a class="title{{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
-		{% endfor %}
+		{% endif %}
+        {% endfor %}
 	</div>
 	<div id="titlecenter">
 		{% if page['plaintitle'] %}
 		{{page['title']}}
 		{% else %}{% if page['title'] %}
 		<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-		<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a>
+        {% if page['title']['models'] %}
+        {% for model in page['title']['models'] %}
+		<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
+        {% endfor %}
+        {% else %}
+		<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
+        {% endif %}
 		{{page['title']['folder']}}
 		{% endif %}{% endif %}
 		{% autoescape false %}
@@ -76,24 +84,36 @@
 
 				<div id="myDropdown" class="dropdown-content">
 					<form action="/{{page['db']}}/search" method="get">
-						<input name="s" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
+						<input name="search" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
 					</form>
 					{% if page['type'] %}
+					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
 					<a href="/{{page['db']}}/random">Random</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=alpha">Sort Alpha</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=ralpha">Sort Alpha(R)</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=latest">Sort Latest</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=rlatest">Sort Latest(R)</a>
-					{% if page['type'] == 'photos' %}
-					<a href="/{{page['db']}}/{{page['type']}}?o=pics">Sort PicCount</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=rpics">Sort PicCount(R)</a>
-					{% endif %}
-					{% if page['type'] == 'models' %}
-					<a href="/{{page['db']}}/{{page['type']}}?o=most">Sort Most</a>
-					<a href="/{{page['db']}}/{{page['type']}}?o=least">Sort Least</a>
-					{% endif %}
-					<a href="/{{page['db']}}/{{page['type']}}?s=large">Large Thumbs</a>
-					<a href="/{{page['db']}}/{{page['type']}}?s=small">Small Thumbs</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=alpha">Sort Alpha</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=ralpha">Sort Alpha(R)</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=id">Sort Id</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=rid">Sort Id(R)</a>
+					  {% endif %}
+					  {% if page['type'] == 'photos' %}
+					<a href="/{{page['db']}}/{{page['type']}}?order=pics">Sort PicCount</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=rpics">Sort PicCount(R)</a>
+					  {% endif %}
+					  {% if page['type'] == 'models' %}
+					<a href="/{{page['db']}}/{{page['type']}}?order=vlatest">Latest Videos</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=rvlatest">Latest Videos(R)</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=platest">Latest Photos</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=rplatest">Latest Photos(R)</a>
+					  {% endif %}
+					  {% if page['type'] in ['models', 'sites'] %}
+					<a href="/{{page['db']}}/{{page['type']}}?order=most">Sort Most</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=least">Sort Least</a>
+					  {% endif %}
+					  {% if page['type'] == 'videos' %}
+					<a href="/{{page['db']}}/{{page['type']}}?order=latest">Latest Videos</a>
+					<a href="/{{page['db']}}/{{page['type']}}?order=rlatest">Latest Videos(R)</a>
+					  {% endif %}
+					<a href="/{{page['db']}}/{{page['type']}}?size=large">Large Thumbs</a>
+					<a href="/{{page['db']}}/{{page['type']}}?size=small">Small Thumbs</a>
 					{% endif %}
 					<!-- a href="#contact">Contact</a>
 					<a href="#custom">Custom</a>

@@ -29,8 +29,18 @@
   #search_form input {font-size: 12pt;background-color: #444; color: #ccc; vertical-align: bottom; border-radius: 3px; border: 1px solid #444; margin: 0px; padding: 2px 2px 2px 2px;}
   select.search_form {font-size: 12pt;background-color: #444; color: #ccc; vertical-align: bottom; border-radius: 3px; border: 1px solid #444; margin: 0px; padding: 2px 2px 2px 2px;}
   #search_form a     {background-color: #A50; padding:3px 6px; border-radius:3px;}
-  #bigbtn {display:inline-block;width:170px;height:120px;border:1px solid #777;margin:3px;}
+  #bigbtn {display:inline-block;width:170px;height:120px;border:1px solid #777;margin:3px;position: relative;}
   span.thumspan {padding:3px; overflow: hidden;}
+
+  .center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
+
   #overlay {
     position: fixed;
     display: none;

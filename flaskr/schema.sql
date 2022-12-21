@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS videos
         name text,        /* video name */
         filename text,    /* video filename */
         thumb text,       /* video thumbnail */
+        poster text,      /* video poster */
         width int,        /* video width (px) */
         height int,       /* video height (px) */
         length double,    /* video length (seconds) */
@@ -56,4 +57,4 @@ COMMIT;
 # models - id, name, thumb
 # sites  - id, name, location
 # photos - id, model_id, site_id, name, location, thumb, count
-# videos - id, model_id, site_id, name, filename, thumb, width, height, length
+# videos - id, model_id, site_id, name, filename, thumb, poster, width, height, length

@@ -123,7 +123,11 @@ class Table(BasicDB):
         
     def col_count(self):
         return len(self.get_results_list(self.pragma, 6))
-        
+    
+    def row_count(self):
+        sql = f"SELECT COUNT() FROM {self.name};"
+        return self.get_single_result(sql, 1)[0]
+
     def column_list(self):
         res = self.get_results_list(self.pragma, 2)
         columns = []
@@ -144,19 +148,19 @@ class Table(BasicDB):
         return self.get_results_list(sql, self.col_count())
         
     def select_order_by(self, order_col, direction):
-        sql = self.sql_all + f"order by {order_col} {direction} "
+        sql = self.sql_all + f"order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_group_by_order_by(self, group_col, order_col, direction):
-        sql = self.sql_all + f" group by {group_col} order by {order_col} {direction} "
+        sql = self.sql_all + f" group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_where_order_by(self, column, value, order_col, direction):
-        sql = self.sql_all + f"where {column} = '{value}' order by {order_col} {direction} "
+        sql = self.sql_all + f"where {column} = '{value}' order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_where_group_by_order_by(self, column, value, group_col, order_col, direction):
-        sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} {direction} "
+        sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
         
     def select_by_most_recent_photos(self, col, order='desc'): 
@@ -192,7 +196,7 @@ class Table(BasicDB):
         return self.get_results_list(sql, self.col_count())
 
     def select_where_like_group_order(self, column, value, group, order, direction):
-        sql = self.sql_all + f"where {column} like '%{value}%' group by {group} order by {order} {direction}"
+        sql = self.sql_all + f"where {column} like '%{value}%' group by {group} order by {order} COLLATE NOCASE {direction}"
         return self.get_results_list(sql, self.col_count())
 
 
@@ -206,11 +210,20 @@ class ModelsTable(Table):
     def select_models_by_count(self, order):
         """list models by largest count of combined photosets and videos"""
         sql = f"select models.id,models.name,models.thumb from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) {order};"
+        sql = f"select models.id,models.name,models.thumb,count(models.id) from models left join photos on photos.model_id=models.id group by models.id  union all select models.id,models.name,models.thumb,count(models.id)  from models left join videos on videos.model_id=models.id where models.id is null group by models.id order by count(models.id) {order} ;"
         return self.get_results_list(sql, self.col_count())
 
 class SitesTable(Table):
     def __init__(self, dbname):
         super().__init__(dbname, 'sites')
+
+    def select_sites_by_count(self, order):
+        """list sites by largest count of combined photosets and videos"""
+
+        sql = f"select sites.id,sites.name,sites.location,count(sites.id) from sites left join photos on photos.site_id=sites.id group by sites.id  union all select sites.id,sites.name,sites.location,count(sites.id)  from sites left join videos on videos.site_id=sites.id where sites.id is null group by sites.id order by count(sites.id) {order} ;"
+        result = self.get_results_list(sql, self.col_count())
+        print(f"{len(result)} {result}")
+        return result
 
 class PhotosTable(Table):
     def __init__(self, dbname):
@@ -266,3 +279,7 @@ if __name__ == '__main__':
     for row in res:
         print(row)
     
+    s = SitesTable(DATABASE)
+    print("select sites by count")
+    print(s.select_sites_by_count('desc'))
+

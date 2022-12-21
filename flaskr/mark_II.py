@@ -16,17 +16,18 @@ class SiteDB:
         self.dbname = dbname
 
 def getDBpath(dbname):
+    """"""
     return f"flaskr/new_{dbname}.db"
 
 def databaseButtons():
     """"""
-    buttons = [{'href':'/kindgirls',  'name':'KindGirls'},
-               {'href':'/inthecrack', 'name':'InTheCrack'},
-               {'href':'/hegre',      'name':'Hegre-Art'},
-               {'href':'/alsangels',  'name':'AlsAngels'},
-               {'href':'/alsscans',   'name':'ALSScans'},
-               {'href':'/femjoy',     'name':'FemJoy'}
-           ]
+    sql = "SELECT title FROM config;"
+    buttons = []
+    for database in glob.glob("flaskr/new*.db"):
+        dbname = database.replace("flaskr/new_",'').replace('.db','')
+        name = ConfigTable(database).get_single_result(sql,1)[0]
+        buttons.append({'href':'/'+dbname, 'name':name})
+
     page_dict = {'title':'', 'heading':'Stuff', 'plaintitle':True, 'button_class':'fivebuttons'}
     return buttons, page_dict
 
@@ -54,6 +55,7 @@ def siteRoot():
                            buttons=buttons)
 
 def get_order(default):
+    """"""
     order = default
     if 'order' in session:
         order = session['order']
@@ -61,6 +63,7 @@ def get_order(default):
     return order
 
 def get_config(dbname):
+    """"""
     global DATABASE
     DATABASE = f"flaskr/new_{dbname}.db"
     #print(DATABASE)
@@ -107,6 +110,7 @@ class HtmlSite:
         self.thumb_h = 120
 
     def setThumbSize(self):
+        """"""
         if 'thumbsize' in session:
             if 'thumb_h' not in session:
                 session['thumb_h'] = self.default_thumbsize
@@ -128,6 +132,7 @@ class HtmlSite:
             
 
     def do(self, method, *args):
+        """"""
         try:
             func = getattr(self, method) #(*args)
         except AttributeError:
@@ -139,10 +144,10 @@ class HtmlSite:
     def heading(self, page=None):
         """"""
         links = {
-            "photos": {"href": f"/{self.dbname}/photos", "title": "Photos", 'class':''},
-            "models": {"href": f"/{self.dbname}/models", "title": "Girls",  'class':''},
-            "sites":  {"href": f"/{self.dbname}/sites",  "title": "Sites",  'class':''},
-            "videos": {"href": f"/{self.dbname}/videos", "title": "Videos", 'class':''}}
+            "photos": {"href": f"/{self.dbname}/photos", "title": "Photos", 'class':'', 'rows':PhotosTable(DATABASE).row_count()},
+            "models": {"href": f"/{self.dbname}/models", "title": "Girls",  'class':'', 'rows':ModelsTable(DATABASE).row_count()},
+            "sites":  {"href": f"/{self.dbname}/sites",  "title": "Sites",  'class':'', 'rows':SitesTable(DATABASE).row_count()-1},
+            "videos": {"href": f"/{self.dbname}/videos", "title": "Videos", 'class':'', 'rows':VideosTable(DATABASE).row_count()}}
             
         if page is not None:
             links[page]['class'] = " page"
@@ -183,7 +188,10 @@ class HtmlSite:
             filterurl=f"/{filter}/{filtid}"
         vdicts = []
         for vid in videos:
-            id, model_id, site_id, name, filename, thumb, width, height, length = vid
+            if len(vid) == 9:
+                id, model_id, site_id, name, filename, thumb, width, height, length = vid
+            if len(vid) == 10:
+                id, model_id, site_id, name, filename, thumb, poster, width, height, length = vid
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
                              'w': width, 'h': height, 'mlen':human_time(length)})
@@ -199,20 +207,23 @@ class HtmlSite:
                 pid,_,_,_,_,thm = PhotosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][:6]
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
                 ordered_sites[int(pid)] = {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h}
+                sdict.append({'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h})
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][5]
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
                 ordered_sites[1] = {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h}
-        photo_ids = [k for k in ordered_sites]
-        photo_ids.sort()
-        photo_ids.reverse()
-        for pid in photo_ids:
-            sdict.append(ordered_sites[pid])
+                sdict.append({'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h})
+        #photo_ids = [k for k in ordered_sites]
+        #photo_ids.sort()
+        #photo_ids.reverse()
+        #for pid in photo_ids:
+        #    sdict.append(ordered_sites[pid])
         return (len(sites) > 0), sdict
 
 
     def models(self):
         """"""
+        models = []
         order = get_order("platest")
         
         if order == "alpha":
@@ -221,21 +232,31 @@ class HtmlSite:
         elif order == "ralpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
             print(f"ralpha {len(models)}")
-        elif order == "latest": # or order == None: # latest video
+        elif order == "vlatest": # or order == None: # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'desc')
-            print(f"latest {len(models)}")
-        elif order == "rlatest": # latest video
+            print(f"vlatest {len(models)}")
+        elif order == "rvlatest": # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_videos('model_id', 'asc')
-            print(f"rlatest {len(models)}")
-        elif order == "platest": # or order == None or order in ("small", "large"): # latest video
+            print(f"rvlatest {len(models)}")
+        elif order == "platest": # or order == None: # latest video
             models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id', 'desc')
             print(f"platest {len(models)}")
+        elif order == "rplatest": # latest video
+            models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id', 'asc')
+            print(f"rplatest {len(models)}")
+        #elif order == "platest": # or order == None or order in ("small", "large"): # latest video
+        #    models = ModelsTable(DATABASE).select_by_most_recent_photos('model_id', 'desc')
+        #    print(f"platest {len(models)}")
         elif order == "most":
             models = ModelsTable(DATABASE).select_models_by_count('desc')
             print(f"most {len(models)}")
         elif order == "least":
             models = ModelsTable(DATABASE).select_models_by_count('asc')
             print(f"least {len(models)}")
+        elif order == "id":
+            models = ModelsTable(DATABASE).select_order_by('id','asc')
+        elif order == "rid":
+            models = ModelsTable(DATABASE).select_order_by('id','desc')
 
         #if order == "2x":
         #    self.thumb_h = self.thumb_h * 1.6
@@ -326,13 +347,39 @@ class HtmlSite:
             
     def sites(self): # 1
         """"""
-        sites = SitesTable(DATABASE).select_all()
+        sites = []
+        order = get_order("rlatest")
+
+        if order == 'alpha':
+            sites = SitesTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
+            print(f"sites alpha {len(sites)}")
+        elif order == 'ralpha':
+            sites = SitesTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
+            print(f"sites ralpha {len(sites)}")
+        #elif order == 'rlatest': # or order == None or order in ("small", "large"):
+        #    sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+        #    print(f"sites rlatest {len(sites)}")
+        #elif order == 'latest':
+        #    sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
+        #    print(f"sites latest {len(sites)}")
+        elif order == "id":
+            sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id','asc')
+            print(f"sites id {len(sites)}")
+        elif order == "rid":
+            sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id','desc')
+            print(f"sites rid {len(sites)}")
+        elif order == "most":
+            sites = SitesTable(DATABASE).select_sites_by_count('desc')
+        elif order == "least":
+            sites = SitesTable(DATABASE).select_sites_by_count('asc')
+
+        #sites = SitesTable(DATABASE).select_all()
 
         hassites, galldicts = self.sitdict(sites)
         
         links = self.heading('sites')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
-                     'db':self.dbname, 'search': True}
+                     'db':self.dbname, 'search': True, 'type':'sites'}
 
         return render_template("photos.html", 
                                webroot=self.config['webroot'],
@@ -365,6 +412,7 @@ class HtmlSite:
 
     def photos(self):
         """"""
+        photos = []
         order = get_order("rlatest")
             
         if order == 'alpha':
@@ -376,12 +424,19 @@ class HtmlSite:
         elif order == 'latest':
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
         elif order == 'pics':
-            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'desc')
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'count', 'desc')
         elif order == 'rpics':
-            photos = PhotosTable(DATABASE).select_group_by_order_by('count', 'count', 'asc')
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'count', 'asc')
+        elif order == "id":
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id','asc')
+        elif order == "rid":
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id','desc')
 
         #if order == "2x":
         #    self.thumb_h = self.thumb_h * 1.6
+        if len(photos) == 0:
+            photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+
 
         hasphotos, galldicts = self.galdict(photos)
 
@@ -398,8 +453,29 @@ class HtmlSite:
     def videos(self):
         """"""
         order = get_order("alpha")
-        
-        videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+        print(f"videos order {order}")
+
+        if order == 'alpha':
+            videos = VideosTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
+            print(f"videos alpha {len(videos)}")
+        elif order == 'ralpha':
+            videos = VideosTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
+            print(f"videos ralpha {len(videos)}")
+        elif order == 'rlatest': # or order == None or order in ("small", "large"):
+            videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
+            print(f"videos rlatest {len(videos)}")
+        elif order == 'latest':
+            videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
+            print(f"videos latest {len(videos)}")
+        elif order == "id":
+            videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id','asc')
+            print(f"videos id {len(videos)}")
+        elif order == "rid":
+            videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id','desc')
+            print(f"videos rid {len(videos)}")
+
+       
+        #videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
         #if order == "2x":
         #    self.thumb_h = self.thumb_h * 1.6
@@ -424,7 +500,11 @@ class HtmlSite:
             print(video2)
         except OperationalError:
             video2 = [0,0,0,0,0,0,None]
-        id, model_id, site_id, name, filename, thumb, width, height, length = video
+        if len(video) == 9:
+            id, model_id, site_id, name, filename, thumb, width, height, length = video
+        if len(video) == 10:
+            id, model_id, site_id, name, filename, thumb, poster, width, height, length = video
+            thumb = poster
         sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
         try:
             modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
@@ -479,8 +559,16 @@ class HtmlSite:
 
     def do_gallery(self, id, col, val, table, links):
         """"""
-        pset = PhotosTable(DATABASE).select_where('id', id)[0]
-        id, model_id, site_id, name, location, thumb, count = pset
+        mids = []
+        psets = PhotosTable(DATABASE).select_where('id', id)
+        #if len(psets) > 1:
+        try:
+            mids = [{'name': ModelsTable(DATABASE).select_where('id', x[1])[0][1],'href':f"/{self.dbname}/model/{x[1]}"} for x in psets]
+        except IndexError:
+            mids = [{'name': '','href':f""} for x in psets]
+
+        id, model_id, site_id, name, location, thumb, count = psets[0]
+
         sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
         try:
             modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
@@ -493,7 +581,7 @@ class HtmlSite:
         next, prev, nname, pname = PhotosTable(DATABASE).get_next_prev(id, col, val)
 
         titledict = {'site': {'href':f"/{self.dbname}/site/{site_id}", 'name':sitename}, 
-                     'model':{'href':f"/{self.dbname}/model/{model_id}", 'name':modelname},
+                     'models':mids, #{'href':f"/{self.dbname}/model/{model_id}", 'name':modelname},
                      'folder':name}
         prefix = ''
         if table is not None: prefix += table+'/'
@@ -501,7 +589,7 @@ class HtmlSite:
         
         page_dict = {'title':titledict, 'plaintitle':False, 'heading':self.config['title'], 'type':'gallery', 
                      'navigation':links, 'prefix':prefix, 'nid':next, 'pid':prev, 'next':nname, 'prev':pname, 
-                     'db':self.dbname}
+                     'db':self.dbname, 'picwidth':98}
 
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
@@ -527,9 +615,9 @@ class HtmlSite:
         
         gall = []
         url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/".replace(' ','%20')
-        #print(f"{url}")
+        print(f"{url}")
         st, out = unix(f"curl -s \"{url}\"")
-        #print(f"{out}")
+        print(f"{out}")
         for line in out.split('\n'):
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
