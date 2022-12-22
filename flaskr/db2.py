@@ -222,7 +222,7 @@ class SitesTable(Table):
 
         sql = f"select sites.id,sites.name,sites.location,count(sites.id) from sites left join photos on photos.site_id=sites.id group by sites.id  union all select sites.id,sites.name,sites.location,count(sites.id)  from sites left join videos on videos.site_id=sites.id where sites.id is null group by sites.id order by count(sites.id) {order} ;"
         result = self.get_results_list(sql, self.col_count())
-        print(f"{len(result)} {result}")
+        #print(f"{len(result)} {result}")
         return result
 
 class PhotosTable(Table):

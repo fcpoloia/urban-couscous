@@ -113,7 +113,7 @@ def do_post_get():
                 except ValueError:
                     pass # not a value page number
 
-        print(f"session {session}")
+        #print(f"session {session}")
     else:
         print(f"not a get method")
 
