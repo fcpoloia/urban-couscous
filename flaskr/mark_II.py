@@ -283,7 +283,7 @@ class HtmlSite:
         if len(models) == 0:
             models = ModelsTable(DATABASE).select_order_by('id', 'desc')
 
-        hasmodels, galldicts = self.moddict(models, pgnum=pgnum)
+        _hasmodels, galldicts = self.moddict(models, pgnum=pgnum)
 
         links = self.heading('models')
         page_dict = {
@@ -307,9 +307,9 @@ class HtmlSite:
         videos = VideosTable(DATABASE).select_where('model_id',modelid)
         modelname = ModelsTable(DATABASE).select_where('id',modelid)[0][1]
     
-        hasphotos, galldicts = self.galdict(photos, 'model', modelid)
+        _hasphotos, galldicts = self.galdict(photos, 'model', modelid)
 
-        hasvideos, viddicts = self.viddict(videos, 'model', modelid)
+        _hasvideos, viddicts = self.viddict(videos, 'model', modelid)
     
         # next/prev needs to follow sort order of models page above
         #print(f"(model) get_next_prev modelid={modelid}")
@@ -333,7 +333,7 @@ class HtmlSite:
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts,
-                               hasvideos=hasvideos, viddicts=viddicts)
+                               viddicts=viddicts)
 
     def sites(self):
         """"""
@@ -353,7 +353,7 @@ class HtmlSite:
         else:
             sites = SitesTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
 
-        hassites, galldicts = self.sitdict(sites)
+        _hassites, galldicts = self.sitdict(sites)
 
         links = self.heading('sites')
         page_dict = {
@@ -377,9 +377,9 @@ class HtmlSite:
         photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
         videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
 
-        hasphotos, galldicts = self.galdict(photos, 'site', siteid)
+        _hasphotos, galldicts = self.galdict(photos, 'site', siteid)
 
-        hasvideos, viddicts = self.viddict(videos, 'site', siteid)
+        _hasvideos, viddicts = self.viddict(videos, 'site', siteid)
 
         #print(f"(site) get_next_prev siteid={siteid}")
         nsite, psite, nname, pname = SitesTable(DATABASE).get_next_prev(siteid)
@@ -402,7 +402,7 @@ class HtmlSite:
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts,
-                               hasvideos=hasvideos, viddicts=viddicts)
+                               viddicts=viddicts)
 
     def photos(self):
         """"""
@@ -423,7 +423,7 @@ class HtmlSite:
         if len(photos) == 0:
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
-        hasphotos, galldicts = self.galdict(photos, pgnum=pgnum)
+        _hasphotos, galldicts = self.galdict(photos, pgnum=pgnum)
 
         links = self.heading('photos')
         page_dict = {
@@ -458,7 +458,7 @@ class HtmlSite:
         }
         videos = VideosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
 
-        hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
+        _hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
 
         links = self.heading('videos')
         page_dict = {
@@ -606,8 +606,8 @@ class HtmlSite:
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
                                page=page_dict,
-                               gallpage=gallery,
-                               hasedit=True, edit={'table':'photos', 'id':id})
+                               gallpage=gallery
+                               )
 
 
     def old_create_gallery(self, fld, id, count):
@@ -653,10 +653,10 @@ class HtmlSite:
         photos = PhotosTable(DATABASE).select_where_like_group_order('name', term, 'id', 'id', 'desc')
         videos = VideosTable(DATABASE).select_where_like_group_order('name', term, 'id', 'id', 'desc')
 
-        hasmodels, modeldicts = self.moddict(models)
-        hasphotos, galldicts = self.galdict(photos)
-        hasvideos, viddicts = self.viddict(videos)
-        hassites, sitedicts = self.sitdict(sites)
+        _hasmodels, modeldicts = self.moddict(models)
+        _hasphotos, galldicts = self.galdict(photos)
+        _hasvideos, viddicts = self.viddict(videos)
+        _hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
         page_dict = {
@@ -671,10 +671,10 @@ class HtmlSite:
         return render_template("search_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict, search_term=term,
-                               hasphotos=hasphotos, galldicts=galldicts,
-                               hasmodels=hasmodels, modeldicts=modeldicts,
-                               hassites=hassites, sitedicts=sitedicts,
-                               hasvideos=hasvideos, viddicts=viddicts)
+                               galldicts=galldicts,
+                               modeldicts=modeldicts,
+                               sitedicts=sitedicts,
+                               viddicts=viddicts)
 
     def random(self):
         """"""
@@ -687,10 +687,9 @@ class HtmlSite:
         photos = random_selection(photos, 8)
         videos = random_selection(videos, 4)
 
-        hasmodels, modeldicts = self.moddict(models)
-        hasphotos, galldicts = self.galdict(photos)
-        hasvideos, viddicts = self.viddict(videos)
-        #hassites, sitedicts = self.sitdict(sites)
+        _hasmodels, modeldicts = self.moddict(models)
+        _hasphotos, galldicts = self.galdict(photos)
+        _hasvideos, viddicts = self.viddict(videos)
 
         links = self.heading()
         page_dict = {
@@ -706,10 +705,9 @@ class HtmlSite:
         return render_template("search_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict, #search_term=s,
-                               hasphotos=hasphotos, galldicts=galldicts,
-                               hasmodels=hasmodels, modeldicts=modeldicts,
-                               hassites=False, #sitedicts=sitedicts,
-                               hasvideos=hasvideos, viddicts=viddicts,
+                               galldicts=galldicts,
+                               modeldicts=modeldicts,
+                               viddicts=viddicts,
                                pagetype='random')
 
 

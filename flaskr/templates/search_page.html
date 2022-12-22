@@ -8,26 +8,26 @@
 	{% endif %}
 	{% import 'macros.html' as macs %}
 	
-	{% if not hasmodels and not hasphotos %}
+	{% if not modeldicts and not galldicts %}
 		<div style="font-size:11pt; color:#ccc">No Models or Photo Sets Found</div>
 	{% endif %}
 
-	{% if hasmodels %}
+	{% if modeldicts %}
 	<h2>Models</h2>
 		{{ macs.image_span(modeldicts) }}
 	{% endif %}
 	
-	{% if hasphotos %}
+	{% if galldicts %}
 	<h2>Photo Sets</h2>
 		{{ macs.image_span(galldicts) }}
 	{% endif %}
 
-	{% if hasvideos %}
+	{% if viddicts %}
 	<h2>Videos</h2>
 		{{ macs.video_span(viddicts) }}
 	{% endif %}
 
-	{% if hassites %}
+	{% if sitedicts %}
 	<h2>Sites</h2>
 		{{ macs.image_span(sitedicts) }}
 	{% endif %}
