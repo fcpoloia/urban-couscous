@@ -57,20 +57,23 @@
 		{% endautoescape %}
 	</div>
 	<div id="title">
+		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
+        <div id="navbtn">
+			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?page={{page['pg']['prev']}}">P</a>
+		</div>
+        {% endif %}{% endif %}
+		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
+        <div id="navbtn">
+			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?page={{page['pg']['next']}}">N</a>
+		</div>
+        {% endif %}{% endif %}
+		<!-- div id="navbtn">
+			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=inc">&plus;</a>
+		</div>
 		<div id="navbtn">
-			<!--div style="margin-bottom: 6px;" -->
+			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=dec">&minus;</a>
+		</div -->
 
-				<!--form id="search_form" action="/{{page['thisurl']}}?t=u">
-					<button class="navbtn" type='submit'>&plus;</button>
-				</form -->
-				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=inc">&plus;</a>
-		</div>
-		<div id="navbtn">
-				<!--form id="search_form" action="/{{page['thisurl']}}?t=d">
-					<button class="navbtn" type='submit'>&minus;</button>
-				</form -->
-				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=dec">&minus;</a>
-		</div>
 		<div id="navbtn">
 				{% if page['prev'] %}
 				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a>
@@ -87,8 +90,8 @@
 						<input name="search" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
 					</form>
 					{% if page['type'] %}
-					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
 					<a href="/{{page['db']}}/random">Random</a>
+					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
 					<a href="/{{page['db']}}/{{page['type']}}?order=alpha">Sort Alpha</a>
 					<a href="/{{page['db']}}/{{page['type']}}?order=ralpha">Sort Alpha(R)</a>
 					<a href="/{{page['db']}}/{{page['type']}}?order=id">Sort Id</a>
@@ -112,8 +115,14 @@
 					<a href="/{{page['db']}}/{{page['type']}}?order=latest">Latest Videos</a>
 					<a href="/{{page['db']}}/{{page['type']}}?order=rlatest">Latest Videos(R)</a>
 					  {% endif %}
+					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
 					<a href="/{{page['db']}}/{{page['type']}}?size=large">Large Thumbs</a>
 					<a href="/{{page['db']}}/{{page['type']}}?size=small">Small Thumbs</a>
+					  {% endif %}
+					  {% if page['type'] in ['gallery' ] %}
+					<a href="{{page['url']}}?image=large">100%</a>
+					<a href="{{page['url']}}?image=small">25%</a>
+					  {% endif %}
 					{% endif %}
 					<!-- a href="#contact">Contact</a>
 					<a href="#custom">Custom</a>

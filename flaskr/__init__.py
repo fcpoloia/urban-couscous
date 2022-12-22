@@ -86,32 +86,57 @@ def get_search_term():
 
 def do_post_get():
     """"""
+    print(f"{request.url}")
     if request.method == 'GET':
-        s = request.args.get('size') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
-        if s in ["large", "small", "inc", "dec"]:
-            session['thumbsize'] = s
-        o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
-        if o is not None:
-            session['order'] = o
-        print(f"session {session}")
+        if len(request.query_string) == 0:
+            if 'order' in session: del session['order']
+            if 'page' in session: del session['page']
+        else:
+            print(f"request query = {request.query_string}")
+        
+            s = request.args.get('size')
+            if s in ["large", "small", "inc", "dec"]:
+                session['thumbsize'] = s
 
-@app.route("/<dbname>/gallery/model/<mid>/<pid>")
+            i = request.args.get('image')
+            if i in ["large", "small"]:
+                session['imagesize'] = i
+
+            o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
+            if o is not None:
+                session['order'] = o
+
+            p = request.args.get('page')
+            if p is not None:
+                try:
+                    session['page'] = int(p)
+                except ValueError:
+                    pass # not a value page number
+
+        print(f"session {session}")
+    else:
+        print(f"not a get method")
+
+@app.route("/<dbname>/gallery/model/<mid>/<pid>", methods=['POST', 'GET'])
 def gallery_model(dbname, pid, mid):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     links = mysite.heading('models')
     return mysite.do('do_gallery', pid, 'model_id', mid, 'model', links)
 
-@app.route("/<dbname>/gallery/site/<sid>/<pid>")
+@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
 def gallery_site(dbname, pid, sid):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     links = mysite.heading('sites')
     return mysite.do('do_gallery', pid, 'site_id', sid, 'site', links)
 
-@app.route("/<dbname>/gallery/<id>")
+@app.route("/<dbname>/gallery/<id>", methods=['POST', 'GET'])
 def gallery(dbname, id):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     links = mysite.heading('photos')
     return mysite.do('do_gallery', id, None, None, None, links)

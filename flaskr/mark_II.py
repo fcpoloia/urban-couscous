@@ -2,7 +2,7 @@
 
 # Mark II verion of the website using a different database schema
 
-from flask import Flask, render_template, session
+from flask import Flask, request, render_template, session
 import glob, os
 from subprocess import getstatusoutput as unix
 
@@ -62,6 +62,14 @@ def get_order(default):
     print(f"photos order {order}")
     return order
 
+def get_page_num(default):
+    """"""
+    page = default
+    if 'page' in session:
+        page = session['page']
+    print(f"page num {page}")
+    return page
+
 def get_config(dbname):
     """"""
     global DATABASE
@@ -108,6 +116,7 @@ class HtmlSite:
             self.errorOccured = True
         self.default_thumbsize = 120
         self.thumb_h = 120
+        self.pgcount = 500
 
     def setThumbSize(self):
         """"""
@@ -116,25 +125,25 @@ class HtmlSite:
                 session['thumb_h'] = self.default_thumbsize
             if session['thumbsize'] == "large":
                 self.thumb_h = 1.5 * self.default_thumbsize
-                print(f"thumb_h = {self.thumb_h}")
+                #print(f"thumb_h = {self.thumb_h}")
             elif session['thumbsize'] == "small":
                 self.thumb_h = self.default_thumbsize
-                print(f"thumb_h = {self.thumb_h}")
+                #print(f"thumb_h = {self.thumb_h}")
                 
             elif session['thumbsize'] == "inc":
                 session['thumb_h'] = session['thumb_h']+10
                 self.thumb_h = session['thumb_h']
-                print(f"thumb_h = {self.thumb_h}")
+                #print(f"thumb_h = {self.thumb_h}")
             elif session['thumbsize'] == "dec":
                 session['thumb_h'] = session['thumb_h']-10
                 self.thumb_h = session['thumb_h']
-                print(f"thumb_h = {self.thumb_h}")
+                #print(f"thumb_h = {self.thumb_h}")
             
 
     def do(self, method, *args):
         """"""
         try:
-            func = getattr(self, method) #(*args)
+            func = getattr(self, method)
         except AttributeError:
             print(f"AttributeError: {method} ( )")
             print(*args)
@@ -144,10 +153,11 @@ class HtmlSite:
     def heading(self, page=None):
         """"""
         links = {
-            "photos": {"href": f"/{self.dbname}/photos", "title": "Photos", 'class':'', 'rows':PhotosTable(DATABASE).row_count()},
-            "models": {"href": f"/{self.dbname}/models", "title": "Girls",  'class':'', 'rows':ModelsTable(DATABASE).row_count()},
-            "sites":  {"href": f"/{self.dbname}/sites",  "title": "Sites",  'class':'', 'rows':SitesTable(DATABASE).row_count()-1},
-            "videos": {"href": f"/{self.dbname}/videos", "title": "Videos", 'class':'', 'rows':VideosTable(DATABASE).row_count()}}
+            "photos": {"href": f"/{self.dbname}/photos", "title": "Photos", 'class':'', 'rows': PhotosTable(DATABASE).row_count() },
+            "models": {"href": f"/{self.dbname}/models", "title": "Girls",  'class':'', 'rows': ModelsTable(DATABASE).row_count() },
+            "sites":  {"href": f"/{self.dbname}/sites",  "title": "Sites",  'class':'', 'rows': SitesTable(DATABASE).row_count()-1 },
+            "videos": {"href": f"/{self.dbname}/videos", "title": "Videos", 'class':'', 'rows': VideosTable(DATABASE).row_count() } 
+            }
             
         if page is not None:
             links[page]['class'] = " page"
@@ -158,22 +168,30 @@ class HtmlSite:
         """"""
         return self.config
 
-    def moddict(self, models):
+    def page_range(self, num, total):
+        """"""
+        self.pg = {'next': num+1 if (num+1) * self.pgcount < total else 0, 
+                   'prev': num-1 if (num-1) > 0 else 0}
+        return (num-1)*self.pgcount, (num*self.pgcount)-1
+
+    def moddict(self, models, pgnum=1):
         """"""
         mdicts = []
-        for id,name,thumb in models:
+        sidx, eidx = self.page_range(pgnum, len(models))
+        for id,name,thumb in models[sidx:eidx]:
             thumburl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['models']}{thumb}"
             mdicts.append({'href':f"/{self.dbname}/model/{id}", 'src':thumburl, 'name':name, 'height':self.thumb_h})
         return (len(models) > 0), mdicts
 
 
-    def galdict(self, photos, filter='', filtid=''):
+    def galdict(self, photos, filter='', filtid='', pgnum=1):
         """"""
         filterurl=""
         if filter != '':
             filterurl = f"/{filter}/{filtid}"
         gdict = []
-        for gallery in photos[:1000]:
+        sidx, eidx = self.page_range(pgnum, len(photos))
+        for gallery in photos[sidx:eidx]:
             id, model_id, site_id, name, location, thumb, count = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}" #.replace(' ','%20')
             name = name.replace('_', ' ')[:50]
@@ -181,13 +199,14 @@ class HtmlSite:
         return (len(photos) > 0), gdict
 
 
-    def viddict(self, videos, filter='', filtid=''):
+    def viddict(self, videos, filter='', filtid='', pgnum=1):
         """"""
         filterurl=""
         if filter != '':
             filterurl=f"/{filter}/{filtid}"
         vdicts = []
-        for vid in videos:
+        sidx, eidx = self.page_range(pgnum, len(videos))
+        for vid in videos[sidx:eidx]:
             if len(vid) == 9:
                 id, model_id, site_id, name, filename, thumb, width, height, length = vid
             if len(vid) == 10:
@@ -195,7 +214,6 @@ class HtmlSite:
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}", 'src':thumb_url, 'name':name, 'theight':self.thumb_h, 
                              'w': width, 'h': height, 'mlen':human_time(length)})
-            #print(self.thumb_h)
         return (len(videos) > 0),vdicts
 
     def sitdict(self, sites):
@@ -213,18 +231,15 @@ class HtmlSite:
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
                 ordered_sites[1] = {'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h}
                 sdict.append({'href':f"/{self.dbname}/site/{id}", 'src':thumb, 'name':name, 'height':self.thumb_h})
-        #photo_ids = [k for k in ordered_sites]
-        #photo_ids.sort()
-        #photo_ids.reverse()
-        #for pid in photo_ids:
-        #    sdict.append(ordered_sites[pid])
         return (len(sites) > 0), sdict
 
 
     def models(self):
         """"""
         models = []
+        pgnum = get_page_num(1)
         order = get_order("platest")
+        if self.dbname == 'inthecrack': order = get_order("vlatest")
         
         if order == "alpha":
             models = ModelsTable(DATABASE).select_group_by_order_by('name', 'name', 'asc')
@@ -258,17 +273,14 @@ class HtmlSite:
         elif order == "rid":
             models = ModelsTable(DATABASE).select_order_by('id','desc')
 
-        #if order == "2x":
-        #    self.thumb_h = self.thumb_h * 1.6
-
         if len(models) == 0:
             models = ModelsTable(DATABASE).select_order_by('id', 'desc')
         
-        hasmodels, galldicts = self.moddict(models)
+        hasmodels, galldicts = self.moddict(models, pgnum=pgnum)
         
         links = self.heading('models')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'navigation': links, 
-                     'db':self.dbname, 'search': True, 'type':'models'}
+                     'db':self.dbname, 'search': True, 'type':'models', 'pg': self.pg}
 
         return render_template("photos.html", 
                                webroot=self.config['webroot'],
@@ -356,12 +368,6 @@ class HtmlSite:
         elif order == 'ralpha':
             sites = SitesTable(DATABASE).select_group_by_order_by('name', 'name', 'desc')
             print(f"sites ralpha {len(sites)}")
-        #elif order == 'rlatest': # or order == None or order in ("small", "large"):
-        #    sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
-        #    print(f"sites rlatest {len(sites)}")
-        #elif order == 'latest':
-        #    sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id', 'asc')
-        #    print(f"sites latest {len(sites)}")
         elif order == "id":
             sites = SitesTable(DATABASE).select_group_by_order_by('id', 'id','asc')
             print(f"sites id {len(sites)}")
@@ -373,7 +379,6 @@ class HtmlSite:
         elif order == "least":
             sites = SitesTable(DATABASE).select_sites_by_count('asc')
 
-        #sites = SitesTable(DATABASE).select_all()
 
         hassites, galldicts = self.sitdict(sites)
         
@@ -413,6 +418,7 @@ class HtmlSite:
     def photos(self):
         """"""
         photos = []
+        pgnum = get_page_num(1)
         order = get_order("rlatest")
             
         if order == 'alpha':
@@ -432,17 +438,14 @@ class HtmlSite:
         elif order == "rid":
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id','desc')
 
-        #if order == "2x":
-        #    self.thumb_h = self.thumb_h * 1.6
         if len(photos) == 0:
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
 
-
-        hasphotos, galldicts = self.galdict(photos)
+        hasphotos, galldicts = self.galdict(photos, pgnum=pgnum)
 
         links = self.heading('photos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'photos', 'navigation': links, 
-                     'db':self.dbname, 'search': True}
+                     'db':self.dbname, 'search': True, 'pg': self.pg}
 
         return render_template("photos.html", 
                                webroot=self.config['webroot'],
@@ -452,6 +455,7 @@ class HtmlSite:
 
     def videos(self):
         """"""
+        pgnum = get_page_num(1)
         order = get_order("alpha")
         print(f"videos order {order}")
 
@@ -474,17 +478,11 @@ class HtmlSite:
             videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id','desc')
             print(f"videos rid {len(videos)}")
 
-       
-        #videos = VideosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
-
-        #if order == "2x":
-        #    self.thumb_h = self.thumb_h * 1.6
-    
-        hasvideos, viddicts = self.viddict(videos)
+        hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
 
         links = self.heading('videos')
         page_dict = {'title':'', 'plaintitle':True, 'heading': self.config['title'], 'type':'videos', 'navigation': links, 
-                     'db':self.dbname, 'search': True}
+                     'db':self.dbname, 'search': True, 'pg': self.pg}
         return render_template("videos.html", 
                                webroot=self.config['webroot'],
                                page=page_dict,
@@ -510,7 +508,7 @@ class HtmlSite:
             modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
         except IndexError:
             modelname = ''
-        if DATABASE == 'flaskr/new_hegre.db':
+        if self.dbname == "hegre":
             filename = filename.replace('.avi', '.mp4')
 
         if video2[6] is not None:
@@ -587,9 +585,11 @@ class HtmlSite:
         if table is not None: prefix += table+'/'
         if val is not None: prefix += val+'/'
         
+        print(f"{session}")
         page_dict = {'title':titledict, 'plaintitle':False, 'heading':self.config['title'], 'type':'gallery', 
                      'navigation':links, 'prefix':prefix, 'nid':next, 'pid':prev, 'next':nname, 'prev':pname, 
-                     'db':self.dbname, 'picwidth':98}
+                     'db':self.dbname, 'picwidth':24 if 'imagesize' in session and session['imagesize'] == 'small' else 98,
+                     'url': request.base_url}
 
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
@@ -615,9 +615,9 @@ class HtmlSite:
         
         gall = []
         url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/".replace(' ','%20')
-        print(f"{url}")
+        #print(f"{url}")
         st, out = unix(f"curl -s \"{url}\"")
-        print(f"{out}")
+        #print(f"{out}")
         for line in out.split('\n'):
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
@@ -671,7 +671,7 @@ class HtmlSite:
         #hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
-        page_dict = {'title':'Random Selection', 'plaintitle':True, 'heading': self.config['title'], 'type':'', 
+        page_dict = {'title':'Random Selection', 'plaintitle':True, 'heading': self.config['title'], 'type':'random', 
                      'navigation': links, 
                      'db':self.dbname, 'search': True}
         
