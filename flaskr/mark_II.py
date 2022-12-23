@@ -408,7 +408,7 @@ class HtmlSite:
         """"""
         photos = []
         pgnum = get_page_num(1)
-        order = get_order("rlatest")
+        order = get_order("rid")
 
         sorting = {
             'alpha':  ('name','name','asc'),
