@@ -19,6 +19,7 @@ def getDBpath(dbname):
     """"""
     return f"flaskr/new_{dbname}.db"
 
+
 def databaseButtons():
     """"""
     sql = "SELECT title FROM config;"
@@ -35,6 +36,7 @@ def databaseButtons():
         'button_class':'fivebuttons'
     }
     return buttons, page_dict
+
 
 def random_selection(datalist, count):
     """"""
@@ -61,17 +63,20 @@ def siteRoot():
                            page=page_dict,
                            buttons=buttons)
 
+
 def get_order(order):
     """"""
     if 'order' in session:
         order = session['order']
     return order
 
+
 def get_page_num(page):
     """"""
     if 'page' in session:
         page = session['page']
     return page
+
 
 def get_config(dbname):
     """"""
@@ -113,6 +118,7 @@ class HtmlSite:
         """"""
         self.errorOccured = False
         self.dbname = dbname
+        self.pg = {'next':-1, 'prev':-1}
         try:
             self.config = get_config(dbname)
         except DatabaseMissingError:
@@ -120,6 +126,7 @@ class HtmlSite:
         self.default_thumbsize = 120
         self.thumb_h = 120
         self.pgcount = 500
+
 
     def setThumbSize(self):
         """"""
@@ -157,9 +164,11 @@ class HtmlSite:
 
         return links
 
+
     def getConfig(self):
         """"""
         return self.config
+
 
     def page_range(self, num, total):
         """"""
@@ -225,6 +234,7 @@ class HtmlSite:
                            )
         return (len(videos) > 0),vdicts
 
+
     def sitdict(self, sites):
         """"""
         ordered_sites = {}
@@ -249,6 +259,15 @@ class HtmlSite:
                               'height':self.thumb_h}
                               )
         return (len(sites) > 0), sdict
+
+
+    def init_page_dict(self, title, plaintitle, ptype, links):
+        """"""
+        return {
+            'title':title, 'db':self.dbname, 'heading':self.config['title'],
+            'plaintitle':plaintitle, 'navigation':links, 'type':ptype, 'pg':self.pg,
+            'url': request.base_url
+        }
 
 
     def models(self):
@@ -286,20 +305,15 @@ class HtmlSite:
         _hasmodels, galldicts = self.moddict(models, pgnum=pgnum)
 
         links = self.heading('models')
-        page_dict = {
-            'title': '',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'navigation': links,
-            'db': self.dbname,
-            'search': True,
-            'type': 'models',
-            'pg': self.pg
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('',True,'models',links)
+        page_dict['search'] = True
+
         return render_template("photos.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts)
+
 
     def model(self, modelid):
         """"""
@@ -316,24 +330,19 @@ class HtmlSite:
         nmodel, pmodel, nname, pname = ModelsTable(DATABASE).get_next_prev(modelid)
 
         links = self.heading('models')
-        page_dict = {
-            'title': modelname,
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'model',
-            'navigation': links,
-            'nid': nmodel,
-            'pid': pmodel,
-            'next': nname,
-            'prev': pname,
-            'db': self.dbname,
-            'thisurl': f"/{self.dbname}/model/{modelid}"
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict(modelname,True,'model',links)
+        page_dict['nid'] = nmodel
+        page_dict['pid'] = pmodel
+        page_dict['next'] = nname
+        page_dict['prev'] = pname
+
         return render_template("model_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts,
                                viddicts=viddicts)
+
 
     def sites(self):
         """"""
@@ -356,19 +365,15 @@ class HtmlSite:
         _hassites, galldicts = self.sitdict(sites)
 
         links = self.heading('sites')
-        page_dict = {
-            'title': '',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'navigation': links,
-            'db': self.dbname,
-            'search': True,
-            'type': 'sites'
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('',True,'sites',links)
+        page_dict['search'] = True
+
         return render_template("photos.html", 
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts)
+
 
     def site(self, siteid):
         """"""
@@ -385,24 +390,19 @@ class HtmlSite:
         nsite, psite, nname, pname = SitesTable(DATABASE).get_next_prev(siteid)
 
         links = self.heading('sites')
-        page_dict = {
-            'title': sitename,
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'site',
-            'navigation': links,
-            'nid': nsite,
-            'pid': psite,
-            'next': nname,
-            'prev': pname,
-            'db': self.dbname
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict(sitename,True,'site',links)
+        page_dict['nid'] = nsite
+        page_dict['pid'] = psite
+        page_dict['next'] = nname
+        page_dict['prev'] = pname
 
         return render_template("model_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts,
                                viddicts=viddicts)
+
 
     def photos(self):
         """"""
@@ -426,16 +426,10 @@ class HtmlSite:
         _hasphotos, galldicts = self.galdict(photos, pgnum=pgnum)
 
         links = self.heading('photos')
-        page_dict = {
-            'title': '',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'photos',
-            'navigation': links,
-            'db': self.dbname,
-            'search': True,
-            'pg': self.pg
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('',True,'photos',links)
+        page_dict['search'] = True
+
         return render_template("photos.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
@@ -451,8 +445,8 @@ class HtmlSite:
         sorting = {
             'alpha':   ('name','name','asc'),
             'ralpha':  ('name','name','desc'),
-            'rlatest': ('id','id','desc'),
-            'latest':  ('id','id','asc'),
+            #'rlatest': ('id','id','desc'),
+            #'latest':  ('id','id','asc'),
             'id':      ('id','id','asc'),
             'rid':     ('id','id','desc'),
         }
@@ -461,16 +455,10 @@ class HtmlSite:
         _hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
 
         links = self.heading('videos')
-        page_dict = {
-            'title': '',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'videos',
-            'navigation': links,
-            'db': self.dbname,
-            'search': True,
-            'pg': self.pg
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('',True,'videos',links)
+        page_dict['search'] = True
+
         return render_template("videos.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
@@ -537,19 +525,14 @@ class HtmlSite:
                       'name':modelname},
             'folder': name
         }
-        page_dict = {
-            'title': titledict,
-            'plaintitle': False,
-            'heading': self.config['title'],
-            'type': 'video',
-            'navigation': links,
-            'nid': nvideo,
-            'pid': pvideo,
-            'next': nname,
-            'prev': pname,
-            'prefix': prefix,
-            'db': self.dbname
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('',False,'photos',links)
+        page_dict['nid'] = nvideo
+        page_dict['pid'] = pvideo
+        page_dict['next'] = nname
+        page_dict['prev'] = pname
+        page_dict['prefix'] = prefix
+
         return render_template("video_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
@@ -587,21 +570,21 @@ class HtmlSite:
         if table is not None: prefix += table+'/'
         if val is not None: prefix += val+'/'
 
+        def picwidth():
+            if 'imagesize' in session:
+                if session['imagesize'] == 'small': return 24
+                if session['imagesize'] == 'medium': return 48
+            return 98
+
         #print(f"{session}")
-        page_dict = {
-            'title': titledict,
-            'plaintitle': False,
-            'heading': self.config['title'],
-            'type': 'gallery',
-            'navigation': links,
-            'prefix': prefix,
-            'nid': next,
-            'pid': prev,
-            'next': nname,
-            'prev': pname,
-            'db': self.dbname,
-            'picwidth': 24 if 'imagesize' in session and session['imagesize'] == 'small' else 98,
-            'url': request.base_url}
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict(titledict,False,'gallery',links)
+        page_dict['prefix'] = prefix
+        page_dict['nid'] = next
+        page_dict['pid'] = prev
+        page_dict['next'] = nname
+        page_dict['prev'] = pname
+        page_dict['picwidth'] = picwidth()
 
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
@@ -659,22 +642,19 @@ class HtmlSite:
         _hassites, sitedicts = self.sitdict(sites)
 
         links = self.heading()
-        page_dict = {
-            'title': f"Search Results for '{term}'",
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'search',
-            'navigation': links,
-            'db': self.dbname,
-            'search': True}
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict(f"Search Results for '{term}'",True,'search',links)
+        page_dict['search'] = True
 
         return render_template("search_page.html",
                                webroot=self.config['webroot'],
-                               page=page_dict, search_term=term,
+                               page=page_dict, 
+                               search_term=term,
                                galldicts=galldicts,
                                modeldicts=modeldicts,
                                sitedicts=sitedicts,
                                viddicts=viddicts)
+
 
     def random(self):
         """"""
@@ -692,15 +672,9 @@ class HtmlSite:
         _hasvideos, viddicts = self.viddict(videos)
 
         links = self.heading()
-        page_dict = {
-            'title': 'Random Selection',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': 'random',
-            'navigation': links,
-            'db': self.dbname,
-            'search': True
-        }
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict('Random Selection',True,'random',links)
+        page_dict['search'] = True
 
         return render_template("search_page.html",
                                webroot=self.config['webroot'],
@@ -721,13 +695,10 @@ class HtmlSite:
         ]
 
         links = self.heading()
-        page_dict = {
-            'title': '',
-            'plaintitle': True,
-            'heading': self.config['title'],
-            'type': '',
-            'button_class': 'fourbuttons'
-        }
+        # title plaintitle heading type
+        page_dict = self.init_page_dict('',True,'',links)
+        page_dict['button_class'] = 'fourbuttons'
+
         return render_template("intro.html", 
                                webroot=self.getConfig()['webroot'],
                                page=page_dict,

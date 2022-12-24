@@ -59,12 +59,12 @@
 	<div id="title">
 		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
         <div id="navbtn">
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?page={{page['pg']['prev']}}">P</a>
+			<a class="navbtn" href="{{page['url']}}?page={{page['pg']['prev']}}">P</a>
 		</div>
         {% endif %}{% endif %}
 		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
         <div id="navbtn">
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?page={{page['pg']['next']}}">N</a>
+			<a class="navbtn" href="{{page['url']}}?page={{page['pg']['next']}}">N</a>
 		</div>
         {% endif %}{% endif %}
 		<!-- div id="navbtn">
@@ -92,35 +92,36 @@
 					{% if page['type'] %}
 					<a href="/{{page['db']}}/random">Random</a>
 					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
-					<a href="/{{page['db']}}/{{page['type']}}?order=alpha">Sort Alpha</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=ralpha">Sort Alpha(R)</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=id">Sort Id</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=rid">Sort Id(R)</a>
+					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
+					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
+					<a href="{{page['url']}}?order=id">Sort Id</a>
+					<a href="{{page['url']}}?order=rid">Sort Id(R)</a>
 					  {% endif %}
 					  {% if page['type'] == 'photos' %}
-					<a href="/{{page['db']}}/{{page['type']}}?order=pics">Sort PicCount</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=rpics">Sort PicCount(R)</a>
+					<a href="{{page['url']}}?order=pics">Sort PicCount</a>
+					<a href="{{page['url']}}?order=rpics">Sort PicCount(R)</a>
 					  {% endif %}
 					  {% if page['type'] == 'models' %}
-					<a href="/{{page['db']}}/{{page['type']}}?order=vlatest">Latest Videos</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=rvlatest">Latest Videos(R)</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=platest">Latest Photos</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=rplatest">Latest Photos(R)</a>
+					<a href="{{page['url']}}?order=vlatest">Latest Videos</a>
+					<a href="{{page['url']}}?order=rvlatest">Latest Videos(R)</a>
+					<a href="{{page['url']}}?order=platest">Latest Photos</a>
+					<a href="{{page['url']}}?order=rplatest">Latest Photos(R)</a>
 					  {% endif %}
 					  {% if page['type'] in ['models', 'sites'] %}
-					<a href="/{{page['db']}}/{{page['type']}}?order=most">Sort Most</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=least">Sort Least</a>
+					<a href="{{page['url']}}?order=most">Sort Most</a>
+					<a href="{{page['url']}}?order=least">Sort Least</a>
 					  {% endif %}
-					  {% if page['type'] == 'videos' %}
-					<a href="/{{page['db']}}/{{page['type']}}?order=latest">Latest Videos</a>
-					<a href="/{{page['db']}}/{{page['type']}}?order=rlatest">Latest Videos(R)</a>
+					  {% if page['type'] == 'videos_not' %}
+					<a href="{{page['url']}}?order=latest">Latest Videos</a>
+					<a href="{{page['url']}}?order=rlatest">Latest Videos(R)</a>
 					  {% endif %}
 					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
-					<a href="/{{page['db']}}/{{page['type']}}?size=large">Large Thumbs</a>
-					<a href="/{{page['db']}}/{{page['type']}}?size=small">Small Thumbs</a>
+					<a href="{{page['url']}}?size=large">Large Thumbs</a>
+					<a href="{{page['url']}}?size=small">Small Thumbs</a>
 					  {% endif %}
 					  {% if page['type'] in ['gallery' ] %}
 					<a href="{{page['url']}}?image=large">100%</a>
+					<a href="{{page['url']}}?image=medium">50%</a>
 					<a href="{{page['url']}}?image=small">25%</a>
 					  {% endif %}
 					{% endif %}
