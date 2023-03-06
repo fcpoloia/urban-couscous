@@ -11,9 +11,6 @@ from sqlite3 import OperationalError
 
 DATABASE = "flaskr/new_kindgirls.db"
 
-#class SiteDB:
-#    def __init__(self, dbname):
-#        self.dbname = dbname
 
 def getDBpath(dbname):
     """"""
@@ -172,13 +169,15 @@ class HtmlSite:
 
     def page_range(self, num, total):
         """"""
-        self.pg = {'next': num+1 if (num+1) * self.pgcount < total else 0,
+        self.pg = {'next': num+1 if (num) * self.pgcount < total else 0,
                    'prev': num-1 if (num-1) > 0 else 0}
         return (num-1)*self.pgcount, (num*self.pgcount)-1
 
 
     def moddict(self, models, pgnum=1):
         """"""
+        models_count = {}
+        cmodels = ModelsTable(DATABASE).get_model_set_count()
         mdicts = []
         sidx, eidx = self.page_range(pgnum, len(models))
         for id,name,thumb in models[sidx:eidx]:
@@ -186,7 +185,8 @@ class HtmlSite:
             mdicts.append({'href': f"/{self.dbname}/model/{id}",
                            'src': thumburl,
                            'name': name,
-                           'height': self.thumb_h}
+                           'height': self.thumb_h,
+                           'count': cmodels[id]}
                            )
         return (len(models) > 0), mdicts
 
@@ -199,7 +199,7 @@ class HtmlSite:
         gdict = []
         sidx, eidx = self.page_range(pgnum, len(photos))
         for gallery in photos[sidx:eidx]:
-            id, model_id, site_id, name, location, thumb, count = gallery
+            id, model_id, site_id, name, location, thumb, count, pdate = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}" #.replace(' ','%20')
             name = name.replace('_', ' ')[:50]
             gdict.append({'href': f"/{self.dbname}/gallery{filterurl}/{id}",
@@ -219,10 +219,7 @@ class HtmlSite:
         vdicts = []
         sidx, eidx = self.page_range(pgnum, len(videos))
         for vid in videos[sidx:eidx]:
-            if len(vid) == 9:
-                id, model_id, site_id, name, filename, thumb, width, height, length = vid
-            if len(vid) == 10:
-                id, model_id, site_id, name, filename, thumb, poster, width, height, length = vid
+            id, model_id, site_id, name, filename, thumb, poster, width, height, length, vdate = vid
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
             vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{id}",
                            'src':thumb_url,
@@ -237,6 +234,8 @@ class HtmlSite:
 
     def sitdict(self, sites):
         """"""
+        sites_count = {}
+        csites = SitesTable(DATABASE).get_sites_set_count()
         ordered_sites = {}
         sdict = []
         for id,name,location in sites:
@@ -247,7 +246,8 @@ class HtmlSite:
                 sdict.append({'href':f"/{self.dbname}/site/{id}",
                               'src':thumb,
                               'name':name,
-                              'height':self.thumb_h}
+                              'height':self.thumb_h,
+                              'count': csites[id]}
                               )
             except IndexError:
                 vname = VideosTable(DATABASE).select_where_order_by('site_id', id, 'id', 'desc')[0][5]
@@ -256,7 +256,8 @@ class HtmlSite:
                 sdict.append({'href':f"/{self.dbname}/site/{id}",
                               'src':thumb,
                               'name':name,
-                              'height':self.thumb_h}
+                              'height':self.thumb_h,
+                              'count': csites[id]}
                               )
         return (len(sites) > 0), sdict
 
@@ -439,7 +440,7 @@ class HtmlSite:
     def videos(self):
         """"""
         pgnum = get_page_num(1)
-        order = get_order("alpha")
+        order = get_order("rid")
         #print(f"videos order {order}")
 
         sorting = {
@@ -451,6 +452,7 @@ class HtmlSite:
             'rid':     ('id','id','desc'),
         }
         videos = VideosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
+        print(f"len(videos) = {len(videos)}")
 
         _hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
 
@@ -458,6 +460,7 @@ class HtmlSite:
         # title plaintitle heading type | navigation db
         page_dict = self.init_page_dict('',True,'videos',links)
         page_dict['search'] = True
+        print(page_dict)
 
         return render_template("videos.html",
                                webroot=self.config['webroot'],
@@ -468,17 +471,9 @@ class HtmlSite:
     def video(self, vid, sid=None, mid=None):
         """"""
         video = VideosTable(DATABASE).select_where('id', vid)[0]
-        try:
-            sql = f"select id, model_id, site_id, name, filename, thumb, poster, width, height, length from videos2 where id = {vid};"
-            video2 = VideosTable(DATABASE).get_single_result(sql,10)
-            #print(video2)
-        except OperationalError:
-            video2 = [0,0,0,0,0,0,None]
-        if len(video) == 9:
-            id, model_id, site_id, name, filename, thumb, width, height, length = video
-        if len(video) == 10:
-            id, model_id, site_id, name, filename, thumb, poster, width, height, length = video
-            thumb = poster
+        id, model_id, site_id, name, filename, thumb, poster, width, height, length, vdate = video
+        if poster is None or poster == "":
+            poster = thumb
         sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
         try:
             modelname = ModelsTable(DATABASE).select_where('id', model_id)[0][1]
@@ -487,11 +482,7 @@ class HtmlSite:
         if self.dbname == "hegre":
             filename = filename.replace('.avi', '.mp4')
 
-        if video2[6] is not None:
-            poster = video2[6]
-            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{poster}"
-        else:
-            thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+        thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
         video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{filename}"
         if int(width) > 1280 or int(height) > 720:
             width=1280
@@ -549,7 +540,7 @@ class HtmlSite:
         except IndexError:
             mids = [{'name': '','href':f""} for x in psets]
 
-        id, model_id, site_id, name, location, thumb, count = psets[0]
+        id, model_id, site_id, name, location, thumb, count, pdate = psets[0]
 
         sitename = SitesTable(DATABASE).select_where('id', site_id)[0][1]
         try:
@@ -611,9 +602,11 @@ class HtmlSite:
         # eg. self.config['webroot']/zdata/stuff.backup/sdc1/www.hegre-art.com/members//LubaAfterAShowerGen/
 
         gall = []
-        url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/".replace(' ','%20')
+        url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/".replace(' ','%20').replace('[','\[').replace(']','\]')
         #print(f"{url}")
         st, out = unix(f"curl -s \"{url}\"")
+        if st != 0:
+            print(f"{url} - {st} {out}")
         #print(f"{out}")
         for line in out.split('\n'):
             if line.find("[IMG]") > -1:
@@ -623,6 +616,8 @@ class HtmlSite:
                              'src': imgurl,
                              'pic': img}
                              )
+        if len(gall) == 0:
+            print(f"{url} - {st} {out}")
         return gall
 
 

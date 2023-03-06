@@ -4,7 +4,7 @@
 if [ "$1" == "-ext" ]
 then
     # for external connections
-    flask --app flaskr --debug run --host=0.0.0.0
+    screen -S urban -dm flask --app flaskr --debug run --host=0.0.0.0
 
 else
     # for local only connections

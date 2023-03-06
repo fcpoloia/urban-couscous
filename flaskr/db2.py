@@ -116,7 +116,7 @@ class Query:
 class Table(BasicDB):
     def __init__(self, dbname, tblname):
         self.name = tblname
-        self.sql_all = f"SELECT * FROM {self.name} "
+        self.sql_all = f"SELECT {','.join(self.columns)} FROM {self.name} "
         self.pragma = f"pragma table_info({self.name});"
         self.connectdb(dbname)
         #self.distinct = ''
@@ -205,38 +205,72 @@ class Table(BasicDB):
 #------------------------------------------------------------------------------
 class ModelsTable(Table):
     def __init__(self, dbname):
+        self.columns = ['id','name','thumb']
         super().__init__(dbname, 'models')
 
     def select_models_by_count(self, order):
-        """list models by largest count of combined photosets and videos"""
-        sql = f"select models.id,models.name,models.thumb from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) {order};"
-        sql = f"select models.id,models.name,models.thumb,count(models.id) from models left join photos on photos.model_id=models.id group by models.id  union all select models.id,models.name,models.thumb,count(models.id)  from models left join videos on videos.model_id=models.id where models.id is null group by models.id order by count(models.id) {order} ;"
+        """finally a simpler statement to get a list of models with a count of pset+vids"""
+        sql = f"with mc as (select model_id from photos union all select model_id from videos) " \
+              f"select model_id,models.name,models.thumb,count(model_id) as c from mc join models on models.id=mc.model_id group by model_id order by c {order};"
         return self.get_results_list(sql, self.col_count())
+
+    def get_model_set_count(self):
+        """sum of photosets and videos grouped by model id"""
+        sqlp = "select models.id,count(photos.model_id) from models left join photos on photos.model_id=models.id group by models.id ;"
+        sqlv = "select models.id,count(videos.model_id) from models left join videos on videos.model_id=models.id group by models.id ;"
+        models = {}
+        for id, count in self.get_results_list(sqlp, 2):
+            models[id] = count
+        for id, count in self.get_results_list(sqlv, 2):
+            models[id] = count + models[id]
+        return models
 
 class SitesTable(Table):
     def __init__(self, dbname):
+        self.columns = ['id','name','location']
         super().__init__(dbname, 'sites')
 
-    def select_sites_by_count(self, order):
+    def Xselect_sites_by_count(self, order):
         """list sites by largest count of combined photosets and videos"""
 
-        sql = f"select sites.id,sites.name,sites.location,count(sites.id) from sites left join photos on photos.site_id=sites.id group by sites.id  union all select sites.id,sites.name,sites.location,count(sites.id)  from sites left join videos on videos.site_id=sites.id where sites.id is null group by sites.id order by count(sites.id) {order} ;"
+        sql = f"select sites.id,sites.name,sites.location,count(sites.id) from sites left join photos on photos.site_id=sites.id group by sites.id " \
+              f" union all select sites.id,sites.name,sites.location,count(sites.id)  from sites " \
+              f"left join videos on videos.site_id=sites.id where sites.id is null group by sites.id order by count(sites.id) {order} ;"
         result = self.get_results_list(sql, self.col_count())
         #print(f"{len(result)} {result}")
         return result
 
+    def select_sites_by_count(self, order):
+        """finally a simpler statement to get a list of sites with a count of pset+vids"""
+        sql = f"with mc as (select site_id from photos union all select site_id from videos) " \
+              f"select site_id,sites.name,sites.location,count(site_id) as c from mc join sites on sites.id=mc.site_id group by site_id order by c {order};"
+        return self.get_results_list(sql, self.col_count())
+
+    def get_sites_set_count(self):
+        """sum of photosets and videos grouped by model id"""
+        sqlp = "select sites.id,count(photos.site_id) from sites left join photos on photos.site_id=sites.id group by sites.id ;"
+        sqlv = "select sites.id,count(videos.site_id) from sites left join videos on videos.site_id=sites.id group by sites.id ;"
+        sites = {}
+        for id, count in self.get_results_list(sqlp, 2):
+            sites[id] = count
+        for id, count in self.get_results_list(sqlv, 2):
+            sites[id] = count + sites[id]
+        return sites
+
 class PhotosTable(Table):
     def __init__(self, dbname):
+        self.columns = ['id','model_id','site_id','name','location','thumb','count','pdate']
         super().__init__(dbname, 'photos')
 
 class VideosTable(Table):
     def __init__(self, dbname):
+        self.columns = ['id','model_id','site_id','name','filename','thumb','poster','width','height','length','vdate']
         super().__init__(dbname, 'videos')
 
 class ConfigTable(Table):
     def __init__(self, dbname):
+        self.columns = ['id','webroot','rootpath','title','images','thumbs','videos','thumbs0','models']
         super().__init__(dbname, 'config')
-
 
 
 #------------------------------------------------------------------------------
