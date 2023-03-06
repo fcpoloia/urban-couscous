@@ -512,12 +512,12 @@ class HtmlSite:
         titledict = {
             'site': {'href':f"/{self.dbname}/site/{site_id}",
                      'name':sitename},
-            'model': {'href':f"/{self.dbname}/model/{model_id}",
-                      'name':modelname},
+            'models':[{'href':f"/{self.dbname}/model/{model_id}",
+                       'name':modelname}],
             'folder': name
         }
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict('',False,'photos',links)
+        page_dict = self.init_page_dict(titledict,False,'video',links)
         page_dict['nid'] = nvideo
         page_dict['pid'] = pvideo
         page_dict['next'] = nname
