@@ -24,7 +24,7 @@ sort order(alpha,latest,most,pics)
 @app.route("/<dbname>/models", methods=['POST', 'GET'])
 @app.route("/<dbname>/model/<model>")
 @app.route("/<dbname>/sites")
-@app.route("/<dbname>/site/<site>")
+@app.route("/<dbname>/site/<site>", methods=['POST, 'GET'])
 @app.route("/<dbname>/photos", methods=['POST', 'GET'])
 @app.route("/<dbname>/videos", methods=['POST', 'GET'])
 @app.route("/<dbname>/video/<vid>")
@@ -166,9 +166,10 @@ def sites(dbname):
     mysite.setThumbSize()
     return mysite.do('sites')
 
-@app.route("/<dbname>/site/<site>")
+@app.route("/<dbname>/site/<site>", methods=['POST', 'GET'])
 def site(dbname, site):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('site', site)

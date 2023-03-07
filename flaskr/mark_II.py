@@ -379,9 +379,14 @@ class HtmlSite:
     def site(self, siteid):
         """"""
         order = get_order("alpha")
+        sorting = {'alpha': ['name','name','asc'],
+                   'ralpha':['name','name','desc'],
+                   'id':    ['id','id','asc'],
+                   'rid':   ['id','id','desc']
+                   }
         sitename = SitesTable(DATABASE).select_where('id', siteid)[0][1]
-        photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
-        videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, 'id', 'id', 'desc')
+        photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
+        videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
 
         _hasphotos, galldicts = self.galdict(photos, 'site', siteid)
 

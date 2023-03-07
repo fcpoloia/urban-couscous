@@ -91,13 +91,13 @@
 					</form>
 					{% if page['type'] %}
 					<a href="/{{page['db']}}/random">Random</a>
-					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
+					  {% if page['type'] in ['photos', 'models', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
 					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
 					<a href="{{page['url']}}?order=id">Sort Id</a>
 					<a href="{{page['url']}}?order=rid">Sort Id(R)</a>
 					  {% endif %}
-					  {% if page['type'] == 'photos' %}
+					  {% if page['type'] in ['photos'] %}
 					<a href="{{page['url']}}?order=pics">Sort PicCount</a>
 					<a href="{{page['url']}}?order=rpics">Sort PicCount(R)</a>
 					  {% endif %}
@@ -115,7 +115,7 @@
 					<a href="{{page['url']}}?order=latest">Latest Videos</a>
 					<a href="{{page['url']}}?order=rlatest">Latest Videos(R)</a>
 					  {% endif %}
-					  {% if page['type'] in ['photos', 'models', 'videos', 'sites'] %}
+					  {% if page['type'] in ['photos', 'models', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?size=large">Large Thumbs</a>
 					<a href="{{page['url']}}?size=small">Small Thumbs</a>
 					  {% endif %}
