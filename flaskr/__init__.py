@@ -99,7 +99,7 @@ def do_post_get():
                 session['thumbsize'] = s
 
             i = request.args.get('image')
-            if i in ["large", "medium", "small"]:
+            if i in ["large", "medium", "small", "thumb"]:
                 session['imagesize'] = i
 
             o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)

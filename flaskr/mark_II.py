@@ -568,6 +568,7 @@ class HtmlSite:
 
         def picwidth():
             if 'imagesize' in session:
+                if session['imagesize'] == 'thumb': return 9
                 if session['imagesize'] == 'small': return 24
                 if session['imagesize'] == 'medium': return 48
             return 98

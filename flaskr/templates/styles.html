@@ -76,7 +76,7 @@
   /* Main container */
   .overlay-image {
     position: relative;
-	margin: 2px 2px 0px 2px;
+    margin: 2px 2px 0px 2px;
     transition: .5s ease;
   }
 
@@ -86,7 +86,7 @@
   }
 
   /* Original text overlay */
-  .overlay-image .text {
+  .overlay-image .text, .overlay-image .textleft {
     color: #fff;
     font-size: 100%;
     line-height: 1.5em;
@@ -97,26 +97,13 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: clip;
-	background-color: rgba(0,0,0,0.5);
-  }
-  .overlay-image .textleft {
-    color: #fff;
-    font-size: 100%;
-    line-height: 1.5em;
-    text-shadow: 2px 2px 2px #000;
-    position: absolute;
-    bottom: -7px;
-    left: 0%;
-    transform: translate(0%, -50%);
-	padding: 1px 3px 2px 3px;
-	margin: 1px 1px 1px 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
     background-color: rgba(0,0,0,0.5);
+  }
+  .overlay-image .textleft {
+    text-align: left
   }
 
   /* Dropdown Menu */
