@@ -15,7 +15,7 @@ body {background-color: #000;
  
 a {font-family: Arial, Verdana, Geneva, Helvetica, sans-serif; font-size: 8pt; text-decoration: none;}
 
-#titlebar {width: 100%; font-size: 20pt; text-align: center; margin: 3px 0px 4px 0px; display: flex; flex-wrap: nowrap; border: 0px solid #222;}
+#titlebar, #footerbar {width: 100%; font-size: 20pt; text-align: center; margin: 0px 0px 4px 0px; display: flex; flex-wrap: nowrap; border: 0px solid #222;}
 #title {padding: 2px 0px 2px 10px;border:0px solid #222; display:flex;flex-wrap: nowrap;} /* T R B L */
 #titlecenter {flex: 4 0 auto; font-size: 18pt; padding: 2px 0px 2px 10px; border: 0px solid #222;} /* T R B L */
 

@@ -21,10 +21,16 @@ def databaseButtons():
     """"""
     sql = "SELECT title FROM config;"
     buttons = []
-    for database in glob.glob("flaskr/new*.db"):
+    names = []
+    dblist = {}
+    for database in glob.glob("flaskr/new_*.db"):
         dbname = database.replace("flaskr/new_",'').replace('.db','')
         name = ConfigTable(database).get_single_result(sql,1)[0]
-        buttons.append({'href':'/'+dbname, 'name':name})
+        dblist[dbname] = name
+        names.append(dbname)
+    names.sort()
+    for dbname in names:
+        buttons.append({'href':'/'+dbname, 'name':dblist[dbname]})
 
     page_dict = {
         'title':'',

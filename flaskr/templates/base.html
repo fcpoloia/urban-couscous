@@ -139,14 +139,16 @@
 </div>
 {% endif %}
 
+<div id="content">
  <div style="width: 100%" id="thumbnails" class="centredthumbs">
   <div style="text-align:center">
       {% block content %}{% endblock %}
   </div>
  </div>
+</div>
 
 {% if page %}
-<div id="titlebar">
+<div id="footerbar">
 	<div id="title">
   {% if page['prev'] %}
     <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
