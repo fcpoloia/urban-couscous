@@ -30,14 +30,18 @@
 {% if page %} 
 <div id="titlebar">
 	<div id="title">
-		{{page['heading']}}
+        <div id="navbtn">
+		    <a class="navbtn" href="/">{{page['heading']}}</a>
+        </div>
 	</div>
 	<div id="title">
+        <div id="navbtn">
 		{% for item in page['navigation'] %}
         {% if page['navigation'][item]['rows'] > 0 %}
-		<a class="title{{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
+		    <a class="navbtn {{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
 		{% endif %}
         {% endfor %}
+        </div>
 	</div>
 	<div id="titlecenter">
 		{% if page['plaintitle'] %}
@@ -166,9 +170,9 @@
 </div>
 {% endif %}
 
-<div id="overlay" onclick="off()">
+<!-- div id="overlay" onclick="off()">
   <div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
-</div>
+</div -->
 
 <script>
 /* When the user clicks on the button,
