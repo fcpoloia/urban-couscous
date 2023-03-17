@@ -543,6 +543,7 @@ class HtmlSite:
 
     def do_gallery(self, id, col, val, table, links):
         """"""
+        picwidth = {'thumb':9, 'small':24, 'medium':48, 'large':98}
         mids = []
         psets = PhotosTable(DATABASE).select_where('id', id)
 
@@ -559,7 +560,14 @@ class HtmlSite:
         except IndexError:
             modelname = ''
 
-        gallery = self.create_gallery(location, id, count)
+
+        def getpicwidth():
+            if 'imagesize' in session:
+                return picwidth[session['imagesize']]
+            return picwidth['large']
+
+
+        gallery = self.create_gallery(location, id, count, getpicwidth())
 
         #print(f"(do_gallery) get_next_prev pid={id} {col}={val}")
         next, prev, nname, pname = PhotosTable(DATABASE).get_next_prev(id, col, val)
@@ -572,12 +580,6 @@ class HtmlSite:
         if table is not None: prefix += table+'/'
         if val is not None: prefix += val+'/'
 
-        def picwidth():
-            if 'imagesize' in session:
-                if session['imagesize'] == 'thumb': return 9
-                if session['imagesize'] == 'small': return 24
-                if session['imagesize'] == 'medium': return 48
-            return 98
 
         #print(f"{session}")
         # title plaintitle heading type | navigation db
@@ -587,7 +589,7 @@ class HtmlSite:
         page_dict['pid'] = prev
         page_dict['next'] = nname
         page_dict['prev'] = pname
-        page_dict['picwidth'] = picwidth()
+        page_dict['picwidth'] = getpicwidth()
 
         return render_template("photo_page.html", 
                                webroot=self.config['webroot'],
@@ -609,7 +611,7 @@ class HtmlSite:
         return gall
 
 
-    def create_gallery(self, fld, id, count):
+    def create_gallery(self, fld, id, count, picsize):
         """relies on being able to downloading the list of images from the gallery server"""
         # eg. self.config['webroot']/zdata/stuff.backup/sdc1/www.hegre-art.com/members//LubaAfterAShowerGen/
 
@@ -624,8 +626,11 @@ class HtmlSite:
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
                 imgurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{img}"
+                picurl = imgurl
+                if picsize == 9:
+                    picurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/.pics/{img.replace('jpg','png')}"
                 gall.append({'href': imgurl,
-                             'src': imgurl,
+                             'src': picurl,
                              'pic': img}
                              )
         if len(gall) == 0:
