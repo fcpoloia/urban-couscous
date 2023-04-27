@@ -84,11 +84,11 @@ class Query:
     def select(self, cols):
         self.sql += f"select {cols}"
         return self
-        
+
     def _from(self, table):
         self.sql += f" from {table}"
         return self
-        
+
     def where(self, clause):
         self.sql += f" where {clause}"
         return self
@@ -100,7 +100,7 @@ class Query:
     def order_by(self, col):
         self.sql += f" order by {col}"
         return self
-        
+
     def desc(self):
         self.sql += f" desc"
         return self
@@ -111,7 +111,7 @@ class Query:
 
     def __call__(self):
         return self.sql
-        
+
 #------------------------------------------------------------------------------
 class Table(BasicDB):
     def __init__(self, dbname, tblname):
@@ -120,10 +120,10 @@ class Table(BasicDB):
         self.pragma = f"pragma table_info({self.name});"
         self.connectdb(dbname)
         #self.distinct = ''
-        
+
     def col_count(self):
         return len(self.get_results_list(self.pragma, 6))
-    
+
     def row_count(self):
         sql = f"SELECT COUNT() FROM {self.name};"
         return self.get_single_result(sql, 1)[0]
@@ -134,7 +134,7 @@ class Table(BasicDB):
         for col in res:
             columns.append(col[1])
         return columns
-        
+
     #def set_distinct(self):
     #    self.distinct = 'DISTINCT'
     #    return self
@@ -142,33 +142,37 @@ class Table(BasicDB):
 
     def select_all(self):
         return self.get_results_list(self.sql_all, self.col_count())
-        
+
     def select_where(self, column, value):
         sql = self.sql_all + f"where {column} = '{value}' "
         return self.get_results_list(sql, self.col_count())
-        
+
     def select_order_by(self, order_col, direction):
         sql = self.sql_all + f"order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
-        
+
     def select_group_by_order_by(self, group_col, order_col, direction):
         sql = self.sql_all + f" group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
-        
+
     def select_where_order_by(self, column, value, order_col, direction):
         sql = self.sql_all + f"where {column} = '{value}' order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
-        
+
+    def select_where_group_by(self, column, value, group_col):
+        sql = self.sql_all + f"where {column} = '{value}' group by {group_col} COLLATE NOCASE "
+        return self.get_results_list(sql, self.col_count())
+
     def select_where_group_by_order_by(self, column, value, group_col, order_col, direction):
         sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
-        
-    def select_by_most_recent_photos(self, col, order='desc'): 
+
+    def select_by_most_recent_photos(self, col, order='desc'):
         """this will only actually work for models table which has thumb column"""
         sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join photos on {self.name}.id=photos.{col} group by photos.{col} order by photos.id {order};"
         return self.get_results_list(sql, self.col_count()+1)
 
-    def select_by_most_recent_videos(self, col, order='desc'): 
+    def select_by_most_recent_videos(self, col, order='desc'):
         """this will only actually work for models table which has thumb column"""
         sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join videos on {self.name}.id=videos.{col} group by videos.{col} order by videos.id {order};"
         return self.get_results_list(sql, self.col_count()+1)
@@ -182,7 +186,7 @@ class Table(BasicDB):
         query = ""
         if col is not None and val is not None:
             query = f"{col}='{val}' and "
-        
+
         sql = f"SELECT id FROM {self.name} WHERE {query} id %s {id} ORDER BY id %s LIMIT 1;"
         pid = self.get_single_result(sql % ('<','desc'), 1)[0]
         nid = self.get_single_result(sql % ('>','asc'), 1)[0]
@@ -280,15 +284,15 @@ class ConfigTable(Table):
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    
+
     DATABASE = "new_kindgirls.db"
-    
+
     p = PhotosTable(DATABASE)
     print(len( p.select_all()))
     print(len( p.select_where('model_id',3)))
     print(len( p.select_where('site_id',3)))
     print(p.get_next_prev(10437))
-    
+
     v = VideosTable(DATABASE)
     print(len( v.select_all()))
     print(len( v.select_where('model_id',7)))
@@ -300,10 +304,10 @@ if __name__ == '__main__':
     c = ConfigTable(DATABASE)
     print(c.select_all())
     print(c.column_list())
-    
+
     print(len(p.select_where_like('name','mango')))
     #print(len(p.select_where_like('name','mango')))
-    
+
     q = Query()
     b = BasicDB()
     b.connectdb(DATABASE)
@@ -312,7 +316,7 @@ if __name__ == '__main__':
     print(len(res))
     for row in res:
         print(row)
-    
+
     s = SitesTable(DATABASE)
     print("select sites by count")
     print(s.select_sites_by_count('desc'))
