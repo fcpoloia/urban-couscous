@@ -24,8 +24,9 @@ CREATE TABLE IF NOT EXISTS photos
         thumb text,       /* photo set thumbnail */
         count int,        /* count of images in set */
         pdate text,       /* date yyyy-mm-dd */
-        PRIMARY KEY (id, model_id), 
+        PRIMARY KEY (id, model_id, site_id)
         FOREIGN KEY (model_id) REFERENCES models(id)
+        FOREIGN KEY (site_id) REFERENCES sites(id)
       );
 CREATE TABLE IF NOT EXISTS videos 
       ( id int NOT NULL,
@@ -39,8 +40,9 @@ CREATE TABLE IF NOT EXISTS videos
         height int,       /* video height (px) */
         length double,    /* video length (seconds) */
         vdate text,       /* date yyyy-mm-dd */
-        PRIMARY KEY (id, model_id), 
+        PRIMARY KEY (id, model_id, site_id), 
         FOREIGN KEY (model_id) REFERENCES models(id)
+        FOREIGN KEY (site_id) REFERENCES sites(id)
       );
 CREATE TABLE IF NOT EXISTS config 
       ( id int PRIMARY KEY NOT NULL, 
