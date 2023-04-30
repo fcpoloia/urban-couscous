@@ -62,7 +62,7 @@ def siteRoot():
     """"""
     buttons, page_dict = databaseButtons()
     return render_template("intro.html",
-                           webroot="http://gallery", #mysite.getConfig()['webroot'],
+                           webroot="http://"+request.host.replace(':5000',''),
                            page=page_dict,
                            buttons=buttons)
 
@@ -95,7 +95,9 @@ def get_config(dbname):
                 config[cols[i]] = vals[i]
         #print(config)
     except DatabaseMissingError:
-        raise 
+        raise
+    # fix the webroot so that it copes with both name or ip provided in url
+    config['webroot'] = "http://"+request.host.replace(':5000','')
     return config
 
 
@@ -126,8 +128,8 @@ class HtmlSite:
             self.config = get_config(dbname)
         except DatabaseMissingError:
             self.errorOccured = True
-        self.default_thumbsize = 120
-        self.thumb_h = 120
+        self.default_thumbsize = 240
+        self.thumb_h = 240
         self.pgcount = 500
 
 
@@ -137,9 +139,9 @@ class HtmlSite:
             if 'thumb_h' not in session:
                 session['thumb_h'] = self.default_thumbsize
             if session['thumbsize'] == "large":
-                self.thumb_h = 1.5 * self.default_thumbsize
-            elif session['thumbsize'] == "small":
                 self.thumb_h = self.default_thumbsize
+            elif session['thumbsize'] == "small":
+                self.thumb_h = self.default_thumbsize / 1.5
 
 
     def do(self, method, *args):
@@ -182,7 +184,6 @@ class HtmlSite:
 
     def moddict(self, models, pgnum=1):
         """"""
-        models_count = {}
         cmodels = ModelsTable(DATABASE).get_model_set_count()
         mdicts = []
         sidx, eidx = self.page_range(pgnum, len(models))
@@ -206,11 +207,11 @@ class HtmlSite:
         sidx, eidx = self.page_range(pgnum, len(photos))
         for gallery in photos[sidx:eidx]:
             id, model_id, site_id, name, location, thumb, count, pdate = gallery
-            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}" #.replace(' ','%20')
-            name = name.replace('_', ' ')[:50]
+            thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
+            #name = name.replace('_', ' ')[:50]
             gdict.append({'href': f"/{self.dbname}/gallery{filterurl}/{id}",
                           'src': thumb,
-                          'name': name,
+                          'name': name.replace('_', ' ')[:50],
                           'height': self.thumb_h,
                           'count': count}
                           )
@@ -281,7 +282,7 @@ class HtmlSite:
         """"""
         models = []
         pgnum = get_page_num(1)
-        order = get_order("platest")
+        order = get_order("most")
         if self.dbname == 'inthecrack': order = get_order("vlatest")
 
         order_by = {
@@ -324,14 +325,32 @@ class HtmlSite:
 
     def model(self, modelid):
         """"""
-        photos = PhotosTable(DATABASE).select_where('model_id',modelid)
-        videos = VideosTable(DATABASE).select_where('model_id',modelid)
+        order = get_order('alpha')
+
+        order_by = {
+            'alpha': 'asc', 'ralpha': 'desc',
+            'id': 'asc',    'rid': 'desc',
+            'date': 'asc',  'rdate': 'desc'
+            }
+        unsorted_photos = PhotosTable(DATABASE).select_where_group_by('model_id',modelid,'id')
+        #    id, model_id, site_id, name, location, thumb, count, pdate = gallery
+        if order == 'alpha' or order == 'ralpha':
+            photos = sorted(unsorted_photos, key = lambda x: x[3])
+        elif order == 'id' or order == 'rid':
+            photos = sorted(unsorted_photos, key = lambda x: x[0])
+        elif order == 'date' or order == 'rdate':
+            photos = sorted(unsorted_photos, key = lambda x: x[7])
+
+        if order_by[order] == 'desc':
+            photos.reverse()
+
+        videos = VideosTable(DATABASE).select_where_group_by('model_id',modelid,'id')
         modelname = ModelsTable(DATABASE).select_where('id',modelid)[0][1]
-    
+
         _hasphotos, galldicts = self.galdict(photos, 'model', modelid)
 
         _hasvideos, viddicts = self.viddict(videos, 'model', modelid)
-    
+
         # next/prev needs to follow sort order of models page above
         #print(f"(model) get_next_prev modelid={modelid}")
         nmodel, pmodel, nname, pname = ModelsTable(DATABASE).get_next_prev(modelid)
@@ -376,7 +395,7 @@ class HtmlSite:
         page_dict = self.init_page_dict('',True,'sites',links)
         page_dict['search'] = True
 
-        return render_template("photos.html", 
+        return render_template("photos.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=galldicts)
@@ -388,10 +407,15 @@ class HtmlSite:
         sorting = {'alpha': ['name','name','asc'],
                    'ralpha':['name','name','desc'],
                    'id':    ['id','id','asc'],
-                   'rid':   ['id','id','desc']
+                   'rid':   ['id','id','desc'],
+                   'date':   ['pdate','pdate','asc'],
+                   'rdate':  ['pdate','pdate','desc']
                    }
         sitename = SitesTable(DATABASE).select_where('id', siteid)[0][1]
         photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
+        if order in ['date', 'rdate']:
+            sorting[order][0] = "vdate"
+            sorting[order][1] = "vdate"
         videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
 
         _hasphotos, galldicts = self.galdict(photos, 'site', siteid)
@@ -428,9 +452,13 @@ class HtmlSite:
             'pics':   ('id','count','desc'),
             'rpics':  ('id','count','asc'),
             'id':     ('id','id','asc'),
-            'rid':    ('id','id','desc')
+            'rid':    ('id','id','desc'),
+            'date':   ('pdate','pdate','asc'),
+            'rdate':  ('pdate','pdate','desc')
         }
-        photos = PhotosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
+        #photos = PhotosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
+        #photos = PhotosTable(DATABASE).select_group_by_order_by('site_id', sorting[order][1], sorting[order][2])
+        photos = PhotosTable(DATABASE).select_order_by(sorting[order][1], sorting[order][2])
 
         if len(photos) == 0:
             photos = PhotosTable(DATABASE).select_group_by_order_by('id', 'id', 'desc')
@@ -461,8 +489,12 @@ class HtmlSite:
             #'latest':  ('id','id','asc'),
             'id':      ('id','id','asc'),
             'rid':     ('id','id','desc'),
+            'date':    ('vdate','vdate','asc'),
+            'rdate':   ('vdate','vdate','desc'),
         }
-        videos = VideosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
+        #videos = VideosTable(DATABASE).select_group_by_order_by(sorting[order][0], sorting[order][1], sorting[order][2])
+        #videos = VideosTable(DATABASE).select_group_by_order_by('name', sorting[order][1], sorting[order][2])
+        videos = VideosTable(DATABASE).select_order_by(sorting[order][1], sorting[order][2])
         print(f"len(videos) = {len(videos)}")
 
         _hasvideos, viddicts = self.viddict(videos, pgnum=pgnum)
@@ -544,6 +576,7 @@ class HtmlSite:
     def do_gallery(self, id, col, val, table, links):
         """"""
         picwidth = {'thumb':9, 'small':24, 'medium':48, 'large':98}
+        columns = {'thumb':11, 'small':4, 'medium':2, 'large':1}
         mids = []
         psets = PhotosTable(DATABASE).select_where('id', id)
 
@@ -565,6 +598,11 @@ class HtmlSite:
             if 'imagesize' in session:
                 return picwidth[session['imagesize']]
             return picwidth['large']
+
+        def getcolumns():
+            if 'imagesize' in session:
+                return columns[session['imagesize']]
+            return columns['large']
 
 
         gallery = self.create_gallery(location, id, count, getpicwidth())
@@ -589,9 +627,11 @@ class HtmlSite:
         page_dict['pid'] = prev
         page_dict['next'] = nname
         page_dict['prev'] = pname
+        page_dict['count'] = len(gallery)
+        page_dict['columns'] = getcolumns()
         page_dict['picwidth'] = getpicwidth()
 
-        return render_template("photo_page.html", 
+        return render_template("photo_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
                                gallpage=gallery
@@ -605,7 +645,7 @@ class HtmlSite:
             n = i+1
             pic = os.path.basename(fld)
             image = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{pic}_{n}.jpg"
-            gall.append({'href':image, 
+            gall.append({'href':image,
                          'src':image}
                          )
         return gall
@@ -660,7 +700,7 @@ class HtmlSite:
 
         return render_template("search_page.html",
                                webroot=self.config['webroot'],
-                               page=page_dict, 
+                               page=page_dict,
                                search_term=term,
                                galldicts=galldicts,
                                modeldicts=modeldicts,
@@ -711,7 +751,7 @@ class HtmlSite:
         page_dict = self.init_page_dict('',True,'',links)
         page_dict['button_class'] = 'fourbuttons'
 
-        return render_template("intro.html", 
+        return render_template("intro.html",
                                webroot=self.getConfig()['webroot'],
                                page=page_dict,
                                buttons=buttons)
