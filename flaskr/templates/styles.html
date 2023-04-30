@@ -32,6 +32,10 @@
   #titlebar { position: fixed; top: 0; z-index: 99; background: black; }
   #content { z-index: 9; overflow: hidden; position; relative; padding-top: 32px; }
 
+  /*.grid-container { column-width: auto ; column-count: 4; column-gap: 0.25rem;}*/
+
+  body { display: flex; flex-direction: column; }
+
   @media only screen and (max-width: 1024px) { 
     body { background: blue; } 
     :root { --menu_font_size: 10pt; --thm_text: 7pt; } 
@@ -60,7 +64,7 @@
   .overlay-image:hover { opacity: 0.75; transition: .5s ease; }
 
   /* Main container */
-  .overlay-image { position: relative; margin: 2px 2px 0px 2px; transition: .5s ease; }
+  .overlay-image { display: inline-block; position: relative; margin: 2px 2px 0px 2px; transition: .5s ease; }
 
   /* Original image */
   .overlay-image .image { display: block; }
