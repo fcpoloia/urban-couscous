@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-	<style>  .overlay-image:hover { opacity: 1.0; } </style>
+	<style>  
+      .overlay-image:hover { opacity: 1.0; } 
+      .grid-container { column-width: auto ; column-count: {{page.columns}}; 
+          column-gap: 0.1rem; column-fill: balance;}
+    </style>
 
-	<div class="centredthumbs">
+	<div class="centredthumbs grid-container">
 		{% for item in gallpage %}
-		<div class="overlay-image" style="max-width:{{page.picwidth}}%"><a href="{{item.href}}">
-		  <img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" />
+		<div class="overlay-image grid-item grid-item-1" /*style="max-width:{{page.picwidth}}%"*/ style="max-width:100%">
+        <a href="{{item.href}}">
+		  <img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="width: 100%" />
 		  <div class="textleft">{{item.pic}}</div>
 		</a></div>
 		{% endfor %}
