@@ -54,7 +54,7 @@ def not_found(error):
     buttons, page_dict = databaseButtons()
     resp = make_response(render_template('error.html',
                                          error=error,
-                                         page=page_dict, 
+                                         page=page_dict,
                                          buttons=buttons,
                                          ), 404)
     resp.headers['X-Something'] = 'A value'
@@ -93,7 +93,7 @@ def do_post_get():
             if 'page' in session: del session['page']
         else:
             print(f"request query = {request.query_string}")
-        
+
             s = request.args.get('size')
             if s in ["large", "small", "inc", "dec"]:
                 session['thumbsize'] = s
@@ -150,9 +150,10 @@ def models(dbname):
     mysite.setThumbSize()
     return mysite.do('models')
 
-@app.route("/<dbname>/model/<model>")
+@app.route("/<dbname>/model/<model>", methods=['POST', 'GET'])
 def model(dbname, model):
     """"""
+    do_post_get()
     mysite = page_factory(dbname)
     mysite.setThumbSize()
     return mysite.do('model', model)
