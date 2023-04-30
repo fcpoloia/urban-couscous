@@ -45,17 +45,17 @@
 	</div>
 	<div id="titlecenter">
 		{% if page['plaintitle'] %}
-		{{page['title']}}
+          {{page['title']}}
 		{% else %}{% if page['title'] %}
-		<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-        {% if page['title']['models'] %}
-        {% for model in page['title']['models'] %}
-		<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
-        {% endfor %}
-        {% else %}
-		<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
-        {% endif %}
-		{{page['title']['folder']}}
+		  <a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
+          {% if page['title']['models'] %}
+            {% for model in page['title']['models'] %}
+		      <a class="title2" href="{{model['href']}}">{{model['name']}}</a>
+            {% endfor %}
+          {% else %}
+		    <a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
+          {% endif %}
+		  {{page['title']['folder']}} ({{page['count']}} pics)
 		{% endif %}{% endif %}
 		{% autoescape false %}
 		{% endautoescape %}
@@ -95,11 +95,15 @@
 					</form>
 					{% if page['type'] %}
 					<a href="/{{page['db']}}/random">Random</a>
-					  {% if page['type'] in ['photos', 'models', 'videos', 'sites', 'site'] %}
+					  {% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
 					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
 					<a href="{{page['url']}}?order=id">Sort Id</a>
 					<a href="{{page['url']}}?order=rid">Sort Id(R)</a>
+					  {% endif %}
+					  {% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
+					<a href="{{page['url']}}?order=date">Sort Date</a>
+					<a href="{{page['url']}}?order=rdate">Sort Date(R)</a>
 					  {% endif %}
 					  {% if page['type'] in ['photos'] %}
 					<a href="{{page['url']}}?order=pics">Sort PicCount</a>
@@ -115,11 +119,11 @@
 					<a href="{{page['url']}}?order=most">Sort Most</a>
 					<a href="{{page['url']}}?order=least">Sort Least</a>
 					  {% endif %}
-					  {% if page['type'] == 'videos_not' %}
+					  {% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
 					<a href="{{page['url']}}?order=latest">Latest Videos</a>
 					<a href="{{page['url']}}?order=rlatest">Latest Videos(R)</a>
 					  {% endif %}
-					  {% if page['type'] in ['photos', 'models', 'videos', 'sites', 'site'] %}
+					  {% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?size=large">Large Thumbs</a>
 					<a href="{{page['url']}}?size=small">Small Thumbs</a>
 					  {% endif %}
