@@ -213,7 +213,8 @@ class HtmlSite:
                           'src': thumb,
                           'name': name.replace('_', ' ')[:50],
                           'height': self.thumb_h,
-                          'count': count}
+                          'count': count,
+                          'basename': os.path.basename(location)}
                           )
         return (len(photos) > 0), gdict
 
@@ -234,7 +235,8 @@ class HtmlSite:
                            'theight':self.thumb_h,
                            'w': width,
                            'h': height,
-                           'mlen':human_time(length)}
+                           'mlen':human_time(length),
+                           'basename': os.path.basename(filename)}
                            )
         return (len(videos) > 0),vdicts
 
@@ -403,7 +405,7 @@ class HtmlSite:
 
     def site(self, siteid):
         """"""
-        order = get_order("alpha")
+        order = get_order("rdate")
         sorting = {'alpha': ['name','name','asc'],
                    'ralpha':['name','name','desc'],
                    'id':    ['id','id','asc'],
@@ -412,11 +414,11 @@ class HtmlSite:
                    'rdate':  ['pdate','pdate','desc']
                    }
         sitename = SitesTable(DATABASE).select_where('id', siteid)[0][1]
-        photos = PhotosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
+        photos = PhotosTable(DATABASE).select_where_order_by('site_id', siteid, sorting[order][0], sorting[order][2])
         if order in ['date', 'rdate']:
             sorting[order][0] = "vdate"
             sorting[order][1] = "vdate"
-        videos = VideosTable(DATABASE).select_where_group_by_order_by('site_id', siteid, sorting[order][0], sorting[order][1], sorting[order][2])
+        videos = VideosTable(DATABASE).select_where_order_by('site_id', siteid, sorting[order][0], sorting[order][2])
 
         _hasphotos, galldicts = self.galdict(photos, 'site', siteid)
 
@@ -594,18 +596,18 @@ class HtmlSite:
             modelname = ''
 
 
-        def getpicwidth():
-            if 'imagesize' in session:
-                return picwidth[session['imagesize']]
-            return picwidth['large']
+        #def getpicwidth():
+        #    if 'imagesize' in session:
+        #        return picwidth[session['imagesize']]
+        #    return picwidth['large']
 
-        def getcolumns():
-            if 'imagesize' in session:
-                return columns[session['imagesize']]
-            return columns['large']
+        #def getcolumns():
+        #    if 'imagesize' in session:
+        #        return columns[session['imagesize']]
+        #    return columns['large']
 
 
-        gallery = self.create_gallery(location, id, count, getpicwidth())
+        gallery = self.create_gallery(location, id, count, False)
 
         #print(f"(do_gallery) get_next_prev pid={id} {col}={val}")
         next, prev, nname, pname = PhotosTable(DATABASE).get_next_prev(id, col, val)
@@ -628,8 +630,8 @@ class HtmlSite:
         page_dict['next'] = nname
         page_dict['prev'] = pname
         page_dict['count'] = len(gallery)
-        page_dict['columns'] = getcolumns()
-        page_dict['picwidth'] = getpicwidth()
+        page_dict['columns'] = 4; #getcolumns()
+        #page_dict['picwidth'] = getpicwidth()
 
         return render_template("photo_page.html",
                                webroot=self.config['webroot'],
@@ -651,7 +653,7 @@ class HtmlSite:
         return gall
 
 
-    def create_gallery(self, fld, id, count, picsize):
+    def create_gallery(self, fld, id, count, use_thms=False):
         """relies on being able to downloading the list of images from the gallery server"""
         # eg. self.config['webroot']/zdata/stuff.backup/sdc1/www.hegre-art.com/members//LubaAfterAShowerGen/
 
@@ -667,7 +669,7 @@ class HtmlSite:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
                 imgurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{img}"
                 picurl = imgurl
-                if picsize == 9:
+                if use_thms:
                     picurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/.pics/{img.replace('jpg','png')}"
                 gall.append({'href': imgurl,
                              'src': picurl,

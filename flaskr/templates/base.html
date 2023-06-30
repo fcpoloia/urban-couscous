@@ -22,6 +22,8 @@
  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
  <link rel="manifest" href="/static/site.webmanifest">
 
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
 {% include "styles.html" %}
  
 </head>
@@ -30,47 +32,48 @@
 {% if page %} 
 <div id="titlebar">
 	<div id="title">
-        <div id="navbtn">
-		    <a class="navbtn" href="/">{{page['heading']}}</a>
-        </div>
+		<div id="navbtn">
+			<a class="navbtn" href="/">{{page['heading']}}</a>
+		</div>
 	</div>
 	<div id="title">
-        <div id="navbtn">
-		{% for item in page['navigation'] %}
-        {% if page['navigation'][item]['rows'] > 0 %}
-		    <a class="navbtn {{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
-		{% endif %}
-        {% endfor %}
-        </div>
+		<div id="navbtn">
+			{% for item in page['navigation'] %}
+				{% if page['navigation'][item]['rows'] > 0 %}
+				<a class="navbtn {{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
+				{% endif %}
+			{% endfor %}
+		</div>
 	</div>
 	<div id="titlecenter">
 		{% if page['plaintitle'] %}
-          {{page['title']}}
+			{{page['title']}}
 		{% else %}{% if page['title'] %}
-		  <a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-          {% if page['title']['models'] %}
-            {% for model in page['title']['models'] %}
-		      <a class="title2" href="{{model['href']}}">{{model['name']}}</a>
-            {% endfor %}
-          {% else %}
-		    <a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
-          {% endif %}
-		  {{page['title']['folder']}} ({{page['count']}} pics)
+			<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
+			{% if page['title']['models'] %}
+				{% for model in page['title']['models'] %}
+					<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
+				{% endfor %}
+			{% else %}
+				<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
+			{% endif %}
+			{{page['title']['folder']}} 
+            {% if page['type'] not in ['video'] %} ({{page['count']}} pics) {% endif %}
 		{% endif %}{% endif %}
 		{% autoescape false %}
 		{% endautoescape %}
 	</div>
 	<div id="title">
 		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
-        <div id="navbtn">
-			<a class="navbtn" href="{{page['url']}}?page={{page['pg']['prev']}}">P</a>
-		</div>
-        {% endif %}{% endif %}
+			<div id="navbtn">
+				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['prev']}}">P</a>
+			</div>
+		{% endif %}{% endif %}
 		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
-        <div id="navbtn">
-			<a class="navbtn" href="{{page['url']}}?page={{page['pg']['next']}}">N</a>
-		</div>
-        {% endif %}{% endif %}
+			<div id="navbtn">
+				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['next']}}">N</a>
+			</div>
+		{% endif %}{% endif %}
 		<!-- div id="navbtn">
 			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=inc">&plus;</a>
 		</div>
@@ -79,6 +82,13 @@
 		</div -->
 
 		<div id="navbtn">
+		    {% if page['type'] in ['gallery'] %}
+				<button id="morecols" class="navbtn">+C</button> <!-- href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a> -->
+
+				<button id="lesscols" class="navbtn">-C</button> <!-- href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a> -->
+				{% endif %}
+
+
 				{% if page['prev'] %}
 				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a>
 				{% endif %}
@@ -95,44 +105,44 @@
 					</form>
 					{% if page['type'] %}
 					<a href="/{{page['db']}}/random">Random</a>
-					  {% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
+						{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
 					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
 					<a href="{{page['url']}}?order=id">Sort Id</a>
 					<a href="{{page['url']}}?order=rid">Sort Id(R)</a>
-					  {% endif %}
-					  {% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
+						{% endif %}
+						{% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
 					<a href="{{page['url']}}?order=date">Sort Date</a>
 					<a href="{{page['url']}}?order=rdate">Sort Date(R)</a>
-					  {% endif %}
-					  {% if page['type'] in ['photos'] %}
+						{% endif %}
+						{% if page['type'] in ['photos'] %}
 					<a href="{{page['url']}}?order=pics">Sort PicCount</a>
 					<a href="{{page['url']}}?order=rpics">Sort PicCount(R)</a>
-					  {% endif %}
-					  {% if page['type'] == 'models' %}
+						{% endif %}
+						{% if page['type'] == 'models' %}
 					<a href="{{page['url']}}?order=vlatest">Latest Videos</a>
 					<a href="{{page['url']}}?order=rvlatest">Latest Videos(R)</a>
 					<a href="{{page['url']}}?order=platest">Latest Photos</a>
 					<a href="{{page['url']}}?order=rplatest">Latest Photos(R)</a>
-					  {% endif %}
-					  {% if page['type'] in ['models', 'sites'] %}
+						{% endif %}
+						{% if page['type'] in ['models', 'sites'] %}
 					<a href="{{page['url']}}?order=most">Sort Most</a>
 					<a href="{{page['url']}}?order=least">Sort Least</a>
-					  {% endif %}
-					  {% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
+						{% endif %}
+						{% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
 					<a href="{{page['url']}}?order=latest">Latest Videos</a>
 					<a href="{{page['url']}}?order=rlatest">Latest Videos(R)</a>
-					  {% endif %}
-					  {% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
+						{% endif %}
+						{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?size=large">Large Thumbs</a>
 					<a href="{{page['url']}}?size=small">Small Thumbs</a>
-					  {% endif %}
-					  {% if page['type'] in ['gallery' ] %}
+						{% endif %}
+						{% if page['type'] in ['not_gallery' ] %}
 					<a href="{{page['url']}}?image=large">100%</a>
 					<a href="{{page['url']}}?image=medium">50%</a>
 					<a href="{{page['url']}}?image=small">25%</a>
 					<a href="{{page['url']}}?image=thumb">10%</a>
-					  {% endif %}
+						{% endif %}
 					{% endif %}
 					<!-- a href="#contact">Contact</a>
 					<a href="#custom">Custom</a>
@@ -148,26 +158,26 @@
 {% endif %}
 
 <div id="content">
- <div style="width: 100%" id="thumbnails" class="centredthumbs">
-  <div style="text-align:center">
-      {% block content %}{% endblock %}
-  </div>
- </div>
+	<div style="width: 100%" id="thumbnails" class="centredthumbs">
+		<div style="text-align:center">
+			{% block content %}{% endblock %}
+		</div>
+	</div>
 </div>
 
 {% if page %}
 <div id="footerbar">
 	<div id="title">
-  {% if page['prev'] %}
-    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
-  {% endif %}
+	{% if page['prev'] %}
+		<a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
+	{% endif %}
 	</div>
 	<div id="titlecenter">
 	</div>
 	<div id="title">
-  {% if page['next'] %}
-    <a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
-  {% endif %}
+	{% if page['next'] %}
+		<a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
+	{% endif %}
 	</div>
 	<div id="title">
 	</div>
@@ -175,40 +185,56 @@
 {% endif %}
 
 <!-- div id="overlay" onclick="off()">
-  <div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
+	<div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
 </div -->
 
 <script>
 /* When the user clicks on the button,
 toggle between hiding and showing the dropdown content */
 function myFunction() {
-  document.getElementById("myDropdown").classList.toggle("show");
+	document.getElementById("myDropdown").classList.toggle("show");
 }
 
 function filterFunction() {
-  var input, filter, ul, li, a, i;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  div = document.getElementById("myDropdown");
-  a = div.getElementsByTagName("a");
-  for (i = 0; i < a.length; i++) {
-    txtValue = a[i].textContent || a[i].innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      a[i].style.display = "";
-    } else {
-      a[i].style.display = "none";
-    }
-  }
+	var input, filter, ul, li, a, i;
+	input = document.getElementById("myInput");
+	filter = input.value.toUpperCase();
+	div = document.getElementById("myDropdown");
+	a = div.getElementsByTagName("a");
+	for (i = 0; i < a.length; i++) {
+		txtValue = a[i].textContent || a[i].innerText;
+		if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			a[i].style.display = "";
+		} else {
+			a[i].style.display = "none";
+		}
+	}
 }
-</script>
+$(document).ready(function(){
+  $("button#lesscols").click(function(){
+		let cols = $("div#photos").css("column-count");
+		let lcols = cols.valueOf();
+		lcols--;
+    $("div#photos").css("column-count", lcols);
+  });
+  $("button#morecols").click(function(){
+		let cols= $("div#photos").css("column-count");
+		let mcols = cols.valueOf();
+		mcols++; /* = (mcols.valueOf() + 1).valueOf();*/
+    $("div#photos").css("column-count", mcols);
+  });
+});
 
-<script>
+function testerFunction() {
+    alert (document.getElementsByClassName('.grid-container').style.backgroundColor);  
+}
+
 function on() {
-  document.getElementById("overlay").style.display = "block";
+	document.getElementById("overlay").style.display = "block";
 }
 
 function off() {
-  document.getElementById("overlay").style.display = "none";
+	document.getElementById("overlay").style.display = "none";
 }
 </script>
 
