@@ -1,9 +1,34 @@
  <style>
-  :root{ --menu_font_size: 14pt; --thm_text:8pt; }
+  @charset "iso-8859-1";
+ 
+  body { background-color: #000;
+         color: #fff;
+         font-family: Arial, Helvetica, Geneva, Verdana, sans-serif;
+         font-size: 8pt;
+         padding: 0px 0px 0px 0px;
+         margin: 0px 0px 0px 0px;
+  }
+
+
+.centredthumbs {margin: 0 auto; /*display: flex; flex-wrap: wrap;*/ justify-content: center; padding: 0px;}
+.thumbnails {padding: 0px; margin: 0px; width: 100%; height: 100%;}
+
+#thumbnails span {padding: 0px; text-align: center; color: #fff; font-size: 8pt; }
+#thumbnails span a {font-size: 8pt; color: #fff;
+                    text-shadow: 2px 2px 4px #000, -2px 2px 4px #000, 2px -2px 4px #000, -2px -2px 4px #000; 
+                   }
+#thumbnails img       {margin-bottom: .25em;}
+#thumbnails a:link    {color: #fff;}
+#thumbnails a:visited {color: #fff;}
+#thumbnails a:hover   {color: #ccc; /*#f47c0e;*/}
+
+
+ :root{ --menu_font_size: 14pt; --thm_text:8pt; }
+  a {font-family: Arial, Verdana, Geneva, Helvetica, sans-serif; font-size: 8pt; text-decoration: none;}
   a img {background-color:#fff;}
   a.navbtn,button.navbtn  {font-size: var(--menu_font_size); color:#aaa; background-color: #A50; padding:3px 6px; border-radius:3px; border: 0px;}
   a.navbtn:hover,button.navbtn:hover {color:#333;}
-  #navbtn {padding: 0px 4px 0px 4px;} 
+  #navbtn {padding: 4px 4px 0px 4px;} 
   a.nav     {font-size: var(--menu_font_size); color:#aaa;}
   a.nav:hover    {color:#A50;}
   a.hide    {display:none;}
@@ -26,35 +51,24 @@
   span.thumspan {padding:3px; overflow: hidden;}
 
   #titlebar, #footerbar {width: 100%; font-size: var(--menu_font_size); text-align: center; margin: 0px 0px 4px 0px; display: flex; flex-wrap: nowrap; border: 0px solid #222; padding-top:3px; padding-bottom:3px;}
-  #title {padding: 2px 0px 2px 10px; border:0px solid #222; display:flex; flex-wrap: nowrap;} /* T R B L */
-  #titlecenter {flex: 4 0 auto; font-size: var(--menu_font_size); padding: 2px 0px 2px 10px; border: 0px solid #222;} /* T R B L */
-
+  #title {padding: 2px 0px 2px 10px; border:0px solid #222; display:flex; flex-wrap: nowrap; z-index: 105;} /* T R B L */
+  #titlecenter {flex: 4 0 auto; font-size: var(--menu_font_size); padding: 6px 0px 2px 10px; border: 0px solid #222;} /* T R B L */
+  #titlemiddle {width:100%; position: absolute;  z-index: 100; top: 9px; color: #fff; text-align:center; font-size: var(--menu_font_size);}
   #titlebar { position: fixed; top: 0; z-index: 99; background: black; }
-  #content { z-index: 9; overflow: hidden; position; relative; padding-top: 32px; }
+  #content { z-index: 9; overflow: hidden; position; relative; padding-top: 42px; }
 
-  /*.grid-container { column-width: auto ; column-count: 4; column-gap: 0.25rem;}*/
 
-  body { display: flex; flex-direction: column; }
 
   @media only screen and (max-width: 1024px) { 
     body { background: blue; } 
     :root { --menu_font_size: 10pt; --thm_text: 7pt; } 
-    #content {padding-top: 28px;} 
+    #content {padding-top: 32px;} 
   }
   @media only screen and (max-width: 900px) { 
     body { background: red; } 
     :root { --menu_font_size: 9pt; --thm_text: 6pt; } 
     #content { padding-top: 25px; } 
   }
-
-/*  .center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-  }*/
 
   /*****************************************/
   /* new thumb image links with truncating */
@@ -64,7 +78,7 @@
   .overlay-image:hover { opacity: 0.75; transition: .5s ease; }
 
   /* Main container */
-  .overlay-image { display: inline-block; position: relative; margin: -5px -3px 0px 0px; transition: .5s ease; }
+  .overlay-image { display: inline-block; position: relative; margin: -4px -2px 0px 0px; transition: .5s ease; }
 
   /* Original image */
   .overlay-image .image { display: block; }
@@ -74,7 +88,7 @@
     color: #fff;
     font-size: var(--thm_text);
     line-height: 1.5em;
-    text-shadow: 2px 2px 2px #000;
+    text-shadow: 1px 1px 0px rgba(0,0,0,.7) /*2px 2px 2px #ccc/*#000*/;
     text-align: center;
     position: absolute;
     bottom: -6px;
@@ -84,7 +98,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.05);
   }
   .overlay-image .textleft { text-align: left }
 
@@ -95,9 +109,11 @@
     background-position: 14px 12px;
     background-repeat: no-repeat;
     font-size: 16px;
-    padding: 6px 6px 6px 16px;
-    border: none;
-    border-bottom: 1px solid #ddd;
+    padding: 5px 6px 4px 8px;
+    border: 1px solid #333;
+    border-bottom: 1px solid #333;
+    color: #cccccc;
+    background: #000000;
   }
   #myInput:focus {outline: 0px solid #ddd;}
 
@@ -114,7 +130,7 @@
     overflow: auto;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     right: 0;
-    top: 28px;
+    top: 32px;
     z-index: 1;
   }
 
@@ -125,3 +141,4 @@
   .show {display: block;}
 
   </style>
+

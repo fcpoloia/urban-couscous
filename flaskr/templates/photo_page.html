@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-
-	<style>  
+{% if page['columns'] == 0 %}
+    <style>
+        /*.grid-item { width:480px;}i*/
 		.overlay-image:hover { opacity: 1.0; } 
 		.grid-container { column-width: auto ; column-gap: 0.1rem; column-fill: balance; }
 	</style>
@@ -15,6 +16,55 @@
 		</a></div>
 		{% endfor %}
 	</div>
+{% endif %}
+
+{% if page['columns'] > 2 %}
+
+    <div id=photos class="centredthumbs">
+        {% for item in gallpage %}
+		<div class="overlay-image "  style="max-width:100%">
+        <a href="{{item.href}}">
+			<img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="height: 200px" />
+			<div class="textleft">{{item.pic}}</div>
+		</a></div>
+		{% endfor %}
+
+    </div>
+
+{% endif %}
+
+{% if page['columns'] == 2 %}
+
+{# using colcade.js #}
+
+  <script src="/static/colcade.js"></script>
+  <style>
+     .grid-col { float:left; width:{{100/page.columns}}%;}
+  </style>
+
+	<div id="photos" class="centredthumbs grid"> 
+    {% for col in range(1,page.columns+1,1) %}
+    <div class="grid-col grid-col--{{col}}"></div>
+    {% endfor %}
+		{% for item in gallpage %}
+		<div class="overlay-image grid-item"> 
+        <a href="{{item.href}}" class="floatbox">
+			<img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="width: 100%" />
+			<div class="textleft">{{item.pic}}</div>
+		</a></div>
+		{% endfor %}
+	</div>
+
+    <script>
+var colcade = new Colcade( '.grid', {
+  columns: '.grid-col',
+    items: '.grid-item'
+    });
+    </script>
+
+{# end using colcade.js #}
+
+{% endif %}
 
 {% endblock %}
 

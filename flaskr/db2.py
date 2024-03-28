@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# pylint: disable-msg=line-too-long
+# pylint: disable-msg=empty-docstring
 
 #
 # tables - config, photos, videos, models, sites
@@ -13,37 +15,42 @@
 
 
 import sqlite3
-import sys
-import re
 import os
-import glob
 
 class DatabaseMissingError(Exception):
-    pass
+    """"""
 
 class BasicDB:
+    """"""
     def __init__(self):
+        """"""
         self.conn = None
 
     def connectdb(self, database):
+        """"""
         if os.path.exists(database):
             self.conn = sqlite3.connect(database)
         else:
             raise DatabaseMissingError
 
     def closedb(self):
+        """"""
         self.conn.close()
 
     def cursor(self):
+        """"""
         return self.conn.cursor()
 
     def commit(self):
+        """"""
         self.conn.commit()
 
     def execute(self, sql):
+        """"""
         self.conn.execute(sql)
 
     def num_cols(self, table):
+        """"""
         return len(self.get_results_list(f"pragma table_info({table});", 6))
 
     def get_single_result(self, sql, cols):
@@ -78,92 +85,111 @@ class BasicDB:
 # select().star().from(table).where(clause).group_by(col).order_by(col).asc()
 #
 class Query:
+    """"""
     def __init__(self):
+        """"""
         self.sql = ""
 
     def select(self, cols):
+        """"""
         self.sql += f"select {cols}"
         return self
 
-    def _from(self, table):
+    def frm(self, table):
+        """"""
         self.sql += f" from {table}"
         return self
 
     def where(self, clause):
+        """"""
         self.sql += f" where {clause}"
         return self
 
     def group_by(self, col):
+        """"""
         self.sql += f" group by {col}"
         return self
 
     def order_by(self, col):
+        """"""
         self.sql += f" order by {col}"
         return self
 
     def desc(self):
-        self.sql += f" desc"
+        """"""
+        self.sql += " desc"
         return self
 
     def asc(self):
-        self.sql += f" asc"
+        """"""
+        self.sql += " asc"
         return self
 
     def __call__(self):
+        """"""
         return self.sql
 
 #------------------------------------------------------------------------------
 class Table(BasicDB):
-    def __init__(self, dbname, tblname):
+    """"""
+    def __init__(self, dbname, tblname, columns):
+        """"""
+        super().__init__()
         self.name = tblname
+        self.columns = columns
         self.sql_all = f"SELECT {','.join(self.columns)} FROM {self.name} "
         self.pragma = f"pragma table_info({self.name});"
         self.connectdb(dbname)
-        #self.distinct = ''
 
     def col_count(self):
+        """"""
         return len(self.get_results_list(self.pragma, 6))
 
     def row_count(self):
+        """"""
         sql = f"SELECT COUNT() FROM {self.name};"
         return self.get_single_result(sql, 1)[0]
 
     def column_list(self):
+        """"""
         res = self.get_results_list(self.pragma, 2)
         columns = []
         for col in res:
             columns.append(col[1])
         return columns
 
-    #def set_distinct(self):
-    #    self.distinct = 'DISTINCT'
-    #    return self
-
-
     def select_all(self):
+        """"""
         return self.get_results_list(self.sql_all, self.col_count())
 
     def select_where(self, column, value):
+        """"""
         sql = self.sql_all + f"where {column} = '{value}' "
         return self.get_results_list(sql, self.col_count())
 
     def select_order_by(self, order_col, direction):
+        """"""
         sql = self.sql_all + f"order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
 
     def select_group_by_order_by(self, group_col, order_col, direction):
+        """"""
         sql = self.sql_all + f" group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
 
     def select_where_order_by(self, column, value, order_col, direction):
+        """"""
         sql = self.sql_all + f"where {column} = '{value}' order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
 
     def select_where_group_by(self, column, value, group_col):
+        """"""
         sql = self.sql_all + f"where {column} = '{value}' group by {group_col} COLLATE NOCASE "
         return self.get_results_list(sql, self.col_count())
 
+    # pylint: disable-msg=too-many-arguments
     def select_where_group_by_order_by(self, column, value, group_col, order_col, direction):
+        """"""
         sql = self.sql_all + f"where {column} = '{value}' group by {group_col} order by {order_col} COLLATE NOCASE {direction} "
         return self.get_results_list(sql, self.col_count())
 
@@ -177,29 +203,34 @@ class Table(BasicDB):
         sql = f"select {self.name}.id,{self.name}.name,{self.name}.thumb from {self.name} join videos on {self.name}.id=videos.{col} group by videos.{col} order by videos.id {order};"
         return self.get_results_list(sql, self.col_count()+1)
 
-    def nn():
-        """"""
-        sql="select count(models.id),models.id,models.name,photos.model_id,videos.model_id from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) desc;"
+    #def nn():
+    #    """"""
+    #    sql="select count(models.id),models.id,models.name,photos.model_id,videos.model_id from models join photos on photos.model_id=models.id join videos on videos.model_id=models.id group by models.id order by count(models.id) desc;"
 
-    def get_next_prev(self, id, col=None, val=None):
+    def get_next_prev(self, idx, col=None, val=None):
         """"""
         query = ""
         if col is not None and val is not None:
             query = f"{col}='{val}' and "
 
-        sql = f"SELECT id FROM {self.name} WHERE {query} id %s {id} ORDER BY id %s LIMIT 1;"
+        sql = f"SELECT id FROM {self.name} WHERE {query} id %s {idx} ORDER BY id %s LIMIT 1;"
         pid = self.get_single_result(sql % ('<','desc'), 1)[0]
         nid = self.get_single_result(sql % ('>','asc'), 1)[0]
         pn = nn = ''
-        if pid is not None: pn = self.get_single_result(f"select name from {self.name} where id = {pid}", 1)[0]
-        if nid is not None: nn = self.get_single_result(f"select name from {self.name} where id = {nid}", 1)[0]
+        if pid is not None:
+            pn = self.get_single_result(f"select name from {self.name} where id = {pid}", 1)[0]
+        if nid is not None:
+            nn = self.get_single_result(f"select name from {self.name} where id = {nid}", 1)[0]
         return nid, pid, nn, pn
 
     def select_where_like(self, column, value):
+        """"""
         sql = self.sql_all + f"where {column} like '%{value}%'" # group by id order by id desc"
         return self.get_results_list(sql, self.col_count())
 
+    # pylint: disable-msg=too-many-arguments
     def select_where_like_group_order(self, column, value, group, order, direction):
+        """"""
         sql = self.sql_all + f"where {column} like '%{value}%' group by {group} order by {order} COLLATE NOCASE {direction}"
         return self.get_results_list(sql, self.col_count())
 
@@ -208,9 +239,11 @@ class Table(BasicDB):
 
 #------------------------------------------------------------------------------
 class ModelsTable(Table):
+    """"""
     def __init__(self, dbname):
+        """"""
         self.columns = ['id','name','thumb']
-        super().__init__(dbname, 'models')
+        super().__init__(dbname, 'models', self.columns)
 
     def select_models_by_count(self, order):
         """finally a simpler statement to get a list of models with a count of pset+vids"""
@@ -223,18 +256,20 @@ class ModelsTable(Table):
         sqlp = "select models.id,count(photos.model_id) from models left join photos on photos.model_id=models.id group by models.id ;"
         sqlv = "select models.id,count(videos.model_id) from models left join videos on videos.model_id=models.id group by models.id ;"
         models = {}
-        for id, count in self.get_results_list(sqlp, 2):
-            models[id] = count
-        for id, count in self.get_results_list(sqlv, 2):
-            models[id] = count + models[id]
+        for idx, count in self.get_results_list(sqlp, 2):
+            models[idx] = count
+        for idx, count in self.get_results_list(sqlv, 2):
+            models[idx] = count + models[idx]
         return models
 
 class SitesTable(Table):
+    """"""
     def __init__(self, dbname):
+        """"""
         self.columns = ['id','name','location']
-        super().__init__(dbname, 'sites')
+        super().__init__(dbname, 'sites', self.columns)
 
-    def Xselect_sites_by_count(self, order):
+    def old_select_sites_by_count(self, order):
         """list sites by largest count of combined photosets and videos"""
 
         sql = f"select sites.id,sites.name,sites.location,count(sites.id) from sites left join photos on photos.site_id=sites.id group by sites.id " \
@@ -255,26 +290,41 @@ class SitesTable(Table):
         sqlp = "select sites.id,count(photos.site_id) from sites left join photos on photos.site_id=sites.id group by sites.id ;"
         sqlv = "select sites.id,count(videos.site_id) from sites left join videos on videos.site_id=sites.id group by sites.id ;"
         sites = {}
-        for id, count in self.get_results_list(sqlp, 2):
-            sites[id] = count
-        for id, count in self.get_results_list(sqlv, 2):
-            sites[id] = count + sites[id]
+        for idx, count in self.get_results_list(sqlp, 2):
+            sites[idx] = count
+        for idx, count in self.get_results_list(sqlv, 2):
+            sites[idx] = count + sites[idx]
         return sites
 
 class PhotosTable(Table):
+    """"""
     def __init__(self, dbname):
+        """"""
         self.columns = ['id','model_id','site_id','name','location','thumb','count','pdate']
-        super().__init__(dbname, 'photos')
+        super().__init__(dbname, 'photos', self.columns)
 
 class VideosTable(Table):
+    """"""
     def __init__(self, dbname):
+        """"""
         self.columns = ['id','model_id','site_id','name','filename','thumb','poster','width','height','length','vdate']
-        super().__init__(dbname, 'videos')
+        super().__init__(dbname, 'videos', self.columns)
 
 class ConfigTable(Table):
+    """"""
     def __init__(self, dbname):
+        """"""
         self.columns = ['id','webroot','rootpath','title','images','thumbs','videos','thumbs0','models']
-        super().__init__(dbname, 'config')
+        super().__init__(dbname, 'config', self.columns)
+
+
+class SortTable(Table):
+    """"""
+    def __init__(self, dbname):
+        """"""
+        self.columns = ['id','photos','models','model','videos','sites','site','search']
+        super().__init__(dbname, 'default_sort', self.columns)
+
 
 
 #------------------------------------------------------------------------------
@@ -311,13 +361,12 @@ if __name__ == '__main__':
     q = Query()
     b = BasicDB()
     b.connectdb(DATABASE)
-    sql = q.select('*')._from('photos').where("name like '%mango%'")()
-    res = b.get_results_list(sql, b.num_cols('photos'))
-    print(len(res))
-    for row in res:
-        print(row)
+    stmt = q.select('*').frm('photos').where("name like '%mango%'")()
+    rslts = b.get_results_list(stmt, b.num_cols('photos'))
+    print(len(rslts))
+    for rslt in rslts:
+        print(rslt)
 
     s = SitesTable(DATABASE)
     print("select sites by count")
     print(s.select_sites_by_count('desc'))
-

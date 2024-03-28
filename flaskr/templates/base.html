@@ -3,10 +3,11 @@
 <head>
 <title>{% if page %}{{page['heading']}}{% endif %}</title>
  <!-- for floatbox -->
- <!-- link type="text/css" rel="stylesheet" href="{{webroot}}/floatbox/floatbox.css">
- <script type="text/javascript" src="{{webroot}}/floatbox/floatbox.js"></script -->
+ <link type="text/css" rel="stylesheet" href="{{webroot}}/floatbox/floatbox.css">
+ <script type="text/javascript" src="{{webroot}}/floatbox/floatbox.js"></script>
+ <script type="text/javascript" src="/static/floatbox_settings.js"></script>
 
- <link rev="stylesheet" type="text/css" href="/static/style.css" rel="stylesheet" media="screen,all">
+ <!-- link rev="stylesheet" type="text/css" href="/static/style.css" rel="stylesheet" media="screen,all" -->
 
  <meta http-equiv="Content-Type" content="text/html, charset=ISO-8859-1">
  <meta http-equiv="content-style-type" content="text/css">
@@ -33,6 +34,7 @@
 <div id="titlebar">
 	<div id="title">
 		<div id="navbtn">
+            <!-- form><button id="morecols" class="navbtn" formaction="/">{{page['heading']}}</button></form -->
 			<a class="navbtn" href="/">{{page['heading']}}</a>
 		</div>
 	</div>
@@ -43,6 +45,7 @@
 				<a class="navbtn {{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
 				{% endif %}
 			{% endfor %}
+            <a class="navbtn" href="/{{page['db']}}/random">Random</a>
 		</div>
 	</div>
 	<div id="titlecenter">
@@ -64,6 +67,13 @@
 		{% endautoescape %}
 	</div>
 	<div id="title">
+		{% if page['db'] %}
+		<form action="/{{page['db']}}/search" method="get">
+		{% else %}
+		<form action="/search" method="get">
+	    {% endif %}
+			<input name="search" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
+	    </form>
 		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
 			<div id="navbtn">
 				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['prev']}}">P</a>
@@ -74,18 +84,14 @@
 				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['next']}}">N</a>
 			</div>
 		{% endif %}{% endif %}
-		<!-- div id="navbtn">
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=inc">&plus;</a>
-		</div>
-		<div id="navbtn">
-			<a class="navbtn" href="/{{page['db']}}/{{page['type']}}?s=dec">&minus;</a>
-		</div -->
 
 		<div id="navbtn">
 		    {% if page['type'] in ['gallery'] %}
-				<button id="morecols" class="navbtn">+C</button> <!-- href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a> -->
+				<!--button id="morecols" class="navbtn">+C</button--> 
+                <!--a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a-->
 
-				<button id="lesscols" class="navbtn">-C</button> <!-- href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a> -->
+				<!--button id="lesscols" class="navbtn">-C</button--> 
+                <!--a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a-->
 				{% endif %}
 
 
@@ -100,11 +106,7 @@
 				<a class="navbtn dropbtn" onclick="myFunction()" >Dropdown</a>
 
 				<div id="myDropdown" class="dropdown-content">
-					<form action="/{{page['db']}}/search" method="get">
-						<input name="search" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
-					</form>
 					{% if page['type'] %}
-					<a href="/{{page['db']}}/random">Random</a>
 						{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
 					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
 					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
@@ -144,17 +146,32 @@
 					<a href="{{page['url']}}?image=thumb">10%</a>
 						{% endif %}
 					{% endif %}
-					<!-- a href="#contact">Contact</a>
-					<a href="#custom">Custom</a>
-					<a href="#support">Support</a -->
 					<a href="#tools">About</a>
 				</div>
-				<!-- /div-->
 		</div>
 	</div>
 	<div id="title"></div>
-	<div id="title"></div>
 </div>
+
+<!-- div id="titlemiddle" style="background-color: #444;">
+	{% if page['plaintitle'] %}
+		{{page['title']}}
+	{% else %}{% if page['title'] %}
+		<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
+		{% if page['title']['models'] %}
+			{% for model in page['title']['models'] %}
+				<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
+			{% endfor %}
+		{% else %}
+			<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
+		{% endif %}
+		{{page['title']['folder']}} 
+		{% if page['type'] not in ['video'] %} ({{page['count']}} pics) {% endif %}
+	{% endif %}{% endif %}
+	{% autoescape false %}
+	{% endautoescape %}
+</div -->
+
 {% endif %}
 
 <div id="content">
@@ -184,9 +201,6 @@
 </div>
 {% endif %}
 
-<!-- div id="overlay" onclick="off()">
-	<div id="text">Model Name<form><input type="text" size=12 name="s" style="font-size:42px"></form></div>
-</div -->
 
 <script>
 /* When the user clicks on the button,

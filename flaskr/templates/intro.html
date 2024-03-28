@@ -4,7 +4,7 @@
     <!-- div style="display: flex; flex-wrap: wrap;" -->
     <div id="titlecenter" style="margin-bottom: 10px">
         <div id="navbtn">
-        {% for item in buttons %}
+        {% for item in obuttons %}
         <!-- div id="bigbtn"><div class="center"><a style="font-size:20pt;" href="{{item.href}}" > {{item.name}} </a></div></div -->
             <a class="navbtn" href="{{item.href}}">{{item.name}}</a>
             {% if loop.index is divisibleby 8 %}
@@ -12,7 +12,17 @@
             {% endif %}
         {% endfor %}
         </div>
-    </div>
+        <h1></h1>
+        <div id="navbtn">
+        {% for item in nbuttons %}
+        <!-- div id="bigbtn"><div class="center"><a style="font-size:20pt;" href="{{item.href}}" > {{item.name}} </a></div></div -->
+            <a class="navbtn" href="{{item.href}}">{{item.name}}</a>
+            {% if loop.index is divisibleby 8 %}
+            </div></div><div id="titlecenter" style="margin-bottom: 10px"><div id="navbtn">
+            {% endif %}
+        {% endfor %}
+        </div>
+   </div>
 
 {% endblock %}
 

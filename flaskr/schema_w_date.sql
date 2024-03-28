@@ -55,6 +55,18 @@ CREATE TABLE IF NOT EXISTS config
         thumbs0 text,     /* seems to be used in photos, site and sites ?? */
         models text       /* relative location of thumbnails for models */
       );
+
+CREATE TABLE IF NOT EXISTS default_sort
+      ( id int PRIMARY KEY NOT NULL,
+        photos text,      /* default sort order for photos pages */
+        models text,      /* default sort order for models pages */
+        model  text,
+        videos text,      /* default sort order for videos pages */
+        sites  text,      /* sites pages */
+        site   text,
+        search text
+        /* - alpha / ralpha    id / rid    date / rdate    most / least    pics / rpics*/
+      );
 COMMIT;
 
 # config - id, rootpath, title, images, thumbs, videos
@@ -62,3 +74,7 @@ COMMIT;
 # sites  - id, name, location
 # photos - id, model_id, site_id, name, location, thumb, count
 # videos - id, model_id, site_id, name, filename, thumb, poster, width, height, length
+
+# defaut_sort - photos, videos, sites
+# - options are - alpha, id, date, piccount (all asc or desc)
+#               - alpha / ralpha    id / rid    date / rdate    most / least

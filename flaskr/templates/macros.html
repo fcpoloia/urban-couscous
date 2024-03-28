@@ -18,8 +18,9 @@
 
 {%- macro video_span(itemdicts) -%}
     <style>
-      .grid-container { flex-direction: row; }
-      .item { align-self: stretch; width: 25%; } /* 16.66 20 25 */
+      .grid-container { display: flex; flex-direction: row; flex-wrap: wrap; }
+      .item { align-self: stretch; width: 24.8%; } /* 16.66 20 25 */
+      .overlay-image { margin: -1px 1px 0px 0px; }
     </style>
     <div class="centredthumbs grid-container">
 	  {% for item in itemdicts %}
@@ -31,4 +32,46 @@
 		</a></div>
 	  {% endfor %}
     </div>
+{%- endmacro -%}
+
+{%- macro image_masonry(itemdicts) -%}
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <style>
+   .grid-item { width:240px;}
+  </style>
+  <div class="centredthumbs grid-container">
+	  {% for item in itemdicts %}
+		<div class="overlay-image grid-item"> <!--style="max-width:100%"-->
+        <a href="{{item.href}}" title="{{item.basename}}">
+		  <!-- img class="image" src="{{item.src}}" alt="Alt text" height="{{item.height}}px" / -->
+		  <img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" />
+		  <div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
+		</a></div>
+	  {% endfor %}
+    </div>
+  <script> 
+    $('.grid-container').masonry({
+    itemSelector: '.grid-item',
+    columnWidth: 240
+    });
+    </script>
+
+{%- endmacro -%}
+
+{%- macro image_colcade(itemdicts) -%}
+  <script src="static/colcade.js"></script>
+  <style>
+   .grid-col { width:50%;}
+  </style>
+  <div class="centredthumbs grid">
+	  {% for item in itemdicts %}
+		<div class="overlay-image grid-col"> <!--style="max-width:100%"-->
+        <a href="{{item.href}}" title="{{item.basename}}">
+		  <!-- img class="image" src="{{item.src}}" alt="Alt text" height="{{item.height}}px" / -->
+		  <img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" />
+		  <div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
+		</a></div>
+	  {% endfor %}
+    </div>
+
 {%- endmacro -%}
