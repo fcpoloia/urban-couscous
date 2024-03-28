@@ -1,0 +1,21 @@
+#!/bin/bash
+# to run the flask website
+
+if [ "$1" == "-h" ]
+then
+  echo "$0 [--local]"
+  echo "  --local  run local only for debugging"
+  exit 0
+fi
+if [ "$1" == "--local" ]
+then
+    # for local only connections
+    cd /zstuff/zdata/webroot/urban-couscous/
+    flask --app flaskr --debug run
+else
+    # for external connections
+    cd /zstuff/zdata/webroot/urban-couscous/
+    #screen -S urban -dm flask --app flaskr --debug run --host=0.0.0.0
+    flask --app flaskr --debug run --host=0.0.0.0 > $HOME/.local/share/urban.log 2>&1
+
+fi

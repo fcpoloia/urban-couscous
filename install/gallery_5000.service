@@ -1,0 +1,11 @@
+[Unit]
+Description=Gallery 5000
+After=apache2.service
+
+[Service]
+User=judge
+ExecStart=/bin/bash $HOME/.local/bin/gallery_5000
+
+
+[Install]
+WantedBy=multi-user.target
