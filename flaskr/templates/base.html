@@ -9,6 +9,10 @@
 
  <!-- link rev="stylesheet" type="text/css" href="/static/style.css" rel="stylesheet" media="screen,all" -->
 
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
  <meta http-equiv="Content-Type" content="text/html, charset=ISO-8859-1">
  <meta http-equiv="content-style-type" content="text/css">
 
@@ -23,234 +27,154 @@
  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
  <link rel="manifest" href="/static/site.webmanifest">
 
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-
+ 
 {% include "styles.html" %}
  
 </head>
 <body>
 
-{% if page %} 
-<div id="titlebar">
-	<div id="title">
-		<div id="navbtn">
-            <!-- form><button id="morecols" class="navbtn" formaction="/">{{page['heading']}}</button></form -->
-			<a class="navbtn" href="/">{{page['heading']}}</a>
-		</div>
-	</div>
-	<div id="title">
-		<div id="navbtn">
-			{% for item in page['navigation'] %}
-				{% if page['navigation'][item]['rows'] > 0 %}
-				<a class="navbtn {{page['navigation'][item]['class']}}" href="{{page['navigation'][item]['href']}}">{{page['navigation'][item]['title']}}</a> 
+
+<div class="w3-top">
+	<div class="w3-bar w3-black">
+		<a href="/" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">{{page['heading']}}</a>
+
+		{% for item in page['navigation'] %}
+		  {% if page['navigation'][item]['rows'] > 0 %}
+            <a href="{{page['navigation'][item]['href']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange {{page['navigation'][item]['class']}} w3-hover-dark-grey w3-button">{{page['navigation'][item]['title']}}</a>
+		  {% endif %}
+		{% endfor %}
+
+		{% if page['db'] %}
+		<a href="/{{page['db']}}/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
+		{% else %}
+		<a href="/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
+		{% endif %}
+
+		<span class="w3-bar-item w3-padding-small w3-border w3-border-black">
+		<div style="font-size: var(--menu_font_size);" nowrap>
+			{% if page['plaintitle'] %}
+				{{page['title']}}
+			{% else %}{% if page['title'] %}
+				<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
+				{% if page['title']['models'] %}
+					{% for model in page['title']['models'] %}
+						<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
+					{% endfor %}
+				{% else %}
+					<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
 				{% endif %}
-			{% endfor %}
-            <a class="navbtn" href="/{{page['db']}}/random">Random</a>
+				{{page['title']['folder']}} 
+				{% if page['type'] not in ['video'] %} ({{page['count']}} pics) {% endif %}
+			{% endif %}{% endif %}
+			{% autoescape false %}
+			{% endautoescape %}
 		</div>
-	</div>
-	<div id="titlecenter">
-		{% if page['plaintitle'] %}
-			{{page['title']}}
-		{% else %}{% if page['title'] %}
-			<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-			{% if page['title']['models'] %}
-				{% for model in page['title']['models'] %}
-					<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
-				{% endfor %}
-			{% else %}
-				<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
+		</span>	
+
+		<div class="w3-dropdown-hover w3-mobile w3-right">
+			<button class="w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort <i class="fa fa-caret-down"></i></button>
+			<div class="w3-dropdown-content w3-bar-block w3-dark-grey" style="right:0">
+
+			{% if page['type'] %}
+				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
+			<a href="{{page['url']}}?order=alpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Alpha</a>
+			<a href="{{page['url']}}?order=ralpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Alpha (R)</a>
+			<a href="{{page['url']}}?order=id" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Index</a>
+			<a href="{{page['url']}}?order=rid" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Index (R)</a>
+				{% endif %}
+				{% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
+			<a href="{{page['url']}}?order=date" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Date</a>
+			<a href="{{page['url']}}?order=rdate" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Date(R)</a>
+				{% endif %}
+				{% if page['type'] in ['photos'] %}
+			<a href="{{page['url']}}?order=pics" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort PicCount</a>
+			<a href="{{page['url']}}?order=rpics" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort PicCount(R)</a>
+				{% endif %}
+				{% if page['type'] == 'models' %}
+			<a href="{{page['url']}}?order=vlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos</a>
+			<a href="{{page['url']}}?order=rvlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos(R)</a>
+			<a href="{{page['url']}}?order=platest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Photos</a>
+			<a href="{{page['url']}}?order=rplatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Photos(R)</a>
+				{% endif %}
+				{% if page['type'] in ['models', 'sites'] %}
+			<a href="{{page['url']}}?order=most" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Most</a>
+			<a href="{{page['url']}}?order=least" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Least</a>
+				{% endif %}
+				{% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
+			<a href="{{page['url']}}?order=latest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos</a>
+			<a href="{{page['url']}}?order=rlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos(R)</a>
+				{% endif %}
+				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
+			<a href="{{page['url']}}?size=large" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Large Thumbs</a>
+			<a href="{{page['url']}}?size=small" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Small Thumbs</a>
+				{% endif %}
+				{% if page['type'] in ['not_gallery' ] %}
+			<a href="{{page['url']}}?image=large" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">100%</a>
+			<a href="{{page['url']}}?image=medium" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">50%</a>
+			<a href="{{page['url']}}?image=small" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">25%</a>
+			<a href="{{page['url']}}?image=thumb" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">10%</a>
+				{% endif %}
 			{% endif %}
-			{{page['title']['folder']}} 
-            {% if page['type'] not in ['video'] %} ({{page['count']}} pics) {% endif %}
+			<a  onclick="document.getElementById('id01').style.display='block'" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">About</a>
+			
+
+			</div>
+	    </div>
+
+		{% if page['prev'] %}
+		<a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Prev</a>
+		{% endif %}
+		{% if page['next'] %}
+		<a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Next</a>
+		{% endif %}
+
+		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
+		<a href="{{page['url']}}?page={{page['pg']['next']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">N</a>
 		{% endif %}{% endif %}
-		{% autoescape false %}
-		{% endautoescape %}
-	</div>
-	<div id="title">
+		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
+		<a href="{{page['url']}}?page={{page['pg']['prev']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">P</a>
+		{% endif %}{% endif %}
+
 		{% if page['db'] %}
 		<form action="/{{page['db']}}/search" method="get">
 		{% else %}
 		<form action="/search" method="get">
 	    {% endif %}
-			<input name="search" type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" size="10">
-	    </form>
-		{% if page['pg'] %}{% if page['pg']['prev'] > 0 %}
-			<div id="navbtn">
-				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['prev']}}">P</a>
-			</div>
-		{% endif %}{% endif %}
-		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
-			<div id="navbtn">
-				<a class="navbtn" href="{{page['url']}}?page={{page['pg']['next']}}">N</a>
-			</div>
-		{% endif %}{% endif %}
-
-		<div id="navbtn">
-		    {% if page['type'] in ['gallery'] %}
-				<!--button id="morecols" class="navbtn">+C</button--> 
-                <!--a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a-->
-
-				<!--button id="lesscols" class="navbtn">-C</button--> 
-                <!--a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a-->
-				{% endif %}
-
-
-				{% if page['prev'] %}
-				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">Prev</a>
-				{% endif %}
-
-				{% if page['next'] %}
-				<a class="navbtn" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">Next</a>
-				{% endif %}
-
-				<a class="navbtn dropbtn" onclick="myFunction()" >Dropdown</a>
-
-				<div id="myDropdown" class="dropdown-content">
-					{% if page['type'] %}
-						{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
-					<a href="{{page['url']}}?order=alpha">Sort Alpha</a>
-					<a href="{{page['url']}}?order=ralpha">Sort Alpha(R)</a>
-					<a href="{{page['url']}}?order=id">Sort Id</a>
-					<a href="{{page['url']}}?order=rid">Sort Id(R)</a>
-						{% endif %}
-						{% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
-					<a href="{{page['url']}}?order=date">Sort Date</a>
-					<a href="{{page['url']}}?order=rdate">Sort Date(R)</a>
-						{% endif %}
-						{% if page['type'] in ['photos'] %}
-					<a href="{{page['url']}}?order=pics">Sort PicCount</a>
-					<a href="{{page['url']}}?order=rpics">Sort PicCount(R)</a>
-						{% endif %}
-						{% if page['type'] == 'models' %}
-					<a href="{{page['url']}}?order=vlatest">Latest Videos</a>
-					<a href="{{page['url']}}?order=rvlatest">Latest Videos(R)</a>
-					<a href="{{page['url']}}?order=platest">Latest Photos</a>
-					<a href="{{page['url']}}?order=rplatest">Latest Photos(R)</a>
-						{% endif %}
-						{% if page['type'] in ['models', 'sites'] %}
-					<a href="{{page['url']}}?order=most">Sort Most</a>
-					<a href="{{page['url']}}?order=least">Sort Least</a>
-						{% endif %}
-						{% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
-					<a href="{{page['url']}}?order=latest">Latest Videos</a>
-					<a href="{{page['url']}}?order=rlatest">Latest Videos(R)</a>
-						{% endif %}
-						{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
-					<a href="{{page['url']}}?size=large">Large Thumbs</a>
-					<a href="{{page['url']}}?size=small">Small Thumbs</a>
-						{% endif %}
-						{% if page['type'] in ['not_gallery' ] %}
-					<a href="{{page['url']}}?image=large">100%</a>
-					<a href="{{page['url']}}?image=medium">50%</a>
-					<a href="{{page['url']}}?image=small">25%</a>
-					<a href="{{page['url']}}?image=thumb">10%</a>
-						{% endif %}
-					{% endif %}
-					<a href="#tools">About</a>
-				</div>
-		</div>
+		  <input type="text" class="w3-bar-item w3-input w3-border w3-border-dark-grey w3-black w3-padding-small w3-right" placeholder="Search..." name="search" >
+		</form>
 	</div>
-	<div id="title"></div>
 </div>
 
-<!-- div id="titlemiddle" style="background-color: #444;">
-	{% if page['plaintitle'] %}
-		{{page['title']}}
-	{% else %}{% if page['title'] %}
-		<a class="title2" href="{{page['title']['site']['href']}}">{{page['title']['site']['name']}}</a> / 
-		{% if page['title']['models'] %}
-			{% for model in page['title']['models'] %}
-				<a class="title2" href="{{model['href']}}">{{model['name']}}</a>
-			{% endfor %}
-		{% else %}
-			<a class="title2" href="{{page['title']['model']['href']}}">{{page['title']['model']['name']}}</a> / 
-		{% endif %}
-		{{page['title']['folder']}} 
-		{% if page['type'] not in ['video'] %} ({{page['count']}} pics) {% endif %}
-	{% endif %}{% endif %}
-	{% autoescape false %}
-	{% endautoescape %}
-</div -->
 
-{% endif %}
 
-<div id="content">
-	<div style="width: 100%" id="thumbnails" class="centredthumbs">
+<div id="w3-main w3-content w3-center w3-padding" style="margin-top:40px">
+
+	<!-- div style="width: 100%" id="thumbnails" class="centredthumbs" -->
 		<div style="text-align:center">
 			{% block content %}{% endblock %}
 		</div>
-	</div>
+	<!-- /div -->
+
 </div>
 
-{% if page %}
-<div id="footerbar">
-	<div id="title">
-	{% if page['prev'] %}
-		<a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}">[{{page['prev']}}]</a>
-	{% endif %}
-	</div>
-	<div id="titlecenter">
-	</div>
-	<div id="title">
-	{% if page['next'] %}
-		<a class="nav" href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}">[{{page['next']}}]</a>
-	{% endif %}
-	</div>
-	<div id="title">
-	</div>
-</div>
-{% endif %}
+<!-- About box - model overlay box -->
 
+<div id="id01" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+      <div class="w3-container w3-center w3-black w3-border w3-border-dark-grey w3-text-grey">
+        <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-display-topright w3-border-top w3-border-right w3-border-dark-grey w3-hover-grey">&times;</span>
+        <h2 class="w3-border-bottom w3-border-dark-grey w3-text-grey">About</h2>
+        <h3>Urban-Couscous</h3>
+        <p>Web-app to display image databases. Written in python using the Flask framework.</p>
+        <p></p>
+        <p>Author: The Judge-Meister</p>
+        <p>&nbsp;</p>
+		<p>Email: ianjudge1969@gmail.com</p>
+        <p>GitHub: <a href="https://github.com/judge-meister/urban-couscous">https://github.com/judge-meister/urban-couscous</a></p>
+      </div>
+    </div>
+  </div>
 
-<script>
-/* When the user clicks on the button,
-toggle between hiding and showing the dropdown content */
-function myFunction() {
-	document.getElementById("myDropdown").classList.toggle("show");
-}
-
-function filterFunction() {
-	var input, filter, ul, li, a, i;
-	input = document.getElementById("myInput");
-	filter = input.value.toUpperCase();
-	div = document.getElementById("myDropdown");
-	a = div.getElementsByTagName("a");
-	for (i = 0; i < a.length; i++) {
-		txtValue = a[i].textContent || a[i].innerText;
-		if (txtValue.toUpperCase().indexOf(filter) > -1) {
-			a[i].style.display = "";
-		} else {
-			a[i].style.display = "none";
-		}
-	}
-}
-$(document).ready(function(){
-  $("button#lesscols").click(function(){
-		let cols = $("div#photos").css("column-count");
-		let lcols = cols.valueOf();
-		lcols--;
-    $("div#photos").css("column-count", lcols);
-  });
-  $("button#morecols").click(function(){
-		let cols= $("div#photos").css("column-count");
-		let mcols = cols.valueOf();
-		mcols++; /* = (mcols.valueOf() + 1).valueOf();*/
-    $("div#photos").css("column-count", mcols);
-  });
-});
-
-function testerFunction() {
-    alert (document.getElementsByClassName('.grid-container').style.backgroundColor);  
-}
-
-function on() {
-	document.getElementById("overlay").style.display = "block";
-}
-
-function off() {
-	document.getElementById("overlay").style.display = "none";
-}
-</script>
 
 </body>
 </html>

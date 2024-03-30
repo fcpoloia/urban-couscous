@@ -200,8 +200,15 @@ def dbroot(dbname):
 def search_all():
     """global search page"""
     term = get_search_term()
-    mysite = page_factory('search') #HtmlSearch()
+    mysite = page_factory('search') #HtmlSearchAll()
     return mysite.search(term)
+
+
+@app.route("/random")
+def random_all():
+    """global random page"""
+    mysite = page_factory('random') #HtmlRandomAll()
+    return mysite.random()
 
 
 @app.route("/favicon.ico")

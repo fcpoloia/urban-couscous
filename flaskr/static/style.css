@@ -22,6 +22,7 @@ a {font-family: Arial, Verdana, Geneva, Helvetica, sans-serif; font-size: 8pt; t
 
 .centredthumbs {margin: 0 auto; /*display: flex; flex-wrap: wrap;*/ justify-content: center; padding: 0px;}
 
+
 #thumbnails span {padding: 0px; text-align: center; color: #fff; font-size: 8pt; }
 
 #thumbnails span a {font-size: 8pt; color: #fff;
@@ -31,5 +32,5 @@ a {font-family: Arial, Verdana, Geneva, Helvetica, sans-serif; font-size: 8pt; t
 #thumbnails img       {margin-bottom: .25em;}
 #thumbnails a:link    {color: #fff;}
 #thumbnails a:visited {color: #fff;}
-#thumbnails a:hover   {color: #ccc; /*#f47c0e;*/}
+#thumbnails a:hover   {color: #ccc; /*#f47c0e;*/ } 
 

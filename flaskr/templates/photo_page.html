@@ -2,17 +2,17 @@
 {% block content %}
 {% if page['columns'] == 0 %}
     <style>
-        /*.grid-item { width:480px;}i*/
+        /*.grid-item { width:480px;} */
 		.overlay-image:hover { opacity: 1.0; } 
 		.grid-container { column-width: auto ; column-gap: 0.1rem; column-fill: balance; }
 	</style>
 
-	<div id="photos" class="centredthumbs grid-container" style="column-count: {{page.columns}}">
+	<div id="photos" class="grid-container" style="column-count: {{page.columns}}">
 		{% for item in gallpage %}
 		<div class="overlay-image grid-item grid-item-1"  style="max-width:100%">
         <a href="{{item.href}}">
-			<img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="width: 100%" />
-			<div class="textleft">{{item.pic}}</div>
+			<img class="image" src="{{item.src}}" loading="lazy" alt="{{item.pic}}" style="width: 100%" />
+			<div class="text">{{item.pic}}</div>
 		</a></div>
 		{% endfor %}
 	</div>
@@ -24,7 +24,7 @@
         {% for item in gallpage %}
 		<div class="overlay-image "  style="max-width:100%">
         <a href="{{item.href}}">
-			<img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="height: 200px" />
+			<img class="image" src="{{item.src}}" loading="lazy" alt="{{item.pic}}" style="height: 200px" />
 			<div class="textleft">{{item.pic}}</div>
 		</a></div>
 		{% endfor %}
@@ -39,7 +39,8 @@
 
   <script src="/static/colcade.js"></script>
   <style>
-     .grid-col { float:left; width:{{100/page.columns}}%;}
+     .grid-col { float:left; width: {{100/page.columns}}%; }
+	 .overlay-image { margin: -4px 1px -1px 0px; }
   </style>
 
 	<div id="photos" class="centredthumbs grid"> 
@@ -50,7 +51,7 @@
 		<div class="overlay-image grid-item"> 
         <a href="{{item.href}}" class="floatbox">
 			<img class="image" src="{{item.src}}" loading="lazy" alt="Alt text" style="width: 100%" />
-			<div class="textleft">{{item.pic}}</div>
+			<div class="text">{{item.pic}}</div>
 		</a></div>
 		{% endfor %}
 	</div>

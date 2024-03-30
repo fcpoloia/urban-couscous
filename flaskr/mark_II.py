@@ -253,7 +253,7 @@ class HtmlSite:
                 page = "sites"
             if page == "model":
                 page = "models"
-            links[page]['class'] = " page"
+            links[page]['class'] = " w3-dark-grey "
 
         return links
 
@@ -411,10 +411,9 @@ class HtmlSearchPage(HtmlSite):
     def search(self, term):
         """list all photo sets, videos, models and sites that match search term"""
         order = self.get_order("search")
-        #term = get_search()
-        term = term.replace(' ','%')
+        #term = term.replace(' ','%')
 
-        modeldicts, galldicts, viddicts, sitedicts = self.search_all_tables(term)
+        modeldicts, galldicts, viddicts, sitedicts = self.search_all_tables(term.replace(' ','%'))
 
         links = self.heading()
         # title plaintitle heading type | navigation db
@@ -840,8 +839,8 @@ class HtmlRandomPage(HtmlSite):
 
     def random(self):
         """list a short random list of photo sets, videos, models and sites"""
-        modeldicts = self.moddict(random_selection(self.db.models_table().select_all(), 8))
-        galldicts = self.galdict(random_selection(self.db.photos_table().select_all(), 8))
+        modeldicts = self.moddict(random_selection(self.db.models_table().select_all(), 7))
+        galldicts = self.galdict(random_selection(self.db.photos_table().select_all(), 10))
         viddicts = self.viddict(random_selection(self.db.videos_table().select_all(), 4))
 
         # title plaintitle heading type | navigation db
@@ -883,6 +882,53 @@ class HtmlRootPage(HtmlSite):
                                buttons=buttons)
 
 
+class HtmlRandomAll(HtmlSite):
+    """pick random entries from all the databases"""
+
+    def __init__(self):
+        """"""
+        super().__init__()
+
+    def random(self):
+        """"""
+        mods = []
+        gals = []
+        vids = []
+        for database in glob.glob("flaskr/old_*.db") + glob.glob("flaskr/new_*.db"):
+            dbname = database.replace('flaskr/new_','').replace('flaskr/old_','').replace('.db','')
+            self.set_dbname(dbname)
+            self.db = DatabaseTables(dbname)
+            try:
+                self.config = get_config(dbname)
+            except DatabaseMissingError:
+                error_occured = True
+                raise
+            # now get a single random model, photo and video from each database 
+            modeldicts = self.moddict(random_selection(self.db.models_table().select_all(), 1))
+            galldicts = self.galdict(random_selection(self.db.photos_table().select_all(), 1))
+            viddicts = self.viddict(random_selection(self.db.videos_table().select_all(), 1))
+            #m,g,v = self.random_table()
+            mods = mods + modeldicts
+            gals = gals + galldicts
+            vids = vids + viddicts
+
+
+        # title plaintitle heading type | navigation db
+        page_dict = {
+            'title': f"Random Selection From All",
+            'heading':'Stuff',
+            'plaintitle':True,
+        }
+
+        return render_template("search_page.html",
+                               webroot="http://"+request.host.replace(':5000',''),
+                               page=page_dict,
+                               galldicts=gals,
+                               modeldicts=mods,
+                               viddicts=vids,
+                               pagetype='random')
+
+
 class HtmlSearchAll(HtmlSite):
     """search all databases"""
 
@@ -893,6 +939,7 @@ class HtmlSearchAll(HtmlSite):
 
     def search(self, term):
         """"""
+        #term = term.replace(' ','%')
         mods = []
         gals = []
         vids = []
@@ -906,7 +953,7 @@ class HtmlSearchAll(HtmlSite):
             except DatabaseMissingError:
                 error_occured = True
                 raise
-            m,g,v,s = self.search_all_tables(term)
+            m,g,v,s = self.search_all_tables(term.replace(' ','%'))
             mods = mods + m
             gals = gals + g
             vids = vids + v
@@ -964,7 +1011,7 @@ class ErrorPage:
         """"""
         self.error = error
 
-    def do(self, _method, *_args):
+    def do_page(self, _a='', _b='', _c=''):
         """"""
         return self.not_found(self.error)
 
@@ -972,7 +1019,7 @@ class ErrorPage:
         """"""
         print(error)
         obuttons, nbuttons, page_dict = database_buttons()
-        resp = make_response(render_template('error.html',
+        resp = make_response(render_template('intro.html',
                                             error=error,
                                             webroot="http://"+request.host.replace(':5000',''),
                                             page=page_dict,
@@ -1007,18 +1054,20 @@ def dbpage_factory(page, dbname):
     try:
         return dbpage_lookup[page](dbname)
     except (InvalidDatabaseError,DatabaseMissingError):
-        return ErrorPage(f"Not Found: Database {dbname} not found.") #ErrorPage(dbname)
+        return ErrorPage(f"Not Found: Database [ {dbname} ] not found.") #ErrorPage(dbname)
+    except KeyError:
+        return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
 
 
 def page_factory(page):
     """factory for root level pages with no dbname"""
     page_lookup = {'search' : HtmlSearchAll, # global search does not take dbname
-                   #'random' : # HtmlRandomAll
+                   'random' : HtmlRandomAll  # global random link generator
                   }
     try:
         return page_lookup[page]()
     except KeyError:
-        return ErrorPage(f"Not Found: Page {page} not found.") #ErrorPage(dbname)
+        return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
 
 
 #class ModelsPage:
