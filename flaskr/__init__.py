@@ -42,7 +42,7 @@ sort order(alpha,latest,most,pics)
 
 from markupsafe import escape
 from flask import Flask, request, session, make_response
-from .mark_II import database_buttons, render_template, site_root, dbpage_factory, page_factory
+from .mark_II import database_buttons, render_template, site_root, dbpage_factory, page_factory, file_system
 #from .mark_II import HtmlSite, HtmlPage, HtmlSearch, HtmlRootPage, HtmlRandom
 from .db2 import DatabaseMissingError
 
@@ -117,6 +117,7 @@ def do_post_get():
 def gallery_page_id_id(dbname, page, pageid, photoid):
     """"""
     do_post_get()
+    print(f"route gallery_page_id_id {photoid}")
     mysite = dbpage_factory('gallery',dbname)
     links = mysite.heading(page+'s')
     return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
@@ -125,6 +126,7 @@ def gallery_page_id_id(dbname, page, pageid, photoid):
 def gallery(dbname, idx):
     """"""
     do_post_get()
+    print(f"route dbname gallery {idx}")
     mysite = dbpage_factory('gallery',dbname)
     links = mysite.heading('photos')
     return mysite.do_gallery(idx, None, None, None, links)
@@ -209,6 +211,14 @@ def random_all():
     """global random page"""
     mysite = page_factory('random') #HtmlRandomAll()
     return mysite.random()
+
+
+@app.route("/fs/<path:subpath>")
+@app.route("/fs")
+def filesystem(subpath='/'):
+    """navigate the filesystem rather than databases"""
+    mysite = file_system()
+    return mysite.fs(subpath)
 
 
 @app.route("/favicon.ico")

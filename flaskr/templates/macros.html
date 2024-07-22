@@ -6,7 +6,7 @@
     </style>
     <div class="grid-container centredthumbs">
 	  {% for item in itemdicts %}
-		<div class="overlay-image " style="max-width:100%">
+		<div class="overlay-image overlay-image-photo" style="max-width:100%">
         <a href="{{item.href}}" title="{{item.basename}}">
 		  <img class="image" src="{{item.src}}" alt="{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
 		  <!-- img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" / -->
@@ -17,14 +17,9 @@
 {%- endmacro -%}
 
 {%- macro video_span(itemdicts) -%}
-    <style>
-      .grid-container { display: flex; flex-direction: row; flex-wrap: wrap; }
-      .item { align-self: stretch; width: 24.8%; } /* 16.66 20 25 */
-      .overlay-image { margin: -2px 2px 4px 0px; }
-    </style>
-    <div class="grid-container centredthumbs">
+    <div class="video-container centredthumbs">
 	  {% for item in itemdicts %}
-		<div class="overlay-image grid-item item" style="max-width:100%">
+		<div class="overlay-image overlay-image-video grid-item video-item" style="max-width:100%">
         <a href="{{item.href}}" title="{{item.basename}}">
 		  <!-- img class="image" src="{{item.src}}" alt="Alt text" height="{{item.theight}}px" / -->
 		  <img class="image" src="{{item.src}}" alt="{{item.name}} {{item.w}}x{{item.h}} {{item.mlen}}" style="width: 100%; aspect-ratio: 1.7776/1;" />

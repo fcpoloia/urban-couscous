@@ -13,6 +13,7 @@ import glob
 import os
 import sys
 import random
+from html.entities import html5
 from subprocess import getstatusoutput as unix
 from flask import request, render_template, session, make_response
 from .db2 import ConfigTable, SortTable, ModelsTable, SitesTable, PhotosTable, VideosTable, DatabaseMissingError
@@ -61,7 +62,7 @@ def database_buttons():
         names.append(dbname)
     names.sort()
     for dbname in names:
-        obuttons.append({'href':'/'+dbname, 'name':dblist[dbname]})
+        obuttons.append({'href':'/'+dbname+'/random', 'name':dblist[dbname]})
 
     names = []
     for database in glob.glob("flaskr/new_*.db"):
@@ -71,7 +72,7 @@ def database_buttons():
         names.append(dbname)
     names.sort()
     for dbname in names:
-        nbuttons.append({'href':'/'+dbname, 'name':dblist[dbname]})
+        nbuttons.append({'href':'/'+dbname+'/random', 'name':dblist[dbname]})
 
 
     page_dict = {
@@ -91,7 +92,7 @@ def random_selection(datalist, count):
     selection = []
     nums = []
 
-    while len(selection) < count:
+    while len(selection) < count and len(selection) < len(datalist):
         num = random.randrange(len(datalist))
         if num not in nums:
             nums.append(num)
@@ -435,6 +436,21 @@ class HtmlPhotoSetPage(HtmlSite):
     def __init__(self, dbname):
         """"""
         super().__init__(dbname)
+        self.dbname = dbname
+
+
+    def get_columns(self, count):
+        """"""
+        use_thms = True
+        columns = 12
+        if 'imagesize' in session and session['imagesize'] == 'large':
+            use_thms = False
+            columns = 0
+        elif count < 25:
+            use_thms = False
+            columns = 2
+        print(f"get_columns - {columns} {use_thms}")
+        return (columns, use_thms)
 
 
     def do_gallery(self, idx, col, val, table, links):
@@ -457,11 +473,13 @@ class HtmlPhotoSetPage(HtmlSite):
         except IndexError:
             modelname = ''
 
-
-        if count < 25:
-            gallery = self.create_gallery(location, idx, count, False)
-        else:
-            gallery = self.create_gallery(location, idx, count, True)
+        columns, use_thms = self.get_columns(count)
+        gallery = self.create_gallery(location, idx, count, use_thms)
+        #print(f"gallery len {len(gallery)} count {count}")
+        #if count < 25:
+        #    gallery = self.create_gallery(location, idx, count, False)
+        #else:
+        #    gallery = self.create_gallery(location, idx, count, True)
 
         nphoto, pphoto, nname, pname = self.db.photos_table().get_next_prev(idx, col, val)
 
@@ -484,11 +502,13 @@ class HtmlPhotoSetPage(HtmlSite):
         page_dict['next'] = nname
         page_dict['prev'] = pname
         page_dict['count'] = len(gallery)
-        if count < 25:
-            page_dict['columns'] = 2
-        else:
-            page_dict['columns'] = 12
 
+        page_dict['columns'] = columns
+        #if count < 25:
+        #    page_dict['columns'] = 2
+        #else:
+        #    page_dict['columns'] = 12
+        print(f"photo_page.html {idx} pd[cols]={page_dict['columns']} cols={columns}")
         return render_template("photo_page.html",
                                webroot=self.config['webroot'],
                                page=page_dict,
@@ -521,12 +541,19 @@ class HtmlPhotoSetPage(HtmlSite):
             print(f"{url} - {st} {out}")
         #print(f"{out}")
         for line in out.split('\n'):
+            #print(line)
             if line.find("[IMG]") > -1:
                 img = line[line.find("href="):line.find("</a>")].split('"')[1]
                 imgurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/{img}"
                 picurl = imgurl
                 if use_thms:
-                    picurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/.pics/{img.replace('jpg','png')}"
+                    print(self.dbname)
+                    #if self.dbname != "femjoy":
+                    picurlimg = img.replace('jpg','png').replace('&amp;','&')
+                    #else:
+                    #    picurlimg = img.replace('&amp;','&')
+                    picurl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{fld}/.pics/{picurlimg}"
+                    print(picurl)
                 gall.append({'href': imgurl,
                              'src': picurl,
                              'pic': img}
@@ -977,6 +1004,131 @@ class HtmlSearchAll(HtmlSite):
                                viddicts=vids)
 
 
+# -----------------------------------------------------------------------------
+# To Do:
+# - this class should be in a new file
+# - custom default sorting
+# - use of Sort menu items
+# - read .ignore file
+# - implement paging (max 500 items)
+# - add a 'show hidden files' option
+# - videos should point to a videos page
+# - need to change cdd for plain files and non-logo folders when mixed with images
+# - remove the Random button
+#
+class HtmlFileSystem(HtmlSite):
+    """search all databases"""
+
+    def __init__(self):
+        """"""
+        super().__init__()
+        self.rpath=''
+
+    def ignored(self, item):
+        ignlist = ['.ignore', 'comments', 'comments.php', 'movie_dims']
+        return item.startswith('.') or item in ignlist
+        
+    def magic(self, item):
+        exten = os.path.splitext(item)[1].lower()
+        if exten in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+            return 'image'
+        if exten in ['.mp4', '.mkv']:
+            return 'movie'
+
+    def load_logo(self):
+        logo={}
+        if os.path.exists(os.path.join(self.rpath, '.logo')):
+            with open(os.path.join(self.rpath, '.logo'), 'r') as fp:
+                lines = fp.readlines()
+                for line in lines:
+                    d, p = line.split(',')[:2]
+                    logo[d] = p
+        return logo
+
+    def shorter(self, path, slen=25):
+        return path[:slen]+html5["hellip;"] if len(path) > slen else  path
+
+    def tail(self, path, slen=150):
+        return html5["hellip;"]+path[-slen:] if len(path) > slen else  path
+
+    def fs(self, path):
+        """"""
+        self.rpath = '/'+path
+        self.wpath = "http://"+request.host.replace(':5000','')+'/'+path+'/'
+        upath = os.path.dirname('/'+path)
+
+        n=p=''
+        nr=pr=0
+        dirlist = sorted([d for d in os.listdir(upath) if os.path.isdir(os.path.join(upath,d))])
+        for c in range(len(dirlist)):
+            if dirlist[c] == os.path.basename('/'+path):
+                if c > 0:
+                    p = dirlist[c-1]
+                    pr=1
+                if c < len(dirlist)-1:
+                    n = dirlist[c+1]
+                    nr=1
+
+        links = {
+            "up": {"href": f"/fs/{os.path.dirname(path)}", "title": "Up", 'class':'', 'rows': 1 },
+            "prev": {"href": f"/fs/{upath}/{p}", "title": "Prev", 'class':'', 'rows': pr },
+            "next": {"href": f"/fs/{upath}/{n}", "title": "Next", 'class':'', 'rows': nr },
+        }
+
+        logo = self.load_logo()
+        listing=[]
+        dirlist = sorted([d for d in os.listdir(self.rpath) if os.path.isdir(os.path.join(self.rpath,d)) and not self.ignored(d)])
+        for item in dirlist:
+            if os.path.isdir(os.path.join(self.rpath, item)): # needs thumbnails on folders
+                if item in logo.keys():
+                    listing.append({'kind': 'logo', 'name': item, 'basename': item, 'height':'240px', 'href':"http://"+request.host+'/fs'+self.rpath+'/'+item, 'src': self.wpath+logo[item]})
+                else:
+                    listing.append({'kind': 'dir', 'name': self.shorter(item), 'href': "http://"+request.host+'/fs'+self.rpath+'/'+item})
+
+        dirlist = sorted([i for i in os.listdir(self.rpath) if not os.path.isdir(os.path.join(self.rpath,i))])
+        for item in dirlist:
+
+            if self.ignored(item):
+                continue
+
+            # check for movies, images, pdf
+            elif self.magic(item) == 'image': # needs basename, height
+                if os.path.exists(self.rpath+"/.pics/"+os.path.splitext(item)[0]+'.png'):
+                    src = self.wpath+".pics/"+os.path.splitext(item)[0]+'.png'
+                if os.path.exists(self.rpath+"/.pics/"+os.path.splitext(item)[0]+'.jpg'):
+                    src = self.wpath+".pics/"+os.path.splitext(item)[0]+'.jpg'
+                else:
+                    src = self.wpath+item
+                listing.append({'kind': 'image', 'name': item, 'basename': item, 'height': '240px', 'href': self.wpath+item, 'src': src})
+
+            elif self.magic(item) == 'movie': # needs h, w, mlen
+                src="/static/MovieClip.png" #'w':'209', 'h':'224'
+                thm=False
+                if os.path.exists(os.path.join(self.rpath+'/.pics/'+os.path.splitext(item)[0]+'.png')):
+                    src = os.path.join(self.wpath+'.pics/'+os.path.splitext(item)[0]+'.png')
+                    #thm=True
+                elif os.path.exists(os.path.join(self.rpath+'/.pics/'+os.path.splitext(item)[0]+'.thm')):
+                    src = os.path.join(self.wpath+'.pics/'+os.path.splitext(item)[0]+'.thm')
+                listing.append({'kind': 'movie', 'name': item, 'href': self.wpath+item, 'src': src, 'thm':thm, 'height':'240px'})
+
+            else:
+                listing.append({'kind': 'file', 'name': item, 'href': self.wpath+item})
+
+        # title plaintitle heading type | navigation db
+        page_dict = {
+            'title': f"{self.tail(path,100)} ({len(listing)} items)",
+            'heading':'phpgallery',
+            'plaintitle':True,
+            'button_class':'fivebuttons', 
+            'navigation':links,
+            'fs': True
+        }
+
+
+        return render_template("fs.html", webroot="http://"+request.host.replace(':5000',''),
+                                page=page_dict, listing=listing)
+
+
 class PageBuilder:
     def __init__(self, info, htmlpageclass):
         self.info = info
@@ -1069,6 +1221,14 @@ def page_factory(page):
     except KeyError:
         return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
 
+
+def file_system():
+    try:
+        #print("filesystem")
+        return HtmlFileSystem()
+    except:
+        return ErrorPage(f"Not Found: Page [ fs ] not found.") #ErrorPage(dbname)
+        raise
 
 #class ModelsPage:
 #    def __init__(self, tagdicts, mtable):

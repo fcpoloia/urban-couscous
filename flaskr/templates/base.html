@@ -46,11 +46,11 @@
 
 		{% if page['db'] %}
 		<a href="/{{page['db']}}/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
-		{% else %}
+		{% elif not page['fs'] %}
 		<a href="/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
 		{% endif %}
 
-		<span class="w3-bar-item w3-padding-small w3-border w3-border-black">
+		<span id="pagetitle" class="w3-bar-item w3-padding-small w3-border w3-border-black">
 		<div style="font-size: var(--menu_font_size);" nowrap>
 			{% if page['plaintitle'] %}
 				{{page['title']}}
@@ -71,51 +71,51 @@
 		</div>
 		</span>	
 
-		<div class="w3-dropdown-hover w3-mobile w3-right">
+		<div class="w3-dropdown-hover w3-right">
 			<button class="w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort <i class="fa fa-caret-down"></i></button>
 			<div class="w3-dropdown-content w3-bar-block w3-dark-grey" style="right:0">
 
 			{% if page['type'] %}
 				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
-			<a href="{{page['url']}}?order=alpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Alpha</a>
-			<a href="{{page['url']}}?order=ralpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Alpha (R)</a>
-			<a href="{{page['url']}}?order=id" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Index</a>
-			<a href="{{page['url']}}?order=rid" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Index (R)</a>
+			<a href="{{page['url']}}?order=alpha"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Alpha</a>
+			<a href="{{page['url']}}?order=ralpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Alpha (R)</a>
+			<a href="{{page['url']}}?order=id"     class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Index</a>
+			<a href="{{page['url']}}?order=rid"    class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Index (R)</a>
 				{% endif %}
 				{% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
-			<a href="{{page['url']}}?order=date" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Date</a>
-			<a href="{{page['url']}}?order=rdate" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Date(R)</a>
+			<a href="{{page['url']}}?order=date"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Date</a>
+			<a href="{{page['url']}}?order=rdate" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Date(R)</a>
 				{% endif %}
 				{% if page['type'] in ['photos'] %}
-			<a href="{{page['url']}}?order=pics" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort PicCount</a>
-			<a href="{{page['url']}}?order=rpics" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort PicCount(R)</a>
+			<a href="{{page['url']}}?order=pics"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort PicCount</a>
+			<a href="{{page['url']}}?order=rpics" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort PicCount(R)</a>
 				{% endif %}
 				{% if page['type'] == 'models' %}
-			<a href="{{page['url']}}?order=vlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos</a>
-			<a href="{{page['url']}}?order=rvlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos(R)</a>
-			<a href="{{page['url']}}?order=platest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Photos</a>
-			<a href="{{page['url']}}?order=rplatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Photos(R)</a>
+			<a href="{{page['url']}}?order=vlatest"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Videos</a>
+			<a href="{{page['url']}}?order=rvlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Videos(R)</a>
+			<a href="{{page['url']}}?order=platest"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Photos</a>
+			<a href="{{page['url']}}?order=rplatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Photos(R)</a>
 				{% endif %}
 				{% if page['type'] in ['models', 'sites'] %}
-			<a href="{{page['url']}}?order=most" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Most</a>
-			<a href="{{page['url']}}?order=least" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Sort Least</a>
+			<a href="{{page['url']}}?order=most"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Most</a>
+			<a href="{{page['url']}}?order=least" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Least</a>
 				{% endif %}
 				{% if page['type'] == 'videos_not' %} <!-- Latest Videos on videos page is just date order -->
-			<a href="{{page['url']}}?order=latest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos</a>
-			<a href="{{page['url']}}?order=rlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Latest Videos(R)</a>
+			<a href="{{page['url']}}?order=latest"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Videos</a>
+			<a href="{{page['url']}}?order=rlatest" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Latest Videos(R)</a>
 				{% endif %}
 				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
-			<a href="{{page['url']}}?size=large" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Large Thumbs</a>
-			<a href="{{page['url']}}?size=small" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">Small Thumbs</a>
+			<a href="{{page['url']}}?size=large" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Large Thumbs</a>
+			<a href="{{page['url']}}?size=small" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Small Thumbs</a>
 				{% endif %}
-				{% if page['type'] in ['not_gallery' ] %}
-			<a href="{{page['url']}}?image=large" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">100%</a>
-			<a href="{{page['url']}}?image=medium" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">50%</a>
-			<a href="{{page['url']}}?image=small" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">25%</a>
-			<a href="{{page['url']}}?image=thumb" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">10%</a>
+				{% if page['type'] in ['gallery' ] %}
+			<a href="{{page['url']}}?image=large"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Single Column</a>
+			<!-- a href="{{page['url']}}?image=medium" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">50%</a -->
+			<!-- a href="{{page['url']}}?image=small"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">25%</a -->
+			<a href="{{page['url']}}?image=thumb"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Default</a>
 				{% endif %}
 			{% endif %}
-			<a  onclick="document.getElementById('id01').style.display='block'" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-mobile ">About</a>
+			<a  onclick="document.getElementById('id01').style.display='block'" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button  ">About</a>
 			
 
 			</div>
@@ -157,7 +157,7 @@
 
 </div>
 
-<!-- About box - model overlay box -->
+<!-- About box - modal overlay box -->
 
 <div id="id01" class="w3-modal">
     <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">

@@ -28,6 +28,8 @@ a.title2:hover { color: #ddd;}
     #content { padding-top: 25px; } 
   }*/
 
+
+
   /*****************************************/
   /* new thumb image links with truncating */
   /* overlay text and hover opacity        */
@@ -38,6 +40,8 @@ a.title2:hover { color: #ddd;}
   /* Main container */
   .overlay-image { display: inline-block; position: relative; margin: -4px -2px 0px 0px; transition: .5s ease; }
 
+  .overlay-image-photo {margin: -4px -2px 0px 0px;}
+  .overlay-image-video {margin: -2px 2px 4px 0px;}
   /* Original image */
   .overlay-image .image { display: block; }
 
@@ -60,6 +64,27 @@ a.title2:hover { color: #ddd;}
   }
   /* left justified text for smaller images */
   .overlay-image .textleft { text-align: left; margin-left: 2px; margin-right: 2px; }
+
+  .video-container { display: flex; flex-direction: row; flex-wrap: wrap; }
+  .video-item { align-self: stretch; width: 24.8%; } /* 16.66 20 25 */
+
+
+  @media screen and (max-width: 600px) {
+    div#intro { margin-left: 0px; margin-right: 0px; }
+    div.video-item { width: 100%; }
+    span#pagetitle { display: none; }
+  }
+  @media screen and (max-width: 900px) and (min-width: 600px) {
+    div#intro { margin-left: 350px; margin-right: 350px; }
+    div.video-item { width: 49.4%; }
+  }
+  @media screen and (max-width: 1200px) and (min-width: 900px) {
+    div.video-item { width: 32.0%; }
+  }
+  @media screen and (min-width: 1210px) {
+    div.video-item { width: 24.8%; }
+  }
+
 
 </style>
 
