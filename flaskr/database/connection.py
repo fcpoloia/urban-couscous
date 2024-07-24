@@ -2,7 +2,7 @@
 import os
 import sqlite3
 
-from flaskr.database.utils import DatabaseMissingError
+from flaskr.database.errors import DatabaseMissingError
 
 
 class ConnectDB:

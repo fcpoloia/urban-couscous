@@ -43,7 +43,7 @@ sort order(alpha,latest,most,pics)
 from markupsafe import escape
 from flask import Flask, request, session, make_response
 from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory, page_factory, file_system
-from flaskr.database.utils import DatabaseMissingError
+from flaskr.database.errors import DatabaseMissingError
 
 
 app = Flask(__name__)

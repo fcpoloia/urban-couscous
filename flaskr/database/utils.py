@@ -1,19 +1,9 @@
 
 import os
 import glob
-#import sqlite3
 from flask import request
 
 from flaskr.database.sql import ConfigTable, SortTable, ModelsTable, SitesTable, PhotosTable, VideosTable
-
-
-class DatabaseMissingError(Exception):
-    """"""
-
-
-class InvalidDatabaseError(Exception):
-    """custom exception"""
-    #pass
 
 
 def database_buttons():

@@ -5,7 +5,8 @@ from flask import render_template, request
 
 from flaskr.common.utils import random_selection
 from flaskr.pages.base import HtmlSite
-from flaskr.database.utils import get_config, DatabaseTables, DatabaseMissingError
+from flaskr.database.utils import DatabaseTables, get_config 
+from flaskr.database.errors import DatabaseMissingError
 
 
 class HtmlSearchPage(HtmlSite):
@@ -101,8 +102,8 @@ class HtmlRandomAll(HtmlSite):
         mods = []
         gals = []
         vids = []
-        for database in glob.glob("flaskr/old_*.db") + glob.glob("flaskr/new_*.db"):
-            dbname = database.replace('flaskr/new_','').replace('flaskr/old_','').replace('.db','')
+        for database in glob.glob("flaskr/sqlitedb/old_*.db") + glob.glob("flaskr/sqlitedb/new_*.db"):
+            dbname = database.replace('flaskr/sqlitedb/new_','').replace('flaskr/sqlitedb/old_','').replace('.db','')
             self.set_dbname(dbname)
             self.db = DatabaseTables(dbname)
             try:
@@ -151,8 +152,8 @@ class HtmlSearchAll(HtmlSite):
         gals = []
         vids = []
         sits = []
-        for database in glob.glob("flaskr/old_*.db") + glob.glob("flaskr/new_*.db"):
-            dbname = database.replace('flaskr/new_','').replace('flaskr/old_','').replace('.db','')
+        for database in glob.glob("flaskr/sqlitedb/old_*.db") + glob.glob("flaskr/sqlitedb/new_*.db"):
+            dbname = database.replace('flaskr/sqlitedb/new_','').replace('flaskr/sqlitedb/old_','').replace('.db','')
             self.set_dbname(dbname)
             self.db = DatabaseTables(dbname)
             try:

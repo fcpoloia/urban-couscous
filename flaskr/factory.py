@@ -11,7 +11,8 @@
 
 from flask import request, render_template, make_response
 
-from flaskr.database.utils import DatabaseMissingError, InvalidDatabaseError, database_buttons
+from flaskr.database.errors import DatabaseMissingError, InvalidDatabaseError
+from flaskr.database.utils import database_buttons
 
 from flaskr.pages.photo import HtmlPhotosPage, HtmlPhotoSetPage
 from flaskr.pages.video import HtmlVideosPage, HtmlVideoPage

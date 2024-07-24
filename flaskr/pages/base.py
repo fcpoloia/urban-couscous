@@ -2,7 +2,8 @@
 import os
 from flask import session, request
 
-from flaskr.database.utils import DatabaseMissingError, DatabaseTables, get_config
+from flaskr.database.errors import DatabaseMissingError
+from flaskr.database.utils import get_config, DatabaseTables
 from flaskr.common.utils import human_time
 
 def get_page_num(page):
