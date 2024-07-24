@@ -1,0 +1,97 @@
+
+import sys
+from flask import render_template
+
+from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
+from flaskr.pages.sorttypes import vsorting
+
+
+class HtmlVideoPage(HtmlSite):
+
+    def __init__(self, dbname):
+        """"""
+        super().__init__(dbname)
+
+
+    def do_page(self, vid, page=None, pageid=None): #sid=None, mid=None):
+        """single video page"""
+        video = self.db.videos_table().select_where('id', vid)[0]
+        _idx, model_id, site_id, name, filename, thumb, poster, width, height, _length, _vdate = video
+        if poster is None or poster == "":
+            poster = thumb
+        sitename = self.db.sites_table().select_where('id', site_id)[0][1]
+        try:
+            modelname = self.db.models_table().select_where('id', model_id)[0][1]
+        except IndexError:
+            modelname = ''
+        if self.dbname == "hegre":
+            filename = filename.replace('.avi', '.mp4')
+
+        thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
+        video_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['videos']}/{filename}"
+        if int(width) > 1280 or int(height) > 720:
+            width=1280
+            height=720
+        if int(width) == 0:
+            width=1280
+            height=720
+
+        viddict = {'height':height, 'width':width, 'thumb_url':thumb_url, 'video_url':video_url}
+
+        if page is None: #mid is None and sid is None:
+            nvideo, pvideo, nname, pname = self.db.videos_table().get_next_prev(vid)
+        else:
+            nvideo, pvideo, nname, pname = self.db.videos_table().get_next_prev(vid, f'{page}_id', pageid)
+
+        sys.stderr.write(f"nv {nvideo}, pv{pvideo}, nn {nname}, pn {pname}\n")
+
+        links = self.heading('videos')
+        prefix = f"{page}/{pageid}/" if page is not None else ""
+
+        titledict = {
+            'site': {'href':f"/{self.dbname}/site/{site_id}",
+                     'name':sitename},
+            'models':[{'href':f"/{self.dbname}/model/{model_id}",
+                       'name':modelname}],
+            'folder': name
+        }
+
+        # title plaintitle heading type | navigation db
+        page_dict = self.init_page_dict(titledict, False, 'video', links)
+        page_dict['nid'] = nvideo
+        page_dict['pid'] = pvideo
+        page_dict['next'] = nname
+        page_dict['prev'] = pname
+        page_dict['prefix'] = prefix
+
+        sys.stderr.write(f"page_dict = {page_dict}\n")
+
+        return render_template("video_page.html",
+                               webroot=self.config['webroot'],
+                               page=page_dict,
+                               viddict=viddict)
+
+
+class HtmlVideosPage(HtmlSite):
+
+    def __init__(self, dbname):
+        """"""
+        super().__init__(dbname)
+
+    def do_page(self):
+        """list all videos"""
+        #videospage = VideosPage([self.viddict,], self.db.videos_table())
+        info = PageInfo([self.viddict,], 'videos')
+        pagebuilder = PageBuilder(info, self)
+        page_dict, viddicts = pagebuilder.build()
+        return render_template("videos.html",
+                               webroot=self.config['webroot'],
+                               page=page_dict,
+                               viddicts=viddicts[0])
+
+    def getitems(self, order):
+        items = self.db.videos_table().select_order_by(vsorting[order][1], vsorting[order][2])
+        if len(items) == 0:
+            items = self.db.videos_table().select_group_by_order_by('id', 'id', 'desc')
+        return (items,)
+

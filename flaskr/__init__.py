@@ -42,9 +42,8 @@ sort order(alpha,latest,most,pics)
 
 from markupsafe import escape
 from flask import Flask, request, session, make_response
-from .mark_II import database_buttons, render_template, site_root, dbpage_factory, page_factory, file_system
-#from .mark_II import HtmlSite, HtmlPage, HtmlSearch, HtmlRootPage, HtmlRandom
-from .db2 import DatabaseMissingError
+from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory, page_factory, file_system
+from flaskr.database.utils import DatabaseMissingError
 
 
 app = Flask(__name__)
@@ -69,6 +68,7 @@ def not_found(error):
 
 def get_search_term():
     """"""
+    s = None
     if request.method == 'GET':
         s = request.args.get('search') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
     return s
