@@ -5,55 +5,122 @@
 <h2>{{error}}</h2>
 {% endif %}
 
+{%- macro dir_file_card(item) -%}
+
+<div class="w3-card-4 zero" style="border:solid 1px #522; display: inline-block; background-color:#080808;" >
+  <a href="{{item.href}}">
+  <div class="w3-display-container hover dir-file-thumb">
+    <div class="w3-display-middle">
+      <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; word-wrap: break-word">{{item.basename}}
+    </div>
+  </div>
+  </a>
+</div>
+{%- endmacro -%}
+
+{%- macro file_card(item) -%}
+<div class="overlay-image overlay-image-photo thumbheight" style="display: inline-block; background-color:#080808;" >
+  <a href="{{item.href}}" title="{{item.basename}}">
+    <img class="image thumbheight" src="{{item.src}}" alt="{{item.basename}} {{item.w}}x{{item.h}} {{item.mlen}}" />
+    <!-- style="width: 100%; aspect-ratio: 1.7776/1;" / -->
+    <!-- div class="text">{{item.basename}} {% if item.w %}<i>{{item.w}}x{{item.h}} {{item.mlen}}</i>{% endif %}</div -->
+    <div class="w3-display-middle">
+      <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; word-wrap: break-word">{{item.basename}}
+    </div>
+  </a>
+</div>
+{%- endmacro -%}
+
+{%- macro file_card2(item) -%}
+<div class="w3-card-4 zero" style="border:solid 1px #522; display: inline-block; background-color:#080808;" >
+  <a href="{{item.href}}">
+  <div class="w3-display-container hover dir-file-thumb">
+    <img class="image thumbheight" src="{{item.src}}" alt="{{item.basename}}" />
+    <div class="w3-display-middle">
+      <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; word-wrap: break-word">{{item.basename}}
+    </div>
+  </div>
+  </a>
+</div>
+{%- endmacro -%}
+
 {% if page %}
 
-<style>div.video-item { width: auto; }</style>
+<style>
+  .zero { margin:-4px -2px 0px 0px; padding:0px 0px 0px 0px;}
+  .grid-container { flex-direction: row;}
+  .item { align-self: stretch;} /* 16.66 20 25 */
+  .hover:hover { background-color:#522; opacity:1.0;}
+  .thumbheight { max-height:200px;}
+  .dir-file-thumb { width:166px; height:198px;}
+  a img { background-color: #000; }
+</style>
+
+<div class="grid-container centredthumbs">
+
+    <h3></h3>
+      <!-- {{comments}} -->
 
 {% if listing %}
-    <div id="intro" class="w3-container w3-center">
+
+    <div id="intro" class="grid-container centredthumbs">
+
     <h3></h3>
-    
+
       {% for item in listing %}
         {% if item.kind == "dir" %}
-          <a href="{{item.href}}" class="w3-button w3-border w3-border-grey w3-padding-small w3-teal w3-hover-dark-grey w3-margin-bottom w3-margin-right">{{item.name}}</a>
+        
+        {{ dir_file_card(item) }}
+
         {% elif item.kind == 'logo' %}
+
         <div class="overlay-image overlay-image-photo" style="max-width:100%">
           <a href="{{item.href}}" title="{{item.basename}}">
-        <img class="image" src="{{item.src}}" alt="{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
-        <!-- img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" / -->
-        <div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
-        </a></div>
+            <img class="image" src="{{item.src}}" alt="{{item.basename}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
+            <div class="text">{{item.basename}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
+          </a>
+        </div>
           
         {% endif %}
       {% endfor %}
-      <br>
+      
       {% for item in listing %}
         {% if item.kind == 'image' %}
 
         <div class="overlay-image overlay-image-photo" style="max-width:100%">
           <a href="{{item.href}}" title="{{item.basename}}">
-        <img class="image" src="{{item.src}}" alt="{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
-        <!-- img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" / -->
-        <div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
-        </a></div>
+            <img class="image" src="{{item.src}}" alt="{{item.basename}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
+            <div class="text">{{item.basename}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
+          </a>
+        </div>
   
         {% elif item.kind == 'movie' %}
 
-        <div class="overlay-image overlay-image-video grid-item video-item" {% if item.thm %}style="max-width:100%"{% endif %}>
+        <div class="overlay-image overlay-image-photo thumbheight">
           <a href="{{item.href}}" title="{{item.basename}}">
-        <!-- img class="image" src="{{item.src}}" alt="Alt text" height="{{item.theight}}px" / -->
-        <img class="image" src="{{item.src}}" alt="{{item.name}} {{item.w}}x{{item.h}} {{item.mlen}}" 
-        {% if item.thm %}
-        style="width: 100%; aspect-ratio: 1.7776/1;"
-        {% else %}
-        style="height: {{item.height}};"
-        {% endif %} 
-        />
-        <div class="text">{{item.name}} <i>{{item.w}}x{{item.h}} {{item.mlen}}</i></div>
-        </a></div>
-  
+            <img class="image thumbheight" src="{{item.src}}" alt="{{item.basename}} {{item.w}}x{{item.h}} {{item.mlen}}" />
+            <!-- style="width: 100%; aspect-ratio: 1.7776/1;" / -->
+            <div class="text">{{item.basename}} {% if item.w %}<i>{{item.w}}x{{item.h}} {{item.mlen}}</i>{% endif %}</div>
+          </a>
+        </div>
+
+        {% elif item.kind == 'movie_icon' %}
+
+        <div class="overlay-image overlay-image-photo thumbheight">
+          <a href="{{item.href}}" title="{{item.basename}}">
+            <img class="image thumbheight" src="{{item.src}}" alt="{{item.basename}} {{item.w}}x{{item.h}} {{item.mlen}}" />
+            <!-- style="width: 100%; aspect-ratio: 1.7776/1;" / -->
+            <!-- div class="text">{{item.basename}} {% if item.w %}<i>{{item.w}}x{{item.h}} {{item.mlen}}</i>{% endif %}</div -->
+            <div class="w3-display-middle">
+              <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; word-wrap: break-word">{{item.basename}}
+            </div>
+                  </a>
+        </div>
+
         {% elif item.kind != 'dir' and item.kind != 'logo' %}
-          <a href="{{item.href}}" class="w3-button w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-margin-bottom w3-margin-right">{{item.name}}</a>
+
+        {{ file_card(item) }}
+
         {% endif %}
       {% endfor %}
     

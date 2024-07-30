@@ -4,6 +4,7 @@ import glob
 from flask import request
 
 from flaskr.database.sql import ConfigTable, SortTable, ModelsTable, SitesTable, PhotosTable, VideosTable
+from flaskr.database.errors import DatabaseMissingError
 
 
 def database_buttons():

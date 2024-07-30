@@ -2,11 +2,88 @@
 
 import glob
 from flask import render_template, request
+from flask.views import View
 
 from flaskr.common.utils import random_selection
 from flaskr.pages.base import HtmlSite
-from flaskr.database.utils import DatabaseTables, get_config 
+from flaskr.database.utils import DatabaseTables, get_config
 from flaskr.database.errors import DatabaseMissingError
+
+#@app.route("/<dbname>/search", methods=['POST', 'GET'])
+#def search(dbname):
+#    """"""
+#    term = get_search_term()
+#    mysite = dbpage_factory('search',dbname)
+#    mysite.set_thumb_size()
+#    return mysite.search(term)
+
+#@app.route("/<dbname>/random")
+#def random(dbname):
+#    """"""
+#    mysite = dbpage_factory('random',dbname) #HtmlRandom(dbname)
+#    mysite.set_thumb_size()
+#    return mysite.random()
+
+def get_search_term():
+    """"""
+    s = None
+    if request.method == 'GET':
+        s = request.args.get('search')
+    return s
+
+
+class CommonView(View):
+    methods = ["POST", "GET"]
+
+    def __init__(self, a):
+        """"""
+        self.appt = a
+
+
+class DBSearchPageView(CommonView):
+
+    def dispatch_request(self, dbname):
+        """"""
+        term = get_search_term()
+        mysite = HtmlSearchPage(dbname)
+        mysite.set_thumb_size()
+        return mysite.search(term)
+
+
+class DBRandomPageView(CommonView):
+
+    def dispatch_request(self, dbname):
+        """"""
+        mysite = HtmlRandomPage(dbname)
+        mysite.set_thumb_size()
+        return mysite.random()
+
+
+class RandomPageView(CommonView):
+
+    def dispatch_request(self):
+        """"""
+        mysite = HtmlRandomAll()
+        return mysite.random()
+
+
+class SearchPageView(CommonView):
+
+    def dispatch_request(self):
+        """"""
+        term = get_search_term()
+        mysite = HtmlSearchAll()
+        return mysite.search(term)
+
+
+class RootPageView(CommonView):
+
+    def dispatch_request(self, dbname):
+        """"""
+        mysite = HtmlRootPage(dbname)
+        return mysite.rootpage()
+
+
 
 
 class HtmlSearchPage(HtmlSite):

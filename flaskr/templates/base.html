@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>{% if page %}{{page['heading']}}{% endif %}</title>
+<title>{% if page['pagetitle'] %}{{page['pagetitle']}}{% else %}{{page['heading']}}{% endif %}</title>
  <!-- for floatbox -->
  <link type="text/css" rel="stylesheet" href="{{webroot}}/floatbox/floatbox.css">
  <script type="text/javascript" src="{{webroot}}/floatbox/floatbox.js"></script>
@@ -46,7 +46,7 @@
 
 		{% if page['db'] %}
 		<a href="/{{page['db']}}/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
-		{% elif not page['fs'] %}
+		{% elif page['type'] != 'fs' %}
 		<a href="/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
 		<a href="/fs" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">FileSystem</a>
 		{% endif %}
@@ -77,13 +77,13 @@
 			<div class="w3-dropdown-content w3-bar-block w3-dark-grey" style="right:0">
 
 			{% if page['type'] %}
-				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site'] %}
+				{% if page['type'] in ['photos', 'models', 'model', 'videos', 'sites', 'site', 'fs'] %}
 			<a href="{{page['url']}}?order=alpha"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Alpha</a>
 			<a href="{{page['url']}}?order=ralpha" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Alpha (R)</a>
 			<a href="{{page['url']}}?order=id"     class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Index</a>
 			<a href="{{page['url']}}?order=rid"    class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Index (R)</a>
 				{% endif %}
-				{% if page['type'] in ['photos', 'videos', 'model', 'site'] %}
+				{% if page['type'] in ['photos', 'videos', 'model', 'site', 'fs'] %}
 			<a href="{{page['url']}}?order=date"  class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Date</a>
 			<a href="{{page['url']}}?order=rdate" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button ">Sort Date(R)</a>
 				{% endif %}

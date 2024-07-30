@@ -2,9 +2,59 @@
 from subprocess import getstatusoutput as unix
 
 from flask import render_template, session
+from flask.views import View
 
-from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
+from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder, do_post_get
 from flaskr.pages.sorttypes import sorting
+
+
+#@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
+#@app.route("/<dbname>/gallery/model/<mid>/<pid>", methods=['POST', 'GET'])
+#@app.route("/<dbname>/gallery/<page>/<pageid>/<photoid>", methods=['POST', 'GET'])
+#def gallery_page_id_id(dbname, page, pageid, photoid):
+#    """"""
+#    do_post_get()
+#    print(f"route gallery_page_id_id {photoid}")
+#    mysite = dbpage_factory('gallery',dbname)
+#    links = mysite.heading(page+'s')
+#    return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
+
+class GalleryPageView(View):
+    methods = ["POST", "GET"]
+
+    def __init__(self, a):
+        self.appt = a
+
+    def dispatch_request(self, dbname, page, pageid, photoid):
+        do_post_get()
+        self.appt.logger.info(f"route gallery_page_id_id {photoid}")
+        mysite = HtmlPhotoSetPage(dbname)
+        links = mysite.heading(page+'s')
+        return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
+
+
+#@app.route("/<dbname>/gallery/<idx>", methods=['POST', 'GET'])
+#def gallery(dbname, idx):
+#    """"""
+#    do_post_get()
+#    print(f"route dbname gallery {idx}")
+#    mysite = dbpage_factory('gallery',dbname)
+#    links = mysite.heading('photos')
+#    return mysite.do_gallery(idx, None, None, None, links)
+
+class GalleryIdxPageView(View):
+    methods = ["POST", "GET"]
+
+    def __init__(self, a):
+        self.appt = a
+
+    def dispatch_request(self, dbname, idx): #page, pageid=None, photoid=None):
+        do_post_get()
+        self.appt.logger.info(f"route dbname gallery {idx}")
+        mysite = HtmlPhotoSetPage(dbname)
+        links = mysite.heading('photos')
+        return mysite.do_gallery(idx, None, None, None, links)
+
 
 
 class HtmlPhotoSetPage(HtmlSite):

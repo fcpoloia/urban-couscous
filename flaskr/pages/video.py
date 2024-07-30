@@ -1,9 +1,28 @@
 
 import sys
 from flask import render_template
+from flask.views import View
 
 from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
 from flaskr.pages.sorttypes import vsorting
+
+
+# @app.route("/<dbname>/video/site/<sid>/<vid>")
+# @app.route("/<dbname>/video/model/<mid>/<vid>")
+# @app.route("/<dbname>/video/<page>/<pageid>/<vid>")
+
+class VideoPageView(View):
+    methods = ["POST", "GET"]
+
+    def __init__(self, a, root=None):
+        """"""
+        self.appt = a
+        self.root = True
+
+    def dispatch_request(self, dbname, page, pageid, vid=None):
+        """"""
+        mysite = HtmlVideoPage(dbname)
+        return mysite.do_page(vid, page, pageid)
 
 
 class HtmlVideoPage(HtmlSite):

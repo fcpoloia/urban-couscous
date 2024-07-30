@@ -42,12 +42,40 @@ sort order(alpha,latest,most,pics)
 
 from markupsafe import escape
 from flask import Flask, request, session, make_response
-from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory, page_factory, file_system
+from flask.views import View
+from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory, page_factory
+#, file_system
 from flaskr.database.errors import DatabaseMissingError
 
+from flaskr.pages.base import do_post_get
+from flaskr.pages.fs import FileSystemView
+from flaskr.pages.video import VideoPageView, HtmlVideosPage, HtmlVideoPage
+from flaskr.pages.model import HtmlModelsPage, HtmlModelPage
+from flaskr.pages.photo import GalleryIdxPageView, GalleryPageView, HtmlPhotosPage
+from flaskr.pages.site import HtmlSitesPage, HtmlSitePage
+from flaskr.pages.common import DBSearchPageView, DBRandomPageView, RandomPageView, SearchPageView, RootPageView
+
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 app = Flask(__name__)
 app.secret_key = "d76df0b23782624435e4e42b9fd79b99e1b1a1c387a145ecae02683d69cf2fda"
+
 
 @app.errorhandler(404)
 def not_found(error):
@@ -65,72 +93,10 @@ def not_found(error):
     return resp
 
 
-
-def get_search_term():
-    """"""
-    s = None
-    if request.method == 'GET':
-        s = request.args.get('search') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
-    return s
-
-def do_post_get():
-    """"""
-    print(f"{request.url}")
-    if request.method == 'GET':
-        if len(request.query_string) == 0:
-            if 'order' in session:
-                del session['order']
-            if 'page' in session:
-                del session['page']
-        else:
-            print(f"request query = {request.query_string}")
-
-            s = request.args.get('size')
-            if s in ["large", "small", "inc", "dec"]:
-                session['thumbsize'] = s
-
-            i = request.args.get('image')
-            if i in ["large", "medium", "small", "thumb"]:
-                session['imagesize'] = i
-
-            o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
-            if o is not None:
-                session['order'] = o
-
-            p = request.args.get('page')
-            if p is not None:
-                try:
-                    session['page'] = int(p)
-                except ValueError:
-                    pass # not a value page number
-
-        #print(f"session {session}")
-    else:
-        print("not a get method")
-
-
 # --------------------gallery page id id-------------------------------
 
-#@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
-#@app.route("/<dbname>/gallery/model/<mid>/<pid>", methods=['POST', 'GET'])
-@app.route("/<dbname>/gallery/<page>/<pageid>/<photoid>", methods=['POST', 'GET'])
-def gallery_page_id_id(dbname, page, pageid, photoid):
-    """"""
-    do_post_get()
-    print(f"route gallery_page_id_id {photoid}")
-    mysite = dbpage_factory('gallery',dbname)
-    links = mysite.heading(page+'s')
-    return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
-
-@app.route("/<dbname>/gallery/<idx>", methods=['POST', 'GET'])
-def gallery(dbname, idx):
-    """"""
-    do_post_get()
-    print(f"route dbname gallery {idx}")
-    mysite = dbpage_factory('gallery',dbname)
-    links = mysite.heading('photos')
-    return mysite.do_gallery(idx, None, None, None, links)
-
+app.add_url_rule("/<dbname>/gallery/<page>/<pageid>/<photoid>", view_func=GalleryPageView.as_view("gallery_page", app))
+app.add_url_rule("/<dbname>/gallery/<idx>", view_func=GalleryIdxPageView.as_view("gallery_idx_page", app))
 
 # ---------------------page--------------------------------------------
 
@@ -138,93 +104,68 @@ def gallery(dbname, idx):
 #@app.route("/<dbname>/sites", methods=['POST', 'GET'])
 #@app.route("/<dbname>/photos", methods=['POST', 'GET'])
 #@app.route("/<dbname>/videos", methods=['POST', 'GET'])
-@app.route("/<dbname>/<page>", methods=['POST', 'GET'])
-def dbname_page(dbname, page):
-    """"""
-    do_post_get()
-    mysite = dbpage_factory(page,dbname)
-    mysite.set_thumb_size()
-    return mysite.do_page()
+#@app.route("/<dbname>/<page>", methods=['POST', 'GET'])
 
+
+class DBPageView(View):
+    def __init__(self, a, htmlpage):
+        self.appt = a
+        self.htmlpage = htmlpage
+
+    def dispatch_request(self, dbname):
+        do_post_get()
+        mysite = self.htmlpage(dbname)
+        mysite.set_thumb_size()
+        return mysite.do_page()
+
+app.add_url_rule("/<dbname>/models", view_func=DBPageView.as_view("models_page", app, HtmlModelsPage))
+app.add_url_rule("/<dbname>/sites", view_func=DBPageView.as_view("sites_page", app, HtmlSitesPage))
+app.add_url_rule("/<dbname>/photos", view_func=DBPageView.as_view("photos_page", app, HtmlPhotosPage))
+app.add_url_rule("/<dbname>/videos", view_func=DBPageView.as_view("videos_page", app, HtmlVideosPage))
 
 # ---------------------page id-----------------------------------------
 
 #@app.route("/<dbname>/model/<modelid>", methods=['POST', 'GET'])
 #@app.route("/<dbname>/site/<siteid>", methods=['POST', 'GET'])
 #@app.route("/<dbname>/video/<vid>")
-@app.route("/<dbname>/<page>/<index>", methods=['POST', 'GET'])
-def dbname_page_id(dbname, page, index):
-    """"""
-    do_post_get()
-    mysite = dbpage_factory(page,dbname)
-    mysite.set_thumb_size()
-    return mysite.do_page(index)
+#@app.route("/<dbname>/<page>/<index>", methods=['POST', 'GET'])
 
 
-# --------------------video page id id --------------------------------
+class DBPageIdView(View):
+    def __init__(self, a, htmlpage):
+        self.appt = a
+        self.htmlpage = htmlpage
 
-#@app.route("/<dbname>/video/site/<sid>/<vid>")
-#@app.route("/<dbname>/video/model/<mid>/<vid>")
-@app.route("/<dbname>/video/<page>/<pageid>/<vid>")
-def video_page_id_id(dbname, page, pageid, vid=None):
-    """"""
-    mysite = dbpage_factory('video',dbname)
-    mysite.set_thumb_size()
-    return mysite.do_page(vid, page, pageid)
-
-# ----------------miscellaneous----------------------------------------
-
-@app.route("/<dbname>/search", methods=['POST', 'GET'])
-def search(dbname):
-    """"""
-    term = get_search_term()
-    mysite = dbpage_factory('search',dbname)
-    mysite.set_thumb_size()
-    return mysite.search(term)
-
-@app.route("/<dbname>/random")
-def random(dbname):
-    """"""
-    mysite = dbpage_factory('random',dbname) #HtmlRandom(dbname)
-    mysite.set_thumb_size()
-    return mysite.random()
+    def dispatch_request(self, dbname, index):
+        do_post_get()
+        mysite = self.htmlpage(dbname)
+        mysite.set_thumb_size()
+        return mysite.do_page(index)
 
 
-@app.route("/<dbname>/")
-@app.route("/<dbname>")
-def dbroot(dbname):
-    """"""
-    mysite = dbpage_factory('rootpage',dbname) #HtmlRootPage(dbname)
-    return mysite.rootpage()
+app.add_url_rule("/<dbname>/model/<index>", view_func=DBPageIdView.as_view("modelid_page", app, HtmlModelPage))
+app.add_url_rule("/<dbname>/site/<index>", view_func=DBPageIdView.as_view("siteid_page", app, HtmlSitePage))
+app.add_url_rule("/<dbname>/video/<index>", view_func=DBPageIdView.as_view("videoid_page", app, HtmlVideoPage))
 
 
-@app.route("/search", methods=['POST', 'GET'])
-def search_all():
-    """global search page"""
-    term = get_search_term()
-    mysite = page_factory('search') #HtmlSearchAll()
-    return mysite.search(term)
+app.add_url_rule("/<dbname>/video/<page>/<pageid>/<vid>", view_func=VideoPageView.as_view("video_page", app))
 
+app.add_url_rule("/<dbname>/search", view_func=DBSearchPageView.as_view("searchdb_page", app))
+app.add_url_rule("/<dbname>/random", view_func=DBRandomPageView.as_view("randomdb_page", app))
+app.add_url_rule("/random", view_func=RandomPageView.as_view("random_page", app))
+app.add_url_rule("/search", view_func=SearchPageView.as_view("search_page", app))
+app.add_url_rule("/<dbname>", view_func=RootPageView.as_view("root_page", app))
 
-@app.route("/random")
-def random_all():
-    """global random page"""
-    mysite = page_factory('random') #HtmlRandomAll()
-    return mysite.random()
-
-
-@app.route("/fs/<path:subpath>")
-@app.route("/fs")
-def filesystem(subpath='/'):
-    """navigate the filesystem rather than databases"""
-    mysite = file_system()
-    return mysite.fs(subpath)
+app.add_url_rule("/fs/<path:subpath>", view_func=FileSystemView.as_view("fs", app))
+#app.add_url_rule("/fs", view_func=FileSystemView.as_view("fs", app, '/'))
 
 
 @app.route("/favicon.ico")
+@app.route("/android-chrome-512x512.png")
+@app.route("/android-chrome-192x192.png")
 def favicon():
     """"""
-    print("favicon.ico handled")
+    app.logger.debug("favicon.ico handled")
     return ""
 
 
@@ -233,114 +174,24 @@ def site_index():
     """"""
     return site_root()
 
+
 # ----  testing ----
 
-@app.route('/path/<path:subpath>')
-def show_subpath(subpath):
-    """"""
-    # show the subpath after /path/
-    return f'Subpath {escape(subpath)}'
+class Testing(View):
+    def __init__(self, a):
+        self.appt = a
 
+    def dispatch_request(self, subpath):
+        #users = User.query.all()
+        self.appt.logger.info("arse")
+        return f'Subpath {escape(subpath)}' #render_template("users.html", objects=users)
+
+app.add_url_rule("/path/<path:subpath>", view_func=Testing.as_view("user_list", app))
 
 # ----------------main-------------------------------------------------
 
 if __name__ == '__main__':
+
     app.run(host="0.0.0.0", port=8181)
 
 
-# ----------------obsoleted methods------------------------------------
-
-#@app.route("/<dbname>/edit/<table>/<idx>")
-#def edit(dbname, table, idx):
-#    """"""
-#    mysite = page_factory(dbname)
-#    return mysite.do('edit', table, idx)
-
-
-#@app.route("/<dbname>/gallery/model/<mid>/<pid>", methods=['POST', 'GET'])
-#def gallery_model(dbname, pid, mid):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('gallery',dbname)
-#    links = mysite.heading('models')
-#    return mysite.do('do_gallery', pid, 'model_id', mid, 'model', links)
-
-#@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
-#def gallery_site(dbname, pid, sid):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('gallery',dbname)
-#    links = mysite.heading('sites')
-#    return mysite.do('do_gallery', pid, 'site_id', sid, 'site', links)
-
-#@app.route("/<dbname>/video/site/<sid>/<vid>")
-#def video_site(dbname, vid, sid=None):
-#    """"""
-#    mysite = dbpage_factory('video',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('video', vid, sid)
-
-#@app.route("/<dbname>/video/model/<mid>/<vid>")
-#def video_model(dbname, vid, sid=None, mid=None):
-#    """"""
-#    mysite = dbpage_factory('video',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('video', vid, sid, mid)
-
-#@app.route("/<dbname>/models", methods=['POST', 'GET'])
-#def models(dbname):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('models',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('models')
-
-#@app.route("/<dbname>/model/<modelid>", methods=['POST', 'GET'])
-#def model(dbname, modelid):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('model',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('model', modelid)
-
-
-#@app.route("/<dbname>/sites", methods=['POST', 'GET'])
-#def sites(dbname):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('sites',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('sites')
-
-#@app.route("/<dbname>/site/<siteid>", methods=['POST', 'GET'])
-#def site(dbname, siteid):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('site',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('site', siteid)
-
-#@app.route("/<dbname>/photos", methods=['POST', 'GET'])
-#def photos(dbname):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('photos',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('photos')
-
-
-#@app.route("/<dbname>/videos", methods=['POST', 'GET'])
-#def videos(dbname):
-#    """"""
-#    do_post_get()
-#    mysite = dbpage_factory('videos',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('videos')
-
-
-#@app.route("/<dbname>/video/<vid>")
-#def video(dbname, vid):
-#    """"""
-#    mysite = dbpage_factory('video',dbname)
-#    mysite.set_thumb_size()
-#    return mysite.do('video', vid, None, None)

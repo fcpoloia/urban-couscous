@@ -238,3 +238,42 @@ class HtmlSite:
         sitedicts = self.sitdict(sites)
 
         return modeldicts, galldicts, viddicts, sitedicts
+
+
+def do_post_get():
+    """"""
+    print(f"{request.url}")
+    if request.method == 'GET':
+        if len(request.query_string) == 0:
+            if 'order' in session:
+                del session['order']
+            if 'page' in session:
+                del session['page']
+        else:
+            print(f"request query = {request.query_string}")
+
+            s = request.args.get('size')
+            if s in ["large", "small", "inc", "dec"]:
+                session['thumbsize'] = s
+
+            i = request.args.get('image')
+            if i in ["large", "medium", "small", "thumb"]:
+                session['imagesize'] = i
+
+            o = request.args.get('order') # sort ( alpha/ralpha , latest/rlatest , pics/rpics)
+            if o is not None:
+                session['order'] = o
+
+            p = request.args.get('page')
+            if p is not None:
+                try:
+                    session['page'] = int(p)
+                except ValueError:
+                    pass # not a value page number
+
+        #print(f"session {session}")
+    else:
+        print("not a get method")
+
+
+
