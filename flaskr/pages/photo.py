@@ -1,7 +1,7 @@
 
 from subprocess import getstatusoutput as unix
 
-from flask import render_template, session
+from flask import render_template, session, current_app
 from flask.views import View
 
 from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder, do_post_get
@@ -22,12 +22,12 @@ from flaskr.pages.sorttypes import sorting
 class GalleryPageView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, a):
-        self.appt = a
+    def __init__(self):
+        pass
 
     def dispatch_request(self, dbname, page, pageid, photoid):
         do_post_get()
-        self.appt.logger.info(f"route gallery_page_id_id {photoid}")
+        current_app.logger.info(f"route gallery_page_id_id {photoid}")
         mysite = HtmlPhotoSetPage(dbname)
         links = mysite.heading(page+'s')
         return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
@@ -45,12 +45,12 @@ class GalleryPageView(View):
 class GalleryIdxPageView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, a):
-        self.appt = a
+    def __init__(self):
+        pass
 
     def dispatch_request(self, dbname, idx): #page, pageid=None, photoid=None):
         do_post_get()
-        self.appt.logger.info(f"route dbname gallery {idx}")
+        current_app.logger.info(f"route dbname gallery {idx}")
         mysite = HtmlPhotoSetPage(dbname)
         links = mysite.heading('photos')
         return mysite.do_gallery(idx, None, None, None, links)
@@ -87,7 +87,7 @@ class HtmlPhotoSetPage(HtmlSite):
         psets = self.db.photos_table().select_where('id', idx)
 
         try:
-            mids = [{'name': self.db.models_table().select_where('id', x[1])[0][1],'href':f"/{self.dbname}/model/{x[1]}"} for x in psets]
+            mids = [{'name': self.db.models_table().select_where('id', x[1])[0][1],'href':f"/models/{self.dbname}/{x[1]}"} for x in psets]
         except IndexError:
             mids = [{'name': '','href':""} for x in psets]
 
@@ -109,7 +109,7 @@ class HtmlPhotoSetPage(HtmlSite):
 
         nphoto, pphoto, nname, pname = self.db.photos_table().get_next_prev(idx, col, val)
 
-        titledict = {'site': {'href':f"/{self.dbname}/site/{site_id}",
+        titledict = {'site': {'href':f"/sites/{self.dbname}/{site_id}",
                               'name':sitename},
                      'models': mids,
                      'folder': name}
@@ -121,7 +121,7 @@ class HtmlPhotoSetPage(HtmlSite):
 
 
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict(titledict, False, 'gallery', links)
+        page_dict = self.init_page_dict(titledict, False, 'photos', links)
         page_dict['prefix'] = prefix
         page_dict['nid'] = nphoto
         page_dict['pid'] = pphoto

@@ -1,17 +1,14 @@
 
 import os
 import glob
-import logging
 from html.entities import html5
 #from markupsafe import escape
 
-from flask import request, render_template, session
+from flask import request, render_template, session, current_app, url_for
 from flask.views import View
 
 from flaskr.pages.base import HtmlSite
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename='/home/judge/example.log', encoding='utf-8', level=logging.DEBUG)
 
 # -----------------------------------------------------------------------------
 # To Do:
@@ -36,9 +33,8 @@ logging.basicConfig(filename='/home/judge/example.log', encoding='utf-8', level=
 class FileSystemView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, a, root=None):
+    def __init__(self, root=None):
         """"""
-        self.appt = a
         self.root = True
 
     def dispatch_request(self, subpath='/'):
@@ -88,6 +84,8 @@ class HtmlFileSystem(HtmlSite):
 
         filelist = FileList(self.rpath)
 
+        # navigation, up, next, prev
+
         if wupath == '/':
             wupath=''
 
@@ -112,6 +110,8 @@ class HtmlFileSystem(HtmlSite):
         listing=[]
         comments=self.rpath+" "
 
+        # add directories first
+
         for item in filelist.get_dirs():
             if os.path.isdir(os.path.join(self.rpath, item)): # needs thumbnails on folders
                 bitem = os.path.basename(item)
@@ -120,6 +120,7 @@ class HtmlFileSystem(HtmlSite):
                 else:
                     listing.append({'kind': 'dir',  'name': self.shorter(item, 90), 'basename': bitem, 'href': "http://"+request.host+'/fs'+'/'+self.escape(item)})
 
+        # add files next
 
         for item in filelist.get_files():
 
@@ -127,7 +128,7 @@ class HtmlFileSystem(HtmlSite):
 
             # check for movies, images, pdf
             if self.magic(bitem) == 'image': # needs basename, height
-                #logger.info(f"{os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png')} - {self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png'}")
+                #current_app.logger.info(f"{os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png')} - {self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png'}")
                 if os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png'):
                     src = self.wpath+'.pics/'+self.escape(os.path.splitext(bitem)[0]+'.png')
                     #logger.info(src)
@@ -140,7 +141,7 @@ class HtmlFileSystem(HtmlSite):
                 listing.append({'kind': 'image', 'name': item, 'basename': self.escape(bitem), 'height': '200px', 'href': self.wpath+self.escape(bitem), 'src': src})
 
             elif self.magic(bitem) == 'movie': # needs h, w, mlen
-                src="/static/movie-blank-512.png" #'w':'209', 'h':'224'
+                src=url_for("static", filename="movie-blank-512.png") #'w':'209', 'h':'224'
                 ht=240
                 wt=224
                 movie_kind = 'movie_icon'
@@ -153,7 +154,7 @@ class HtmlFileSystem(HtmlSite):
                 listing.append({'kind': movie_kind, 'name': item, 'basename': bitem, 'href': self.wpath+bitem, 'src': src, 'height':f"{ht}px", 'width':f"{wt}px"})
 
             else:
-                listing.append({'kind': 'file', 'name':item, 'basename': self.shorter(bitem, 90), 'href': self.wpath+bitem, 'src':"/static/file-blank-512.png"})
+                listing.append({'kind': 'file', 'name':item, 'basename': self.shorter(bitem, 90), 'href': self.wpath+bitem, 'src':url_for("static",filename="file-blank-512.png")})
 
         # title plaintitle heading type | navigation db
         page_dict = {

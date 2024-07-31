@@ -16,7 +16,7 @@ class ConnectDB:
         if os.path.exists(database):
             self.conn = sqlite3.connect(database)
         else:
-            raise DatabaseMissingError
+            raise DatabaseMissingError(f"Database [{database}] cannot be found.")
 
     def closedb(self):
         """"""

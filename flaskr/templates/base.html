@@ -45,7 +45,7 @@
 		{% endfor %}
 
 		{% if page['db'] %}
-		<a href="/{{page['db']}}/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
+		<a href="/random/{{page['db']}}/" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
 		{% elif page['type'] != 'fs' %}
 		<a href="/random" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">Random</a>
 		<a href="/fs" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button">FileSystem</a>
@@ -123,10 +123,10 @@
 	    </div>
 
 		{% if page['prev'] %}
-		<a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['pid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Prev</a>
+		<a href="/{{page['type']}}/{{page['db']}}/{{page['prefix']}}{{page['pid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Prev</a>
 		{% endif %}
 		{% if page['next'] %}
-		<a href="/{{page['db']}}/{{page['type']}}/{{page['prefix']}}{{page['nid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Next</a>
+		<a href="/{{page['type']}}/{{page['db']}}/{{page['prefix']}}{{page['nid']}}" class="w3-bar-item w3-border w3-border-grey w3-padding-small w3-deep-orange w3-hover-dark-grey w3-button w3-right">Next</a>
 		{% endif %}
 
 		{% if page['pg'] %}{% if page['pg']['next'] > 0 %}
@@ -137,7 +137,7 @@
 		{% endif %}{% endif %}
 
 		{% if page['db'] %}
-		<form action="/{{page['db']}}/search" method="get">
+		<form action="/search/{{page['db']}}/" method="get">
 		{% else %}
 		<form action="/search" method="get">
 	    {% endif %}

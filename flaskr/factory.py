@@ -50,13 +50,13 @@ class ErrorPage:
     def not_found(self, error):
         """"""
         print(error)
-        obuttons, nbuttons, page_dict = database_buttons()
+        #obuttons, nbuttons, page_dict = database_buttons()
         resp = make_response(render_template('intro.html',
                                             error=error,
                                             webroot="http://"+request.host.replace(':5000',''),
                                             page=page_dict,
-                                            obuttons=obuttons,
-                                            nbuttons=nbuttons,
+                                            #obuttons=obuttons,
+                                            #nbuttons=nbuttons,
                                             ), 404)
         resp.headers['X-Something'] = 'A value'
         return resp
@@ -95,15 +95,15 @@ def dbpage_factory(page, dbname):
         return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
 
 
-def page_factory(page):
-    """factory for root level pages with no dbname"""
-    page_lookup = {'search' : HtmlSearchAll, # global search does not take dbname
-                   'random' : HtmlRandomAll  # global random link generator
-                  }
-    try:
-        return page_lookup[page]()
-    except KeyError:
-        return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
+#def page_factory(page):
+#    """factory for root level pages with no dbname"""
+#    page_lookup = {'search' : HtmlSearchAll, # global search does not take dbname
+#                   'random' : HtmlRandomAll  # global random link generator
+#                  }
+#    try:
+#        return page_lookup[page]()
+#    except KeyError:
+#        return ErrorPage(f"Not Found: Page [ {page} ] not found.") #ErrorPage(dbname)
 
 
 

@@ -84,10 +84,10 @@ class HtmlSite:
     def heading(self, page=None):
         """"""
         links = {
-            "photos": {"href": f"/{self.dbname}/photos", "title": "Photos", 'class':'', 'rows': self.db.photos_table().row_count() },
-            "models": {"href": f"/{self.dbname}/models", "title": "Girls",  'class':'', 'rows': self.db.models_table().row_count() },
-            "sites":  {"href": f"/{self.dbname}/sites",  "title": "Sites",  'class':'', 'rows':  self.db.sites_table().row_count()-1 },
-            "videos": {"href": f"/{self.dbname}/videos", "title": "Videos", 'class':'', 'rows': self.db.videos_table().row_count() }
+            "photos": {"href": f"/photos/{self.dbname}/", "title": "Photos", 'class':'', 'rows': self.db.photos_table().row_count() },
+            "models": {"href": f"/models/{self.dbname}/", "title": "Girls",  'class':'', 'rows': self.db.models_table().row_count() },
+            "sites":  {"href": f"/sites/{self.dbname}/",  "title": "Sites",  'class':'', 'rows':  self.db.sites_table().row_count()-1 },
+            "videos": {"href": f"/videos/{self.dbname}/", "title": "Videos", 'class':'', 'rows': self.db.videos_table().row_count() }
             }
 
         if page is not None:
@@ -133,7 +133,7 @@ class HtmlSite:
         sidx, eidx = self.page_range(pgnum, len(models))
         for idx,name,thumb in models[sidx:eidx]:
             thumburl = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['models']}{thumb}"
-            mdicts.append({'href': f"/{self.dbname}/model/{idx}",
+            mdicts.append({'href': f"/models/{self.dbname}/{idx}",
                            'src': thumburl,
                            'name': name,
                            'height': self.config['thumb_h'],
@@ -154,7 +154,7 @@ class HtmlSite:
             idx, _, _, name, location, thumb, count, _ = gallery
             thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thumb}"
             #name = name.replace('_', ' ')[:50]
-            gdict.append({'href': f"/{self.dbname}/gallery{filterurl}/{idx}",
+            gdict.append({'href': f"/photos/{self.dbname}/{filterurl}/{idx}",
                           'src': thumb,
                           'name': name.replace('_', ' ')[:50],
                           'height': self.config['thumb_h'],
@@ -175,7 +175,7 @@ class HtmlSite:
             #idx, model_id, site_id, name, filename, thumb, poster, width, height, length, vdate = vid
             idx, _, _, name, filename, thumb, _, width, height, length, _ = vid
             thumb_url = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{thumb}"
-            vdicts.append({'href':f"/{self.dbname}/video{filterurl}/{idx}",
+            vdicts.append({'href':f"/videos/{self.dbname}/{filterurl}/{idx}",
                            'src':thumb_url,
                            'name':name,
                            'theight':self.config['thumb_h'],
@@ -197,8 +197,8 @@ class HtmlSite:
             try:
                 pid,_,_,_,_,thm = self.db.photos_table().select_where_order_by('site_id', idx, 'id', 'desc')[0][:6]
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
-                ordered_sites[int(pid)] = {'href':f"/{self.dbname}/site/{idx}", 'src':thumb, 'name':name, 'height':self.config['thumb_h']}
-                sdict.append({'href':f"/{self.dbname}/site/{idx}",
+                ordered_sites[int(pid)] = {'href':f"/sites/{self.dbname}/{idx}", 'src':thumb, 'name':name, 'height':self.config['thumb_h']}
+                sdict.append({'href':f"/sites/{self.dbname}/{idx}",
                               'src':thumb,
                               'name':name,
                               'height':self.config['thumb_h'],
@@ -207,8 +207,8 @@ class HtmlSite:
             except IndexError:
                 vname = self.db.videos_table().select_where_order_by('site_id', idx, 'id', 'desc')[0][5]
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['thumbs']}/{vname}"
-                ordered_sites[1] = {'href':f"/{self.dbname}/site/{idx}", 'src':thumb, 'name':name, 'height':self.config['thumb_h']}
-                sdict.append({'href':f"/{self.dbname}/site/{idx}",
+                ordered_sites[1] = {'href':f"/sites/{self.dbname}/{idx}", 'src':thumb, 'name':name, 'height':self.config['thumb_h']}
+                sdict.append({'href':f"/sites/{self.dbname}/{idx}",
                               'src':thumb,
                               'name':name,
                               'height':self.config['thumb_h'],

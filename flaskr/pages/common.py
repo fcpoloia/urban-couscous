@@ -1,7 +1,7 @@
 
 
 import glob
-from flask import render_template, request
+from flask import render_template, request, current_app
 from flask.views import View
 
 from flaskr.common.utils import random_selection
@@ -32,12 +32,14 @@ def get_search_term():
     return s
 
 
+# Views
+
 class CommonView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, a):
+    def __init__(self):
         """"""
-        self.appt = a
+        pass
 
 
 class DBSearchPageView(CommonView):
@@ -84,7 +86,7 @@ class RootPageView(CommonView):
         return mysite.rootpage()
 
 
-
+# HtmlPages
 
 class HtmlSearchPage(HtmlSite):
 
@@ -151,10 +153,10 @@ class HtmlRootPage(HtmlSite):
     def rootpage(self):
         """landing page"""
         buttons = [
-            {'href':f"/{self.dbname}/photos", 'name':'Photos'},
-            {'href':f"/{self.dbname}/models", 'name':'Models'},
-            {'href':f"/{self.dbname}/sites",  'name':'Sites'},
-            {'href':f"/{self.dbname}/videos", 'name':'Videos'},
+            {'href':f"/photos/{self.dbname}/", 'name':'Photos'},
+            {'href':f"/models/{self.dbname}/", 'name':'Models'},
+            {'href':f"/sites/{self.dbname}/",  'name':'Sites'},
+            {'href':f"/videos/{self.dbname}/", 'name':'Videos'},
         ]
 
         # title plaintitle heading type

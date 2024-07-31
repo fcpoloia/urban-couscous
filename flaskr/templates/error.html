@@ -2,12 +2,12 @@
 {% block content %}
 
     {% if error %}
-	<h2>{{error}}</h2>
+	<h3>{{error}}</h3>
 	{% endif %}
 
     {% if page %}
 
-    <div id="titlecenter" style="margin-bottom: 10px">
+    <!-- div id="titlecenter" style="margin-bottom: 10px">
         <div id="navbtn">
         {% for item in obuttons %}
             <a class="navbtn" href="{{item.href}}">{{item.name}}</a>
@@ -25,7 +25,7 @@
             {% endif %}
         {% endfor %}
         </div>
-   </div>
+   </div -->
 
    {% endif %}
 

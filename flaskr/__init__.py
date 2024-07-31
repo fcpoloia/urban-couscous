@@ -33,17 +33,41 @@ sort order(alpha,latest,most,pics)
 @app.route("/<dbname>/video/model/<mid>/<vid>")
 @app.route("/<dbname>/search", methods=['POST', 'GET'])
 @app.route("/<dbname>/random")
+
 @app.route("/<dbname>/edit/<table>/<id>")
 @app.route("/<dbname>/")
 @app.route("/<dbname>")
 @app.route("/favicon.ico")
 @app.route("/")
+
+# new layout to implement
+
+/models/<db>/
+/models/<db>/<id>
+/sites/<db>/
+/sites/<db>/<id>
+/videos/<db>/
+/videos/<db>/<id>
+/photos/<db>/
+/photos/<db>/<id>
+
+/photos/<db>/model/<mid>/<pid>
+/photos/<db>/site/<sid>/<pid>
+/videos/<db>/model/<mid>/<pid>
+/videos/<db>/site/<sid>/<pid>
+
+/random/<db>
+/search/<db>
+
+/random
+/search
+
 """
 
 from markupsafe import escape
 from flask import Flask, request, session, make_response
 from flask.views import View
-from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory, page_factory
+from flaskr.factory import database_buttons, render_template, site_root, dbpage_factory
 #, file_system
 from flaskr.database.errors import DatabaseMissingError
 
@@ -86,17 +110,37 @@ def not_found(error):
                                          error=error,
                                          webroot="http://"+request.host.replace(':5000',''),
                                          page=page_dict,
-                                         obuttons=obuttons,
-                                         nbuttons=nbuttons,
+                                         #obuttons=obuttons,
+                                         #nbuttons=nbuttons,
                                          ), 404)
     resp.headers['X-Something'] = 'A value'
     return resp
 
 
+from flaskr.database.errors import DatabaseMissingError
+@app.errorhandler(DatabaseMissingError)
+def DatabaseError(error):
+    """"""
+    print(error)
+    obuttons, nbuttons, page_dict = database_buttons()
+    resp = make_response(render_template('error.html',
+                                         error=error,
+                                         webroot="http://"+request.host.replace(':5000',''),
+                                         page=page_dict,
+                                         #obuttons=obuttons,
+                                         #nbuttons=nbuttons,
+                                         ), 500)
+    resp.headers['X-Something'] = 'A value'
+    return resp
+
+
+
+
+
 # --------------------gallery page id id-------------------------------
 
-app.add_url_rule("/<dbname>/gallery/<page>/<pageid>/<photoid>", view_func=GalleryPageView.as_view("gallery_page", app))
-app.add_url_rule("/<dbname>/gallery/<idx>", view_func=GalleryIdxPageView.as_view("gallery_idx_page", app))
+app.add_url_rule("/photos/<dbname>/<page>/<pageid>/<photoid>", view_func=GalleryPageView.as_view("gallery_page"))
+app.add_url_rule("/photos/<dbname>/<idx>", view_func=GalleryIdxPageView.as_view("gallery_idx_page"))
 
 # ---------------------page--------------------------------------------
 
@@ -108,8 +152,7 @@ app.add_url_rule("/<dbname>/gallery/<idx>", view_func=GalleryIdxPageView.as_view
 
 
 class DBPageView(View):
-    def __init__(self, a, htmlpage):
-        self.appt = a
+    def __init__(self, htmlpage):
         self.htmlpage = htmlpage
 
     def dispatch_request(self, dbname):
@@ -118,10 +161,10 @@ class DBPageView(View):
         mysite.set_thumb_size()
         return mysite.do_page()
 
-app.add_url_rule("/<dbname>/models", view_func=DBPageView.as_view("models_page", app, HtmlModelsPage))
-app.add_url_rule("/<dbname>/sites", view_func=DBPageView.as_view("sites_page", app, HtmlSitesPage))
-app.add_url_rule("/<dbname>/photos", view_func=DBPageView.as_view("photos_page", app, HtmlPhotosPage))
-app.add_url_rule("/<dbname>/videos", view_func=DBPageView.as_view("videos_page", app, HtmlVideosPage))
+app.add_url_rule("/models/<dbname>/", view_func=DBPageView.as_view("models_page", HtmlModelsPage))
+app.add_url_rule("/sites/<dbname>/",  view_func=DBPageView.as_view("sites_page",  HtmlSitesPage))
+app.add_url_rule("/photos/<dbname>/", view_func=DBPageView.as_view("photos_page", HtmlPhotosPage))
+app.add_url_rule("/videos/<dbname>/", view_func=DBPageView.as_view("videos_page", HtmlVideosPage))
 
 # ---------------------page id-----------------------------------------
 
@@ -132,8 +175,7 @@ app.add_url_rule("/<dbname>/videos", view_func=DBPageView.as_view("videos_page",
 
 
 class DBPageIdView(View):
-    def __init__(self, a, htmlpage):
-        self.appt = a
+    def __init__(self, htmlpage):
         self.htmlpage = htmlpage
 
     def dispatch_request(self, dbname, index):
@@ -143,21 +185,22 @@ class DBPageIdView(View):
         return mysite.do_page(index)
 
 
-app.add_url_rule("/<dbname>/model/<index>", view_func=DBPageIdView.as_view("modelid_page", app, HtmlModelPage))
-app.add_url_rule("/<dbname>/site/<index>", view_func=DBPageIdView.as_view("siteid_page", app, HtmlSitePage))
-app.add_url_rule("/<dbname>/video/<index>", view_func=DBPageIdView.as_view("videoid_page", app, HtmlVideoPage))
+app.add_url_rule("/models/<dbname>/<index>", view_func=DBPageIdView.as_view("modelid_page", HtmlModelPage))
+app.add_url_rule("/sites/<dbname>/<index>",  view_func=DBPageIdView.as_view("siteid_page",  HtmlSitePage))
+app.add_url_rule("/videos/<dbname>/<index>", view_func=DBPageIdView.as_view("videoid_page", HtmlVideoPage))
 
 
-app.add_url_rule("/<dbname>/video/<page>/<pageid>/<vid>", view_func=VideoPageView.as_view("video_page", app))
+app.add_url_rule("/videos/<dbname>/<page>/<pageid>/<vid>", view_func=VideoPageView.as_view("video_page"))
 
-app.add_url_rule("/<dbname>/search", view_func=DBSearchPageView.as_view("searchdb_page", app))
-app.add_url_rule("/<dbname>/random", view_func=DBRandomPageView.as_view("randomdb_page", app))
-app.add_url_rule("/random", view_func=RandomPageView.as_view("random_page", app))
-app.add_url_rule("/search", view_func=SearchPageView.as_view("search_page", app))
-app.add_url_rule("/<dbname>", view_func=RootPageView.as_view("root_page", app))
+app.add_url_rule("/search/<dbname>/", view_func=DBSearchPageView.as_view("searchdb_page"))
+app.add_url_rule("/random/<dbname>/", view_func=DBRandomPageView.as_view("randomdb_page"))
+app.add_url_rule("/random", view_func=RandomPageView.as_view("random_page"))
+app.add_url_rule("/search", view_func=SearchPageView.as_view("search_page"))
+#app.add_url_rule("/<dbname>", view_func=RootPageView.as_view("root_page"))
 
-app.add_url_rule("/fs/<path:subpath>", view_func=FileSystemView.as_view("fs", app))
-#app.add_url_rule("/fs", view_func=FileSystemView.as_view("fs", app, '/'))
+app.add_url_rule("/fs/<path:subpath>", view_func=FileSystemView.as_view("fs_path"))
+app.add_url_rule("/fs", view_func=FileSystemView.as_view("fs_root", '/'))
+app.add_url_rule("/fs/", view_func=FileSystemView.as_view("fs_root2", '/'))
 
 
 @app.route("/favicon.ico")
@@ -178,15 +221,15 @@ def site_index():
 # ----  testing ----
 
 class Testing(View):
-    def __init__(self, a):
-        self.appt = a
+    def __init__(self):
+        pass
 
     def dispatch_request(self, subpath):
         #users = User.query.all()
-        self.appt.logger.info("arse")
+        app.logger.info("arse")
         return f'Subpath {escape(subpath)}' #render_template("users.html", objects=users)
 
-app.add_url_rule("/path/<path:subpath>", view_func=Testing.as_view("user_list", app))
+app.add_url_rule("/path/<path:subpath>", view_func=Testing.as_view("user_list"))
 
 # ----------------main-------------------------------------------------
 

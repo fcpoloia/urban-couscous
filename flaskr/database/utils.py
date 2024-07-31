@@ -21,7 +21,7 @@ def database_buttons():
         names.append(dbname)
     names.sort()
     for dbname in names:
-        obuttons.append({'href':'/'+dbname+'/random', 'name':dblist[dbname]})
+        obuttons.append({'href':'/random/'+dbname, 'name':dblist[dbname]})
 
     names = []
     for database in glob.glob("flaskr/sqlitedb/new_*.db"):
@@ -31,7 +31,7 @@ def database_buttons():
         names.append(dbname)
     names.sort()
     for dbname in names:
-        nbuttons.append({'href':'/'+dbname+'/random', 'name':dblist[dbname]})
+        nbuttons.append({'href':'/random/'+dbname, 'name':dblist[dbname]})
 
 
     page_dict = {
@@ -53,7 +53,7 @@ class Database:
         """"""
         old = f"flaskr/sqlitedb/old_{self.dbname}.db"
         new = f"flaskr/sqlitedb/new_{self.dbname}.db"
-        path = ""
+        path = self.dbname
         if os.path.exists(old):
             path = old
         if os.path.exists(new):

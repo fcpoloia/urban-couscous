@@ -1,6 +1,6 @@
 
 import sys
-from flask import render_template
+from flask import render_template, current_app
 from flask.views import View
 
 from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
@@ -14,9 +14,8 @@ from flaskr.pages.sorttypes import vsorting
 class VideoPageView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, a, root=None):
+    def __init__(self, root=None):
         """"""
-        self.appt = a
         self.root = True
 
     def dispatch_request(self, dbname, page, pageid, vid=None):
@@ -68,9 +67,9 @@ class HtmlVideoPage(HtmlSite):
         prefix = f"{page}/{pageid}/" if page is not None else ""
 
         titledict = {
-            'site': {'href':f"/{self.dbname}/site/{site_id}",
+            'site': {'href':f"/sites/{self.dbname}/{site_id}",
                      'name':sitename},
-            'models':[{'href':f"/{self.dbname}/model/{model_id}",
+            'models':[{'href':f"/models/{self.dbname}/{model_id}",
                        'name':modelname}],
             'folder': name
         }
