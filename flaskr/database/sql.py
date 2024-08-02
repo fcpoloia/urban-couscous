@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
 
-# pylint: disable-msg=line-too-long
-# pylint: disable-msg=empty-docstring
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+
 
 #
 # tables - config, photos, videos, models, sites

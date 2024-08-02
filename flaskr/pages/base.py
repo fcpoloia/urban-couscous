@@ -1,4 +1,6 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+
 import os
 from flask import session, request
 
@@ -43,8 +45,8 @@ class PageBuilder:
             tagdicts.append(tagdictfunc(items[x], self.info.filtcol, self.info.filtid, pgnum))
             x=x+1
 
-        links = self.htmlpage.heading(self.info.name)
-        page_dict = self.htmlpage.init_page_dict('', True, self.info.name, links)
+        self.htmlpage.heading(self.info.name)
+        page_dict = self.htmlpage.init_page_dict('', True, self.info.name) #, links)
         page_dict['search'] = True
         return page_dict, tagdicts
 
@@ -66,6 +68,7 @@ class HtmlSite:
             self.db = None
             self.config = None
         self.pg = {'next':-1, 'prev':-1}
+        self.links = {}
 
     def set_dbname(self, name):
         self.dbname = name
@@ -83,7 +86,7 @@ class HtmlSite:
 
     def heading(self, page=None):
         """"""
-        links = {
+        self.links = {
             "photos": {"href": f"/photos/{self.dbname}/", "title": "Photos", 'class':'', 'rows': self.db.photos_table().row_count() },
             "models": {"href": f"/models/{self.dbname}/", "title": "Girls",  'class':'', 'rows': self.db.models_table().row_count() },
             "sites":  {"href": f"/sites/{self.dbname}/",  "title": "Sites",  'class':'', 'rows':  self.db.sites_table().row_count()-1 },
@@ -95,9 +98,9 @@ class HtmlSite:
                 page = "sites"
             if page == "model":
                 page = "models"
-            links[page]['class'] = " w3-dark-grey "
+            self.links[page]['class'] = " w3-dark-grey "
 
-        return links
+        #return links
 
 
     #def getConfig(self):

@@ -1,6 +1,8 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+# pylint: disable-msg=invalid-name
+
 import os
-import glob
 from html.entities import html5
 #from markupsafe import escape
 
@@ -33,7 +35,7 @@ from flaskr.pages.base import HtmlSite
 class FileSystemView(View):
     methods = ["POST", "GET"]
 
-    def __init__(self, root=None):
+    def __init__(self):
         """"""
         self.root = True
 
@@ -51,6 +53,9 @@ class HtmlFileSystem(HtmlSite):
         super().__init__()
         self.rpath=''
         self.wpath=''
+        self.movie_kind = 'movie_icon'
+        self.filelist=None
+        self.listing=[]
 
     def magic(self, item):
         """item is image or movie or not"""
@@ -59,7 +64,7 @@ class HtmlFileSystem(HtmlSite):
             return 'image'
         if exten in ['.mp4', '.mkv']:
             return 'movie'
-        return ''
+        return 'file'
 
     def shorter(self, path, slen=25):
         """return the start of the path"""
@@ -69,106 +74,117 @@ class HtmlFileSystem(HtmlSite):
         """return the end of the path"""
         return html5["hellip;"]+path[-slen:] if len(path) > slen else  path
 
-    def escape(self, str):
+    def escape(self, path):
         """"""
-        return str.replace('#', '%23')
+        return path.replace('#', '%23')
+
+    def do_folders(self):
+        """"""
+        for item in self.filelist.get_dirs():
+            if os.path.isdir(os.path.join(self.rpath, item)): # needs thumbnails on folders
+                bitem = os.path.basename(item)
+                if item in self.filelist.logo:
+                    self.listing.append({'kind': 'logo', 'name': item, 'basename': bitem, 'height':'180px', 'href': "http://"+request.host+'/fs'+'/'+self.escape(item), 'src': self.wpath+self.filelist.logo[item]})
+                else:
+                    self.listing.append({'kind': 'dir',  'name': self.shorter(item, 90), 'basename': bitem, 'href': "http://"+request.host+'/fs'+'/'+self.escape(item)})
+
 
     def fs(self, path):
         """main method"""
         if path == '/':
             path=''
         self.rpath = path if path.startswith('/') else f"/{path}".replace('//','/')
-        self.wpath = "http://"+request.host.replace(':5000','')+'/'+path+'/'
-        upath = os.path.dirname('/'+path)
-        wupath = upath
+        self.wpath = "http://"+request.host.replace(':5000','')+self.rpath+'/'
 
-        filelist = FileList(self.rpath)
+        self.filelist = FileList(self.rpath)
 
-        # navigation, up, next, prev
-
-        if wupath == '/':
-            wupath=''
-
-        n=p=''
-        nr=pr="noanchor"
-        dirlist = sorted([d for d in os.listdir(upath) if os.path.isdir(os.path.join(upath,d))])
-        for c in range(len(dirlist)):
-            if dirlist[c] == os.path.basename('/'+path):
-                if c > 0:
-                    p = dirlist[c-1]
-                    pr=""
-                if c < len(dirlist)-1:
-                    n = dirlist[c+1]
-                    nr=""
-
-        links = {
-            "up": {"href": f"/fs{wupath}", "title": "Up", 'class':'', 'rows': 1 },
-            "prev": {"href": f"/fs{wupath}/{p}", "title": "Prev", 'class':pr, 'rows': 1 },
-            "next": {"href": f"/fs{wupath}/{n}", "title": "Next", 'class':nr, 'rows': 1 },
-        }
-
-        listing=[]
         comments=self.rpath+" "
 
         # add directories first
-
-        for item in filelist.get_dirs():
-            if os.path.isdir(os.path.join(self.rpath, item)): # needs thumbnails on folders
-                bitem = os.path.basename(item)
-                if item in filelist.logo:
-                    listing.append({'kind': 'logo', 'name': item, 'basename': bitem, 'height':'180px', 'href': "http://"+request.host+'/fs'+'/'+self.escape(item), 'src': self.wpath+filelist.logo[item]})
-                else:
-                    listing.append({'kind': 'dir',  'name': self.shorter(item, 90), 'basename': bitem, 'href': "http://"+request.host+'/fs'+'/'+self.escape(item)})
+        self.do_folders()
 
         # add files next
 
-        for item in filelist.get_files():
+        for item in self.filelist.get_files():
 
             bitem = os.path.basename(item)
 
-            # check for movies, images, pdf
-            if self.magic(bitem) == 'image': # needs basename, height
-                #current_app.logger.info(f"{os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png')} - {self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png'}")
-                if os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png'):
-                    src = self.wpath+'.pics/'+self.escape(os.path.splitext(bitem)[0]+'.png')
-                    #logger.info(src)
-                elif os.path.exists(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.jpg'):
-                    src = self.wpath+'.pics/'+self.escape(os.path.splitext(bitem)[0]+'.jpg')
-                    #logger.info(src)
-                else:
-                    src = self.wpath+self.escape(bitem)
-                    #logger.info(src)
-                listing.append({'kind': 'image', 'name': item, 'basename': self.escape(bitem), 'height': '200px', 'href': self.wpath+self.escape(bitem), 'src': src})
-
-            elif self.magic(bitem) == 'movie': # needs h, w, mlen
-                src=url_for("static", filename="movie-blank-512.png") #'w':'209', 'h':'224'
-                ht=240
-                wt=224
-                movie_kind = 'movie_icon'
-                if os.path.exists(os.path.join(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.png')):
-                    src = os.path.join(self.wpath+'.pics/'+os.path.splitext(bitem)[0]+'.png')
-                    movie_kind = 'movie'
-                elif os.path.exists(os.path.join(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+'.thm')):
-                    src = os.path.join(self.wpath+'.pics/'+os.path.splitext(bitem)[0]+'.thm')
-                    movie_kind = 'movie'
-                listing.append({'kind': movie_kind, 'name': item, 'basename': bitem, 'href': self.wpath+bitem, 'src': src, 'height':f"{ht}px", 'width':f"{wt}px"})
-
-            else:
-                listing.append({'kind': 'file', 'name':item, 'basename': self.shorter(bitem, 90), 'href': self.wpath+bitem, 'src':url_for("static",filename="file-blank-512.png")})
+            kind = self.magic(bitem)
+            row = {'name': item,
+                   'basename': self.escape(self.shorter(bitem, 90)),
+                   'href': self.wpath+self.escape(bitem),
+                   'src': self.get_src(bitem, default=self.get_dflt_src(kind, bitem)),
+                   'width':'', 'height': '200px'}
+            row['kind'] = self.movie_kind if kind == 'movie' else kind
+            self.listing.append(row)
 
         # title plaintitle heading type | navigation db
         page_dict = {
-            'title': f"{self.tail(path,100)} ({len(listing)} items)",
-            'pagetitle': os.path.basename(self.rpath),
-            'heading': 'phpgallery',
-            'plaintitle':True,
-            'button_class':'fivebuttons',
-            'navigation':links,
-            'type':'fs',
+                'title': f"{self.tail(self.rpath,100)} ({len(self.listing)} items)",
+                'pagetitle': os.path.basename(self.rpath),
+                'heading': 'phpgallery',
+                'plaintitle':True,
+                'button_class':'fivebuttons',
+                'navigation': Navigation(self.rpath)(),
+                'type':'fs',
         }
 
-        return render_template("fs.html", webroot="http://"+request.host.replace(':5000',''),
-                                page=page_dict, listing=listing, comments=comments)
+        return render_template("fs.html", 
+                               webroot="http://"+request.host.replace(':5000',''),
+                               page=page_dict, 
+                               listing=self.listing, 
+                               comments=comments)
+
+    
+    def get_dflt_src(self, kind, bitem):
+        """"""
+        srcs = {'movie': url_for("static", filename="movie-blank-512.png"),
+                'image': self.wpath+self.escape(bitem),
+                'file': url_for("static",filename="file-blank-512.png")}
+        current_app.logger.info(f"kind={kind}")
+        return srcs[kind]
+
+
+    def get_src(self, bitem, default=""):
+        """"""
+        for extn in ['.png', '.jpg', '.thm']:
+            if os.path.exists(os.path.join(self.rpath+'/.pics/'+os.path.splitext(bitem)[0]+extn)):
+                self.movie_kind = 'movie'
+                return os.path.join(self.wpath+'.pics/'+os.path.splitext(bitem)[0]+extn)
+        self.movie_kind = 'movie_icon'
+        return default
+
+
+class Navigation:
+    def __init__(self, rpath):
+        """"""
+        self.rpath = rpath
+        self.upath = os.path.dirname(self.rpath)
+        self.wupath = self.upath
+        self.dirlist = []
+
+        if self.wupath == '/':
+            self.wupath=''
+
+    def get_dir(self, offset):
+        """"""
+        try:
+            return self.dirlist[self.dirlist.index(os.path.basename(self.rpath))+offset]
+        except (ValueError,IndexError):
+            return ""
+
+    def __call__(self):
+        """"""
+        self.dirlist = sorted([d for d in os.listdir(self.upath) if os.path.isdir(os.path.join(self.upath,d))])
+
+        prevdir = self.get_dir(-1)
+        nextdir = self.get_dir(1)
+
+        return {
+            "up": {"href": f"/fs{self.wupath}", "title": "Up", 'class':'', 'rows': 1 },
+            "prev": {"href": f"/fs{self.wupath}/{prevdir}", "title": "Prev", 'class':"noanchor" if prevdir=="" else "", 'rows': 1 },
+            "next": {"href": f"/fs{self.wupath}/{nextdir}", "title": "Next", 'class':"noanchor" if nextdir=="" else "", 'rows': 1 },
+        }
 
 
 class FileList:

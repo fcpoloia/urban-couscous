@@ -1,4 +1,6 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+
 from subprocess import getstatusoutput as unix
 
 from flask import render_template, session, current_app
@@ -11,13 +13,6 @@ from flaskr.pages.sorttypes import sorting
 #@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
 #@app.route("/<dbname>/gallery/model/<mid>/<pid>", methods=['POST', 'GET'])
 #@app.route("/<dbname>/gallery/<page>/<pageid>/<photoid>", methods=['POST', 'GET'])
-#def gallery_page_id_id(dbname, page, pageid, photoid):
-#    """"""
-#    do_post_get()
-#    print(f"route gallery_page_id_id {photoid}")
-#    mysite = dbpage_factory('gallery',dbname)
-#    links = mysite.heading(page+'s')
-#    return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
 
 class GalleryPageView(View):
     methods = ["POST", "GET"]
@@ -29,18 +24,11 @@ class GalleryPageView(View):
         do_post_get()
         current_app.logger.info(f"route gallery_page_id_id {photoid}")
         mysite = HtmlPhotoSetPage(dbname)
-        links = mysite.heading(page+'s')
-        return mysite.do_gallery(photoid, page+'_id', pageid, page, links)
+        mysite.heading(page+'s')
+        return mysite.do_gallery(photoid, page+'_id', pageid, page)
 
 
 #@app.route("/<dbname>/gallery/<idx>", methods=['POST', 'GET'])
-#def gallery(dbname, idx):
-#    """"""
-#    do_post_get()
-#    print(f"route dbname gallery {idx}")
-#    mysite = dbpage_factory('gallery',dbname)
-#    links = mysite.heading('photos')
-#    return mysite.do_gallery(idx, None, None, None, links)
 
 class GalleryIdxPageView(View):
     methods = ["POST", "GET"]
@@ -52,8 +40,8 @@ class GalleryIdxPageView(View):
         do_post_get()
         current_app.logger.info(f"route dbname gallery {idx}")
         mysite = HtmlPhotoSetPage(dbname)
-        links = mysite.heading('photos')
-        return mysite.do_gallery(idx, None, None, None, links)
+        mysite.heading('photos')
+        return mysite.do_gallery(idx)
 
 
 
@@ -79,7 +67,7 @@ class HtmlPhotoSetPage(HtmlSite):
         return (columns, use_thms)
 
 
-    def do_gallery(self, idx, col, val, table, links):
+    def do_gallery(self, idx, col=None, val=None, table=None):
         """single photo set page"""
         #picwidth = {'thumb':9, 'small':24, 'medium':48, 'large':98}
         #columns = {'thumb':11, 'small':4, 'medium':2, 'large':1}
@@ -91,45 +79,45 @@ class HtmlPhotoSetPage(HtmlSite):
         except IndexError:
             mids = [{'name': '','href':""} for x in psets]
 
-        idx, _model_id, site_id, name, location, _thumb, count, _pdate = psets[0]
+        pset = dict(zip(['idx','model_id', 'site_id', 'name', 'location', 'thumb', 'count', 'pdate'], psets[0]))
+        #idx, _model_id, site_id, name, location, _thumb, count, _pdate = psets[0]
 
-        sitename = self.db.sites_table().select_where('id', site_id)[0][1]
+        #sitename = self.db.sites_table().select_where('id', site_id)[0][1]
         #try:
         #    modelname = self.db.models_table().select_where('id', model_id)[0][1]
         #except IndexError:
         #    modelname = ''
 
-        columns, use_thms = self.get_columns(count)
-        gallery = self.create_gallery(location, idx, count, use_thms)
+        columns, use_thms = self.get_columns(pset['count'])
+        gallery = self.create_gallery(pset['location'], idx, pset['count'], use_thms)
         #print(f"gallery len {len(gallery)} count {count}")
         #if count < 25:
         #    gallery = self.create_gallery(location, idx, count, False)
         #else:
         #    gallery = self.create_gallery(location, idx, count, True)
 
-        nphoto, pphoto, nname, pname = self.db.photos_table().get_next_prev(idx, col, val)
-
-        titledict = {'site': {'href':f"/sites/{self.dbname}/{site_id}",
-                              'name':sitename},
+        titledict = {'site': {'href':f"/sites/{self.dbname}/{pset['site_id']}",
+                              'name': self.db.sites_table().select_where('id', pset['site_id'])[0][1]},
                      'models': mids,
-                     'folder': name}
+                     'folder': pset['name']}
+        
         prefix = ''
-        if table is not None:
-            prefix += table+'/'
-        if val is not None:
-            prefix += val+'/'
-
+        prefix += table+'/' if table is not None else ''
+        prefix += val+'/' if val is not None else ''
 
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict(titledict, False, 'photos', links)
+        page_dict = self.init_page_dict(titledict, False, 'photos') #, self.links)
         page_dict['prefix'] = prefix
-        page_dict['nid'] = nphoto
-        page_dict['pid'] = pphoto
-        page_dict['next'] = nname
-        page_dict['prev'] = pname
         page_dict['count'] = len(gallery)
+        page_dict['nid'], page_dict['pid'], page_dict['next'], page_dict['prev'] = self.db.photos_table().get_next_prev(idx, col, val)
+
+        #page_dict['nid'] = nphoto
+        #page_dict['pid'] = pphoto
+        #page_dict['next'] = nname
+        #page_dict['prev'] = pname
 
         page_dict['columns'] = columns
+
         #if count < 25:
         #    page_dict['columns'] = 2
         #else:
@@ -208,6 +196,7 @@ class HtmlPhotosPage(HtmlSite):
                                galldicts=galldicts[0])
 
     def getitems(self, order):
+        """"""
         items = self.db.photos_table().select_order_by(sorting[order][1], sorting[order][2])
         if len(items) == 0:
             items = self.db.photos_table().select_group_by_order_by('id', 'id', 'desc')

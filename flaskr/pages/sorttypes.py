@@ -1,5 +1,5 @@
 
-
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
 
 sorting = {
     'alpha':  ['name','name','asc'],

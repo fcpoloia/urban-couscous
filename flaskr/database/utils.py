@@ -1,4 +1,6 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+
 import os
 import glob
 from flask import request

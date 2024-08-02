@@ -1,7 +1,8 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
 
 import glob
-from flask import render_template, request, current_app
+from flask import render_template, request
 from flask.views import View
 
 from flaskr.common.utils import random_selection
@@ -39,8 +40,6 @@ class CommonView(View):
 
     def __init__(self):
         """"""
-        pass
-
 
 class DBSearchPageView(CommonView):
 
@@ -49,6 +48,7 @@ class DBSearchPageView(CommonView):
         term = get_search_term()
         mysite = HtmlSearchPage(dbname)
         mysite.set_thumb_size()
+        mysite.heading()
         return mysite.search(term)
 
 
@@ -58,6 +58,7 @@ class DBRandomPageView(CommonView):
         """"""
         mysite = HtmlRandomPage(dbname)
         mysite.set_thumb_size()
+        mysite.heading()
         return mysite.random()
 
 
@@ -83,6 +84,7 @@ class RootPageView(CommonView):
     def dispatch_request(self, dbname):
         """"""
         mysite = HtmlRootPage(dbname)
+        mysite.heading()
         return mysite.rootpage()
 
 
@@ -102,9 +104,9 @@ class HtmlSearchPage(HtmlSite):
 
         modeldicts, galldicts, viddicts, sitedicts = self.search_all_tables(term.replace(' ','%'))
 
-        links = self.heading()
+        #self.heading()
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict(f"Search Results for '{term}'",True,'search',links)
+        page_dict = self.init_page_dict(f"Search Results for '{term}'", True, 'search') #,self.links)
         page_dict['search'] = True
 
         return render_template("search_page.html",
@@ -131,7 +133,7 @@ class HtmlRandomPage(HtmlSite):
         viddicts = self.viddict(random_selection(self.db.videos_table().select_all(), 4))
 
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict('Random Selection',True,'random',self.heading())
+        page_dict = self.init_page_dict('Random Selection',True,'random') #,self.heading())
         page_dict['search'] = True
 
         return render_template("search_page.html",
@@ -160,7 +162,7 @@ class HtmlRootPage(HtmlSite):
         ]
 
         # title plaintitle heading type
-        page_dict = self.init_page_dict('',True,'',self.heading())
+        page_dict = self.init_page_dict('',True,'') #,self.heading())
         page_dict['button_class'] = 'fourbuttons'
 
         return render_template("intro.html",

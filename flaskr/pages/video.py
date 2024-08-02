@@ -1,4 +1,6 @@
 
+# pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
+
 import sys
 from flask import render_template, current_app
 from flask.views import View
@@ -21,6 +23,7 @@ class VideoPageView(View):
     def dispatch_request(self, dbname, page, pageid, vid=None):
         """"""
         mysite = HtmlVideoPage(dbname)
+        mysite.heading('videos')
         return mysite.do_page(vid, page, pageid)
 
 
@@ -63,7 +66,7 @@ class HtmlVideoPage(HtmlSite):
 
         sys.stderr.write(f"nv {nvideo}, pv{pvideo}, nn {nname}, pn {pname}\n")
 
-        links = self.heading('videos')
+        #self.heading('videos')
         prefix = f"{page}/{pageid}/" if page is not None else ""
 
         titledict = {
@@ -75,7 +78,7 @@ class HtmlVideoPage(HtmlSite):
         }
 
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict(titledict, False, 'video', links)
+        page_dict = self.init_page_dict(titledict, False, 'video') #, self.links)
         page_dict['nid'] = nvideo
         page_dict['pid'] = pvideo
         page_dict['next'] = nname

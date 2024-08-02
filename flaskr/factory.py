@@ -18,8 +18,7 @@ from flaskr.pages.photo import HtmlPhotosPage, HtmlPhotoSetPage
 from flaskr.pages.video import HtmlVideosPage, HtmlVideoPage
 from flaskr.pages.model import HtmlModelsPage, HtmlModelPage
 from flaskr.pages.site  import HtmlSitesPage,  HtmlSitePage
-from flaskr.pages.common import HtmlSearchPage, HtmlRandomPage, HtmlRootPage, HtmlRandomAll, HtmlSearchAll
-from flaskr.pages.fs import HtmlFileSystem
+from flaskr.pages.common import HtmlSearchPage, HtmlRandomPage, HtmlRootPage
 
 
 def site_root():
@@ -50,13 +49,11 @@ class ErrorPage:
     def not_found(self, error):
         """"""
         print(error)
-        #obuttons, nbuttons, page_dict = database_buttons()
+        _obuttons, _nbuttons, page_dict = database_buttons()
         resp = make_response(render_template('intro.html',
                                             error=error,
                                             webroot="http://"+request.host.replace(':5000',''),
                                             page=page_dict,
-                                            #obuttons=obuttons,
-                                            #nbuttons=nbuttons,
                                             ), 404)
         resp.headers['X-Something'] = 'A value'
         return resp
