@@ -11,7 +11,7 @@
   <a href="{{item.href}}">
   <div class="w3-display-container hover dir-file-thumb">
     <div class="w3-display-middle">
-      <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; word-wrap: break-word">{{item.basename}}
+      <p style="overflow:hidden; width:140px; text-decoration:none; font-size:110%; line-height:1.2; word-wrap: break-word">{{item.basename}}
     </div>
   </div>
   </a>
@@ -51,7 +51,7 @@
   .grid-container { flex-direction: row;}
   .item { align-self: stretch;} /* 16.66 20 25 */
   .hover:hover { background-color:#522; opacity:1.0;}
-  .thumbheight { max-height:200px;}
+  .thumbheight { max-height: {{page['thm_ht']}};}
   .dir-file-thumb { width:166px; height:198px;}
   a img { background-color: #000; }
 </style>

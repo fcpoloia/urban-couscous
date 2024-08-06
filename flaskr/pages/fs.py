@@ -32,6 +32,8 @@ from flaskr.pages.base import HtmlSite
 # @app.route("/fs/<page:subpage>")
 # @app.route("/fs")
 
+THM_HT="200px"
+
 class FileSystemView(View):
     methods = ["POST", "GET"]
 
@@ -83,8 +85,8 @@ class HtmlFileSystem(HtmlSite):
         for item in self.filelist.get_dirs():
             if os.path.isdir(os.path.join(self.rpath, item)): # needs thumbnails on folders
                 bitem = os.path.basename(item)
-                if item in self.filelist.logo:
-                    self.listing.append({'kind': 'logo', 'name': item, 'basename': bitem, 'height':'180px', 'href': "http://"+request.host+'/fs'+'/'+self.escape(item), 'src': self.wpath+self.filelist.logo[item]})
+                if bitem in self.filelist.logo:
+                    self.listing.append({'kind': 'logo', 'name': item, 'basename': bitem, 'height':THM_HT, 'href': "http://"+request.host+'/fs'+'/'+self.escape(item), 'src': self.wpath+self.filelist.logo[bitem]})
                 else:
                     self.listing.append({'kind': 'dir',  'name': self.shorter(item, 90), 'basename': bitem, 'href': "http://"+request.host+'/fs'+'/'+self.escape(item)})
 
@@ -114,7 +116,7 @@ class HtmlFileSystem(HtmlSite):
                    'basename': self.escape(self.shorter(bitem, 90)),
                    'href': self.wpath+self.escape(bitem),
                    'src': self.get_src(bitem, default=self.get_dflt_src(kind, bitem)),
-                   'width':'', 'height': '200px'}
+                   'width':'', 'height': THM_HT}
             row['kind'] = self.movie_kind if kind == 'movie' else kind
             self.listing.append(row)
 
@@ -126,7 +128,7 @@ class HtmlFileSystem(HtmlSite):
                 'plaintitle':True,
                 'button_class':'fivebuttons',
                 'navigation': Navigation(self.rpath)(),
-                'type':'fs',
+                'type':'fs', 'thm_ht': THM_HT,
         }
 
         return render_template("fs.html", 
@@ -141,7 +143,7 @@ class HtmlFileSystem(HtmlSite):
         srcs = {'movie': url_for("static", filename="movie-blank-512.png"),
                 'image': self.wpath+self.escape(bitem),
                 'file': url_for("static",filename="file-blank-512.png")}
-        current_app.logger.info(f"kind={kind}")
+        #current_app.logger.info(f"kind={kind}")
         return srcs[kind]
 
 

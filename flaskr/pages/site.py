@@ -18,7 +18,8 @@ class HtmlSitePage(HtmlSite):
         """list all photo sets amd videos of a site"""
         self.siteid = siteid
         #sitepage = SitePage([self.galdict, self.viddict], siteid, self.db)
-        info = PageInfo([self.galdict, self.viddict], 'site', filtid=siteid)
+        #info = PageInfo([self.galdict, self.viddict], 'site', filtid=siteid)
+        info = PageInfo([self.galdict,], 'site', filtid=siteid)
         pagebuilder = PageBuilder(info, self)
         page_dict, gvdicts = pagebuilder.build()
 
@@ -37,12 +38,13 @@ class HtmlSitePage(HtmlSite):
                                webroot=self.config['webroot'],
                                page=page_dict,
                                galldicts=gvdicts[0],
-                               viddicts=gvdicts[1])
+                               #viddicts=gvdicts[1]
+                               )
 
     def getitems(self, order):
         photos = self.db.photos_table().select_where_order_by('site_id', self.siteid, sorting[order][0], sorting[order][2])
         videos = self.db.videos_table().select_where_order_by('site_id', self.siteid, vsorting[order][0], vsorting[order][2])
-        return (photos, videos)
+        return (photos,) # videos)
 
 
 

@@ -2,7 +2,7 @@
 # pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
 
 import os
-from flask import session, request
+from flask import session, request, current_app
 
 from flaskr.database.errors import DatabaseMissingError
 from flaskr.database.utils import get_config, DatabaseTables
@@ -126,6 +126,7 @@ class HtmlSite:
             pgcount = self.config['pgcount']
         self.pg = {'next': num+1 if (num * pgcount) < total else 0,
                    'prev': num-1 if (num - 1) > 0 else 0}
+        current_app.logger.debug(f"{self.pg}")
         return (num-1)*pgcount, (num*pgcount)
 
 
@@ -190,13 +191,14 @@ class HtmlSite:
         return vdicts
 
 
-    def sitdict(self, sites, _filtval='', _filtid='', _pgnum=1):
+    def sitdict(self, sites, _filtval='', _filtid='', pgnum=1):
         """"""
         #sites_count = {}
         csites = self.db.sites_table().get_sites_set_count()
         ordered_sites = {}
         sdict = []
-        for idx,name,_location in sites:
+        sidx, eidx = self.page_range(pgnum, len(sites))
+        for idx,name,_location in sites[sidx:eidx]:
             try:
                 pid,_,_,_,_,thm = self.db.photos_table().select_where_order_by('site_id', idx, 'id', 'desc')[0][:6]
                 thumb = f"{self.config['webroot']}{self.config['rootpath']}/{self.config['images']}/{self.config['thumbs0']}/{thm}"
@@ -220,11 +222,11 @@ class HtmlSite:
         return sdict
 
 
-    def init_page_dict(self, title, plaintitle, ptype, links):
+    def init_page_dict(self, title, plaintitle, ptype):
         """"""
         return {
             'title':title, 'db':self.dbname, 'heading':self.config['title'],
-            'plaintitle':plaintitle, 'navigation':links, 'type':ptype, 'pg':self.pg,
+            'plaintitle':plaintitle, 'navigation':self.links, 'type':ptype, 'pg':self.pg,
             'url': request.base_url
         }
 
