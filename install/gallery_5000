@@ -15,13 +15,13 @@ then
     #  pid=$!
     #fi
     # for local only connections
-    cd /zstuff/zdata/webroot/urban-couscous/
+    cd ../
     flask --app flaskr --debug run
 
     #kill $pid
 else
     # for external connections
-    cd /zstuff/zdata/webroot/urban-couscous/
+    cd ../
     #screen -S urban -dm flask --app flaskr --debug run --host=0.0.0.0
     flask --app flaskr --debug run --host=0.0.0.0 > $HOME/.local/share/urban.log 2>&1
 
