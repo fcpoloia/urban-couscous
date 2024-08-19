@@ -18,25 +18,6 @@
 thumbsize x2
 sort order(alpha,latest,most,pics)
 
-
-@app.route("/<dbname>/gallery/model/<mid>/<pid>")
-@app.route("/<dbname>/gallery/site/<sid>/<pid>")
-@app.route("/<dbname>/gallery/<id>")
-@app.route("/<dbname>/models", methods=['POST', 'GET'])
-@app.route("/<dbname>/model/<model>")
-@app.route("/<dbname>/sites")
-@app.route("/<dbname>/site/<site>", methods=['POST, 'GET'])
-@app.route("/<dbname>/photos", methods=['POST', 'GET'])
-@app.route("/<dbname>/videos", methods=['POST', 'GET'])
-@app.route("/<dbname>/video/<vid>")
-@app.route("/<dbname>/video/site/<sid>/<vid>")
-@app.route("/<dbname>/video/model/<mid>/<vid>")
-@app.route("/<dbname>/search", methods=['POST', 'GET'])
-@app.route("/<dbname>/random")
-
-@app.route("/<dbname>/edit/<table>/<id>")
-@app.route("/<dbname>/")
-@app.route("/<dbname>")
 @app.route("/favicon.ico")
 @app.route("/")
 
@@ -66,7 +47,7 @@ sort order(alpha,latest,most,pics)
 
 from logging.config import dictConfig
 from markupsafe import escape
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, current_app
 from flask.views import View
 
 from flaskr.factory import database_buttons, render_template, site_root
@@ -75,10 +56,10 @@ from flaskr.database.errors import DatabaseMissingError
 
 from flaskr.pages.base import do_post_get
 from flaskr.pages.fs import FileSystemView
-from flaskr.pages.video import VideoPageView, HtmlVideosPage, HtmlVideoPage
-from flaskr.pages.model import HtmlModelsPage, HtmlModelPage
-from flaskr.pages.photo import GalleryIdxPageView, GalleryPageView, HtmlPhotosPage
-from flaskr.pages.site import HtmlSitesPage, HtmlSitePage
+from flaskr.pages.video import VideoPageView, HtmlVideoPage #, HtmlVideosPage
+#from flaskr.pages.model import HtmlModelsPage, HtmlModelPage
+from flaskr.pages.photo import GalleryIdxPageView, GalleryPageView #, HtmlPhotosPage
+#from flaskr.pages.site import HtmlSitesPage, HtmlSitePage
 from flaskr.pages.common import DBSearchPageView, DBRandomPageView, RandomPageView, SearchPageView
 
 
@@ -147,23 +128,24 @@ app.add_url_rule("/photos/<dbname>/<idx>", view_func=GalleryIdxPageView.as_view(
 #@app.route("/<dbname>/<page>", methods=['POST', 'GET'])
 
 
-class DBPageView(View):
-    """"""
-    def __init__(self, htmlpage):
-        """"""
-        self.htmlpage = htmlpage
+#class DBPageView(View):
+#    """"""
+#    def __init__(self, htmlpage):
+#        """"""
+#        self.htmlpage = htmlpage
+        #current_app.logger.info(f"DBPageView - methods: {self.name}")
 
-    def dispatch_request(self, dbname):
-        """"""
-        do_post_get()
-        mysite = self.htmlpage(dbname)
-        mysite.set_thumb_size()
-        return mysite.do_page()
+#    def dispatch_request(self, dbname):
+#        """"""
+#        do_post_get()
+#        mysite = self.htmlpage(dbname)
+#        mysite.set_thumb_size()
+#        return mysite.do_page()
 
-app.add_url_rule("/models/<dbname>/", view_func=DBPageView.as_view("models_page", HtmlModelsPage))
-app.add_url_rule("/sites/<dbname>/",  view_func=DBPageView.as_view("sites_page",  HtmlSitesPage))
-app.add_url_rule("/photos/<dbname>/", view_func=DBPageView.as_view("photos_page", HtmlPhotosPage))
-app.add_url_rule("/videos/<dbname>/", view_func=DBPageView.as_view("videos_page", HtmlVideosPage))
+#app.add_url_rule("/models/<dbname>/", view_func=DBPageView.as_view("models_page", HtmlModelsPage))
+#app.add_url_rule("/sites/<dbname>/",  view_func=DBPageView.as_view("sites_page",  HtmlSitesPage))
+#app.add_url_rule("/photos/<dbname>/", view_func=DBPageView.as_view("photos_page", HtmlPhotosPage))
+#app.add_url_rule("/videos/<dbname>/", view_func=DBPageView.as_view("videos_page", HtmlVideosPage))
 
 # ---------------------page id-----------------------------------------
 
@@ -187,8 +169,8 @@ class DBPageIdView(View):
         return mysite.do_page(index)
 
 
-app.add_url_rule("/models/<dbname>/<index>", view_func=DBPageIdView.as_view("modelid_page", HtmlModelPage))
-app.add_url_rule("/sites/<dbname>/<index>",  view_func=DBPageIdView.as_view("siteid_page",  HtmlSitePage))
+#app.add_url_rule("/models/<dbname>/<index>", view_func=DBPageIdView.as_view("modelid_page", HtmlModelPage))
+#app.add_url_rule("/sites/<dbname>/<index>",  view_func=DBPageIdView.as_view("siteid_page",  HtmlSitePage))
 app.add_url_rule("/videos/<dbname>/<index>", view_func=DBPageIdView.as_view("videoid_page", HtmlVideoPage))
 
 
@@ -201,7 +183,21 @@ app.add_url_rule("/search", view_func=SearchPageView.as_view("search_page"))
 
 app.add_url_rule("/fs/<path:subpath>", view_func=FileSystemView.as_view("fs_path"))
 app.add_url_rule("/fs", view_func=FileSystemView.as_view("fs_root"))
-app.add_url_rule("/fs/", view_func=FileSystemView.as_view("fs_root2"))
+app.add_url_rule("/fs/", view_func=FileSystemView.as_view("fs_root_slash"))
+
+# new site page for testing
+from flaskr.newsite import DBNewSiteView, DBNewSiteIdView
+
+app.add_url_rule("/sites/<dbname>/",          view_func=DBNewSiteView.as_view("new_sites_page", 'sites')) # list of sites
+app.add_url_rule("/models/<dbname>/",         view_func=DBNewSiteView.as_view("new_models_page", 'models')) # list of models
+app.add_url_rule("/photos/<dbname>/",         view_func=DBNewSiteView.as_view("new_photos_page", 'photos')) # list of photos
+app.add_url_rule("/videos/<dbname>/",         view_func=DBNewSiteView.as_view("new_videos_page", 'videos')) # list of videos
+
+app.add_url_rule("/sites/<dbname>/<index>",   view_func=DBNewSiteIdView.as_view("new_siteid_page",  'site')) # list of photosets and videos for a site_id
+app.add_url_rule("/models/<dbname>/<index>",  view_func=DBNewSiteIdView.as_view("new_modelid_page", 'model')) # list of photosets and videos for a model_id
+
+#app.add_url_rule("/photos/<dbname>/<index>",  view_func=DBNewSiteIdView.as_view("new_photoid_page", 'photo')) # this is a gallery page
+#app.add_url_rule("/videos/<dbname>/<index>",  view_func=DBNewSiteIdView.as_view("new_videoid_page", 'video')) # this is a single video
 
 
 @app.route("/favicon.ico")
@@ -239,5 +235,6 @@ app.add_url_rule("/path/<path:subpath>", view_func=Testing.as_view("user_list"))
 if __name__ == '__main__':
 
     app.run(host="0.0.0.0", port=8181)
+
 
 

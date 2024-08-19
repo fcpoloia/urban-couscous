@@ -110,7 +110,7 @@ def get_config(dbname):
     except DatabaseMissingError:
         raise
     # fix the webroot so that it copes with both name or ip provided in url
-    config['webroot'] = "http://"+request.host.replace(':5000','')
+    #config['webroot'] = "http://"+request.host.replace(':5000','')
     # append more items
     config['thumbsize'] = 240
     config['thumb_h'] = 240

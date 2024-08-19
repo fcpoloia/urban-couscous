@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% import 'macros.html' as macs %}
+
+<div class="grid-container centredthumbs">
+
+{% for item in tiles %}
+
+  {% if loop.changed(item.kind) %}
+  </div>
+  <div style="height:10px"></div>
+  <div class="video-container centredthumbs">
+  {% endif %}
+
+  {% if item.kind == 'photo' %}
+
+    {{ macs.imageitem(item) }}
+
+  {% elif item.kind == 'video' %}
+
+    {{ macs.videoitem(item) }}
+
+  {% endif %}
+
+{% endfor %}
+</div>
+
+{% endblock %}

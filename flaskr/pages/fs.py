@@ -78,7 +78,7 @@ class HtmlFileSystem(HtmlSite):
 
     def escape(self, path):
         """"""
-        return path.replace('#', '%23')
+        return path.replace('#', '%23').replace('%','%25')
 
     def do_folders(self):
         """"""
@@ -113,9 +113,9 @@ class HtmlFileSystem(HtmlSite):
 
             kind = self.magic(bitem)
             row = {'name': item,
-                   'basename': self.escape(self.shorter(bitem, 90)),
-                   'href': self.wpath+self.escape(bitem),
-                   'src': self.get_src(bitem, default=self.get_dflt_src(kind, bitem)),
+                   'basename': self.escape(self.shorter(bitem, 90)),                       # label
+                   'href': self.wpath+self.escape(bitem),                                  # href
+                   'src': self.get_src(bitem, default=self.get_dflt_src(kind, bitem)),     # src
                    'width':'', 'height': THM_HT}
             row['kind'] = self.movie_kind if kind == 'movie' else kind
             self.listing.append(row)

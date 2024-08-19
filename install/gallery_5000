@@ -9,9 +9,16 @@ then
 fi
 if [ "$1" == "--local" ]
 then
+    #if [ "$(uname -a)" == "Darwin" ]
+    #then
+    #  python3 -m http.server -d / 80 &
+    #  pid=$!
+    #fi
     # for local only connections
     cd /zstuff/zdata/webroot/urban-couscous/
     flask --app flaskr --debug run
+
+    #kill $pid
 else
     # for external connections
     cd /zstuff/zdata/webroot/urban-couscous/

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+{%- macro imageitem(item) -%}
+<div class="overlay-image overlay-image-photo" style="max-width:100%">
+  <a href="{{item.href}}" title="{{item.basename}}">
+	<img class="image" src="{{item.src}}" alt="{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}" height="{{item.height}}px" />
+	<!-- img class="image" src="{{item.src}}" alt="Alt text" style="width: 100%" / -->
+	<div class="text">{{item.name}} {% if item.count and item.count > 0 %}({{item.count}}){% endif %}</div>
+  </a>
+</div>
+{%- endmacro -%}
+
+{%- macro videoitem(item) -%}
+<div class="overlay-image overlay-image-video grid-item video-item" style="max-width:100%">
+  <a href="{{item.href}}" title="{{item.basename}}">
+    <!-- img class="image" src="{{item.src}}" alt="Alt text" height="{{item.theight}}px" / -->
+    <img class="image" src="{{item.src}}" alt="{{item.name}} {{item.w}}x{{item.h}} {{item.mlen}}" style="width: 100%; aspect-ratio: 1.7776/1;" />
+    <div class="text">{{item.name}} <i>{{item.w}}x{{item.h}} {{item.mlen}}</i></div>
+  </a>
+</div>
+{%- endmacro -%}
+
+<div class="grid-container centredthumbs">
+
+{% for item in tiles %}
+
+{% if item.kind == 'model' %}
+
+  {{ imageitem(item) }}
+
+{% elif item.kind == 'site' %}
+
+  {{ imageitem(item) }}
+
+{% elif item.kind == 'photo' %}
+
+  {{ imageitem(item) }}
+
+{% endif %}
+
+{% endfor %}
+</div>
+
+{% endblock %}

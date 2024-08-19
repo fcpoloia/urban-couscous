@@ -1,36 +1,51 @@
 {% extends "base.html" %}
 {% block content %}
 
-    {% if page['type'] == 'search' %}
-	<!-- h1 style="color:#ccc">Search Results for "{{search_term}}"</h1 -->
-	{% else %}
-	<!-- h1 style="color:#ccc">Random Selection</h1 -->
-	{% endif %}
 	{% import 'macros.html' as macs %}
-	
-	{% if not modeldicts and not galldicts %}
-		<div style="font-size:11pt; color:#ccc">No Models or Photo Sets Found</div>
-	{% endif %}
 
-	{% if modeldicts %}
-	<h3 class="w3-center">Models</h3>
-		{{ macs.image_span(modeldicts) }}
-	{% endif %}
-	
-	{% if galldicts %}
-	<h3 class="w3-center">Photo Sets</h3>
-		{{ macs.image_span(galldicts) }}
-	{% endif %}
+	{% if tiles|length() == 0 %}
+	  <div style="font-size:11pt; color:#ccc">No Results Found</div>
+    {% endif %}
 
-	{% if viddicts %}
-	<h3 class="w3-center">Videos</h3>
-		{{ macs.video_span(viddicts) }}
-	{% endif %}
+	<div class="grid-container centredthumbs">
 
-	{% if sitedicts %}
-	<h3 class="w3-center">Sites</h3>
-		{{ macs.image_span(sitedicts) }}
-	{% endif %}
+    {% for item in tiles %}
+
+	  {% if loop.changed(item.kind) %}
+	    {% if item.kind == 'model' %}
+	  <h3 class="w3-center">Models</h3>
+	    {% elif item.kind == 'photo' %}
+	  <h3 class="w3-center">Photos</h3>
+	    {% elif item.kind == 'video' %}
+ 	  </div>
+	  <h3 class="w3-center">Videos</h3>
+	  <div class="video-container centredthumbs">
+		{% elif item.kind == 'site' %}
+  	  </div>
+	  <h3 class="w3-center">Sites</h3>
+	  <div class="grid-container centredthumbs">
+	    {% endif %}
+      {% endif %}
+
+	  {% if item.kind == 'model' %}
+
+	    {{ macs.imageitem(item) }}
+
+	  {% elif item.kind == 'photo' %}
+
+        {{ macs.imageitem(item) }}
+
+      {% elif item.kind == 'video' %}
+
+        {{ macs.videoitem(item) }}
+
+	  {% elif item.kind == 'site' %}
+
+  	    {{ macs.imageitem(item) }}
+
+      {% endif %}
+
+	{% endfor %}
 	
 
 {% endblock %}

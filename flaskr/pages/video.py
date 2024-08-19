@@ -5,8 +5,9 @@ import sys
 from flask import render_template, current_app
 from flask.views import View
 
-from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
-from flaskr.pages.sorttypes import vsorting
+#from flaskr.collections import DBItems, DBItemsIterator
+from flaskr.pages.base import HtmlSite #, PageInfo, PageBuilder
+#from flaskr.pages.sorttypes import vsorting
 
 
 # @app.route("/<dbname>/video/site/<sid>/<vid>")
@@ -64,7 +65,7 @@ class HtmlVideoPage(HtmlSite):
         else:
             nvideo, pvideo, nname, pname = self.db.videos_table().get_next_prev(vid, f'{page}_id', pageid)
 
-        sys.stderr.write(f"nv {nvideo}, pv{pvideo}, nn {nname}, pn {pname}\n")
+        current_app.logger.info(f"nv {nvideo}, pv {pvideo}, nn {nname}, pn {pname}\n")
 
         #self.heading('videos')
         prefix = f"{page}/{pageid}/" if page is not None else ""
@@ -78,7 +79,7 @@ class HtmlVideoPage(HtmlSite):
         }
 
         # title plaintitle heading type | navigation db
-        page_dict = self.init_page_dict(titledict, False, 'video') #, self.links)
+        page_dict = self.init_page_dict(titledict, False, 'videos') #, self.links)
         page_dict['nid'] = nvideo
         page_dict['pid'] = pvideo
         page_dict['next'] = nname
@@ -93,26 +94,28 @@ class HtmlVideoPage(HtmlSite):
                                viddict=viddict)
 
 
-class HtmlVideosPage(HtmlSite):
+# class HtmlVideosPage(HtmlSite):
 
-    def __init__(self, dbname):
-        """"""
-        super().__init__(dbname)
+#     def __init__(self, dbname):
+#         """"""
+#         super().__init__(dbname)
+#         self._dbitems = DBItems()
 
-    def do_page(self):
-        """list all videos"""
-        #videospage = VideosPage([self.viddict,], self.db.videos_table())
-        info = PageInfo([self.viddict,], 'videos')
-        pagebuilder = PageBuilder(info, self)
-        page_dict, viddicts = pagebuilder.build()
-        return render_template("videos.html",
-                               webroot=self.config['webroot'],
-                               page=page_dict,
-                               viddicts=viddicts[0])
+#     def do_page(self):
+#         """list all videos"""
+#         #videospage = VideosPage([self.viddict,], self.db.videos_table())
+#         info = PageInfo([self.viddict,], 'videos')
+#         pagebuilder = PageBuilder(info, self)
+#         page_dict, viddicts = pagebuilder.build()
+#         return render_template("videos.html",
+#                                webroot=self.config['webroot'],
+#                                page=page_dict,
+#                                viddicts=viddicts[0])
 
-    def getitems(self, order):
-        items = self.db.videos_table().select_order_by(vsorting[order][1], vsorting[order][2])
-        if len(items) == 0:
-            items = self.db.videos_table().select_group_by_order_by('id', 'id', 'desc')
-        return (items,)
+#     def getitems(self, order):
+#         items = self.db.videos_table().select_order_by(vsorting[order][1], vsorting[order][2])
+#         if len(items) == 0:
+#             items = self.db.videos_table().select_group_by_order_by('id', 'id', 'desc')
+#         self._dbitems.addVideoMembers(items)
+#         return (items,)
 

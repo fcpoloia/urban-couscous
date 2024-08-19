@@ -1,115 +1,124 @@
 
 # pylint: disable-msg=empty-docstring, line-too-long, missing-class-docstring, empty-docstring, missing-module-docstring
 
-from flask import render_template
+#from flask import render_template
 
-from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
+#from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder
+f#rom flaskr.collections import DBItems, DBItemsIterator
+
+# class HtmlModelPage(HtmlSite):
+
+#     def __init__(self, dbname):
+#         """"""
+#         super().__init__(dbname)
+#         self.modelid = None
+#         self._dbitems = DBItems()
+
+#     def querydb(self, modelid):
+#         """"""
+
+#     def do_page(self, modelid):
+#         """list all photo sets and videos of a model"""
+#         self.modelid = modelid
+#         #modelpage = ModelPage([self.galdict, self.viddict], modelid, self.db)
+#         info = PageInfo([self.galdict, self.viddict], 'model', filtid=modelid, filterurl=f"/model/{modelid}")
+#         pagebuilder = PageBuilder(info, self)
+#         page_dict, gvdicts = pagebuilder.build()
+
+#         # next/prev needs to follow sort order of models page above
+#         nmodel, pmodel, nname, pname = self.db.models_table().get_next_prev(modelid)
+
+#         page_dict['nid'] = nmodel
+#         page_dict['pid'] = pmodel
+#         page_dict['next'] = nname
+#         page_dict['prev'] = pname
+
+#         modelname = self.db.models_table().select_where('id', modelid)[0][1]
+#         page_dict['title'] = modelname
+
+#         return render_template("model_page.html",
+#                                webroot=self.config['webroot'],
+#                                page=page_dict,
+#                                galldicts=gvdicts[0],
+#                                viddicts=gvdicts[1])
+
+#     def getitems(self, order):
+#         order_by = {
+#             'alpha': 'asc',  'ralpha': 'desc',
+#             'id':    'asc',  'rid':    'desc',
+#             'date':  'asc',  'rdate':  'desc'
+#             }
+#         unsorted_photos = self.db.photos_table().select_where_group_by('model_id',self.modelid,'id')
+#         #    id, model_id, site_id, name, location, thumb, count, pdate = gallery
+#         unsorted_videos = self.db.videos_table().select_where_group_by('model_id',self.modelid,'id')
+
+#         photos = []
+#         videos = []
+#         # lambda is setting the database column to sort on - date is different between photos and videos
+#         if order in ('alpha', 'ralpha'):
+#             photos = sorted(unsorted_photos, key = lambda x: x[3]) #name
+#             videos = sorted(unsorted_videos, key = lambda x: x[3])
+#         elif order in ('id', 'rid'):
+#             photos = sorted(unsorted_photos, key = lambda x: x[0]) # id
+#             videos = sorted(unsorted_videos, key = lambda x: x[0])
+#         elif order in ('date', 'rdate'):
+#             photos = sorted(unsorted_photos, key = lambda x: x[7])  #pdate
+#             videos = sorted(unsorted_videos, key = lambda x: x[10]) #vdate
+
+#         if order_by[order] == 'desc':
+#             photos.reverse()
+#             videos.reverse()
+
+#         self._dbitems.addPhotoMembers(photos)
+#         self._dbitems.addVideoMembers(videos)
+#         #return (photos, videos)
 
 
-class HtmlModelPage(HtmlSite):
 
-    def __init__(self, dbname):
-        """"""
-        super().__init__(dbname)
-        self.modelid = None
+# class HtmlModelsPage(HtmlSite):
 
-    def do_page(self, modelid):
-        """list all photo sets and videos of a model"""
-        self.modelid = modelid
-        #modelpage = ModelPage([self.galdict, self.viddict], modelid, self.db)
-        info = PageInfo([self.galdict, self.viddict], 'model', filtid=modelid)
-        pagebuilder = PageBuilder(info, self)
-        page_dict, gvdicts = pagebuilder.build()
+#     def __init__(self, dbname):
+#         """"""
+#         super().__init__(dbname)
+#         self._dbitems = DBItems()
 
-        # next/prev needs to follow sort order of models page above
-        nmodel, pmodel, nname, pname = self.db.models_table().get_next_prev(modelid)
+#     def do_page(self):
+#         """list all models"""
+#         #modelspage = ModelsPage([self.moddict,], self.db.models_table())
+#         info = PageInfo([self.moddict,], 'models')
+#         pagebuilder = PageBuilder(info, self)
+#         page_dict, galldicts = pagebuilder.build()
+#         return render_template("photos.html",
+#                                webroot=self.config['webroot'],
+#                                page=page_dict,
+#                                galldicts=galldicts[0])
 
-        page_dict['nid'] = nmodel
-        page_dict['pid'] = pmodel
-        page_dict['next'] = nname
-        page_dict['prev'] = pname
+#     def getitems(self, order):
+#         order_by = {
+#             'alpha':   'asc',   'ralpha':   'desc',
+#             'vlatest': 'desc',  'rvlatest': 'asc',
+#             'platest': 'desc',  'rplatest': 'asc',
+#             'most':    'desc',  'least':    'asc',
+#             'id':      'asc',   'rid':      'desc'
+#         }
+#         if order in ['alpha', 'ralpha']:
+#             models = self.db.models_table().select_group_by_order_by('name', 'name', order_by[order])
 
-        modelname = self.db.models_table().select_where('id', modelid)[0][1]
-        page_dict['title'] = modelname
+#         elif order in ['vlatest', 'rvlatest']:
+#             models = self.db.models_table().select_by_most_recent_videos('model_id', order_by[order])
 
-        return render_template("model_page.html",
-                               webroot=self.config['webroot'],
-                               page=page_dict,
-                               galldicts=gvdicts[0],
-                               viddicts=gvdicts[1])
+#         elif order in ['platest', 'rplatest']:
+#             models = self.db.models_table().select_by_most_recent_photos('model_id', order_by[order])
 
-    def getitems(self, order):
-        order_by = {
-            'alpha': 'asc',  'ralpha': 'desc',
-            'id':    'asc',  'rid':    'desc',
-            'date':  'asc',  'rdate':  'desc'
-            }
-        unsorted_photos = self.db.photos_table().select_where_group_by('model_id',self.modelid,'id')
-        #    id, model_id, site_id, name, location, thumb, count, pdate = gallery
-        unsorted_videos = self.db.videos_table().select_where_group_by('model_id',self.modelid,'id')
+#         elif order in ['most', 'least']:
+#             models = self.db.models_table().select_models_by_count(order_by[order])
 
-        photos = []
-        videos = []
-        # lambda is setting the database column to sort on - date is different between photos and videos
-        if order in ('alpha', 'ralpha'):
-            photos = sorted(unsorted_photos, key = lambda x: x[3]) #name
-            videos = sorted(unsorted_videos, key = lambda x: x[3])
-        elif order in ('id', 'rid'):
-            photos = sorted(unsorted_photos, key = lambda x: x[0]) # id
-            videos = sorted(unsorted_videos, key = lambda x: x[0])
-        elif order in ('date', 'rdate'):
-            photos = sorted(unsorted_photos, key = lambda x: x[7])  #pdate
-            videos = sorted(unsorted_videos, key = lambda x: x[10]) #vdate
+#         elif order in ['id', 'rid']:
+#             models = self.db.models_table().select_order_by('id', order_by[order])
 
-        if order_by[order] == 'desc':
-            photos.reverse()
-            videos.reverse()
-        return (photos, videos)
+#         if len(models) == 0:
+#             models = self.db.models_table().select_order_by('id', 'desc')
 
-
-
-class HtmlModelsPage(HtmlSite):
-
-    def __init__(self, dbname):
-        """"""
-        super().__init__(dbname)
-
-    def do_page(self):
-        """list all models"""
-        #modelspage = ModelsPage([self.moddict,], self.db.models_table())
-        info = PageInfo([self.moddict,], 'models')
-        pagebuilder = PageBuilder(info, self)
-        page_dict, galldicts = pagebuilder.build()
-        return render_template("photos.html",
-                               webroot=self.config['webroot'],
-                               page=page_dict,
-                               galldicts=galldicts[0])
-
-    def getitems(self, order):
-        order_by = {
-            'alpha':   'asc',   'ralpha':   'desc',
-            'vlatest': 'desc',  'rvlatest': 'asc',
-            'platest': 'desc',  'rplatest': 'asc',
-            'most':    'desc',  'least':    'asc',
-            'id':      'asc',   'rid':      'desc'
-        }
-        if order in ['alpha', 'ralpha']:
-            models = self.db.models_table().select_group_by_order_by('name', 'name', order_by[order])
-
-        elif order in ['vlatest', 'rvlatest']:
-            models = self.db.models_table().select_by_most_recent_videos('model_id', order_by[order])
-
-        elif order in ['platest', 'rplatest']:
-            models = self.db.models_table().select_by_most_recent_photos('model_id', order_by[order])
-
-        elif order in ['most', 'least']:
-            models = self.db.models_table().select_models_by_count(order_by[order])
-
-        elif order in ['id', 'rid']:
-            models = self.db.models_table().select_order_by('id', order_by[order])
-
-        if len(models) == 0:
-            models = self.db.models_table().select_order_by('id', 'desc')
-
-        return (models,)
+#         self._dbitems.addModelMembers(models)
+#         #return (models,)
 

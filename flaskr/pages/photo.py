@@ -6,8 +6,9 @@ from subprocess import getstatusoutput as unix
 from flask import render_template, session, current_app
 from flask.views import View
 
-from flaskr.pages.base import HtmlSite, PageInfo, PageBuilder, do_post_get
-from flaskr.pages.sorttypes import sorting
+#from flaskr.collections import DBItems, DBItemsIterator
+from flaskr.pages.base import HtmlSite, do_post_get #PageInfo, PageBuilder, 
+#from flaskr.pages.sorttypes import sorting
 
 
 #@app.route("/<dbname>/gallery/site/<sid>/<pid>", methods=['POST', 'GET'])
@@ -178,27 +179,29 @@ class HtmlPhotoSetPage(HtmlSite):
 
 
 
-class HtmlPhotosPage(HtmlSite):
+# class HtmlPhotosPage(HtmlSite):
 
-    def __init__(self, dbname):
-        """"""
-        super().__init__(dbname)
+#     def __init__(self, dbname):
+#         """"""
+#         super().__init__(dbname)
+#         self._dbitems = DBItems()
 
-    def do_page(self):
-        """list all photo sets"""
-        #photospage = PhotosPage([self.galdict,], self.db.photos_table())
-        info = PageInfo([self.galdict,], 'photos')
-        pagebuilder = PageBuilder(info, self)
-        page_dict, galldicts = pagebuilder.build()
-        return render_template("photos.html",
-                               webroot=self.config['webroot'],
-                               page=page_dict,
-                               galldicts=galldicts[0])
+#     def do_page(self):
+#         """list all photo sets"""
+#         #photospage = PhotosPage([self.galdict,], self.db.photos_table())
+#         info = PageInfo([self.galdict,], 'photos')
+#         pagebuilder = PageBuilder(info, self)
+#         page_dict, galldicts = pagebuilder.build()
+#         return render_template("photos.html",
+#                                webroot=self.config['webroot'],
+#                                page=page_dict,
+#                                galldicts=galldicts[0])
 
-    def getitems(self, order):
-        """"""
-        items = self.db.photos_table().select_order_by(sorting[order][1], sorting[order][2])
-        if len(items) == 0:
-            items = self.db.photos_table().select_group_by_order_by('id', 'id', 'desc')
-        return (items,)
+#     def getitems(self, order):
+#         """"""
+#         items = self.db.photos_table().select_order_by(sorting[order][1], sorting[order][2])
+#         if len(items) == 0:
+#             items = self.db.photos_table().select_group_by_order_by('id', 'id', 'desc')
+#         self._dbitems.addPhotoMembers(items)
+#         #return (items,)
 
